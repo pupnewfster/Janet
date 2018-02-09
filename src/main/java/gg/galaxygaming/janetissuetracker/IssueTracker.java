@@ -4,7 +4,7 @@ import gg.galaxygaming.janetissuetracker.CommandHandler.CommandHandler;
 import gg.galaxygaming.janetissuetracker.Forums.RestIntegration;
 import gg.galaxygaming.janetissuetracker.Slack.JanetSlack;
 
-public class IssueTracker {
+public class IssueTracker {//TODO: add in proper javadoc explanations for methods
     private static IssueTracker INSTANCE;
     public static boolean DEBUG = true;//TODO replace with a proper loger
     private final Config config;

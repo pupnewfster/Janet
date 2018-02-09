@@ -65,7 +65,7 @@ public class CommandHandler {
     public ArrayList<String> getHelpList(CommandSender sender) {
         ArrayList<String> help = new ArrayList<>();
         this.cmds.stream().filter(cmd -> cmd.getName() != null && cmd.getUsage() != null && cmd.helpDoc() != null &&
-                sender.getRank().hasRank(cmd.getRequiredRank())).forEach(cmd -> {
+                sender.getRank().hasRank(cmd.getRequiredRank())).forEachOrdered(cmd -> {
             List<CommandSource> sources = cmd.supportedSources();
             if (sources == null || sources.contains(sender.getSource()))
                 help.add(cmd.getUsage() + " ~ " + cmd.helpDoc());

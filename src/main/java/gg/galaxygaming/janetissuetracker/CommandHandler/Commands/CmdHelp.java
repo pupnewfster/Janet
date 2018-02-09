@@ -30,22 +30,16 @@ public class CmdHelp implements Cmd {
             sender.sendMessage("Error: Input a number from 1 to " + totalPages);
             return true;
         }
-        int time = 0;
-        StringBuilder m = new StringBuilder(" ---- Help -- Page " + page + '/' + totalPages + " ---- \n");
-        page = page - 1;
-        String msg;
-        while ((msg = getLine(page, time++, helpList)) != null)
+        StringBuilder m = new StringBuilder(" ---- Help -- Page " + page + " / " + totalPages + " ---- \n");
+        page -= 1;
+        int end = page * 10 + 9;
+        List<String> curPage = helpList.subList(page * 10, end > helpList.size() ? helpList.size() : end);
+        for (String msg : curPage)
             m.append(msg).append('\n');
         if (page + 1 < totalPages)
             m.append("Type !help ").append(page + 2).append(" to read the next page.\n");
         sender.sendMessage(m.toString());
         return true;
-    }
-
-
-    private String getLine(int page, int time, ArrayList<String> helpList) {
-        //page *= 10;
-        return helpList.size() < time + (page *= 10) + 1 || time == 10 ? null : helpList.get(page + time);
     }
 
     @Override

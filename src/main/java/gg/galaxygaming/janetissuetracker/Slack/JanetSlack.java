@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JanetSlack {//TODO: add in proper javadoc explanations for methods
+public class JanetSlack {
     //TODO convert more void methods to booleans to give error messages if things go wrong
     //TODO: Replace SlackUser with BaseSlackUser after implementing some required methods
     private final HashMap<String, SlackUser> userMap = new HashMap<>();
@@ -27,7 +27,6 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
     private WebSocket ws;
     private int id;
     //TODO: use RTM member_joined_channel to tell when they joined the server, this can be used to invite them to the proper server rooms
-    //TODO: Make sure that user mentions convert to proper name and back
 
     public JanetSlack(Config config) {
         token = config.getStringOrDefault("SLACK_TOKEN", "token");
