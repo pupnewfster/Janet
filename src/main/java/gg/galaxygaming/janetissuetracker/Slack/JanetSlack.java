@@ -5,6 +5,8 @@ import com.github.cliftonlabs.json_simple.Jsoner;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketFactory;
+import gg.galaxygaming.janetissuetracker.Config;
+import gg.galaxygaming.janetissuetracker.IssueTracker;
 import gg.galaxygaming.janetissuetracker.Utils;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -13,10 +15,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Properties;
 
 public class JanetSlack {//TODO: add in proper javadoc explanations for methods
-    //TODO: Update simple json usage to make sure the old code is working properly with the new version of json-simple after its major refactor
     //TODO convert more void methods to booleans to give error messages if things go wrong
     private final HashMap<String, SlackUser> userMap = new HashMap<>();
     private final HashMap<Integer, ArrayList<String>> helpLists = new HashMap<>();
@@ -28,22 +28,19 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
     //TODO: use RTM member_joined_channel to tell when they joined the server
     //TODO: Make sure that user mentions convert to proper name and back
 
-    public void init() {
-        Properties config = new Properties();//TODO get config instead of creating new unloaded version
-        token = config.containsKey("SlackToken") ? config.getProperty("SlackToken") : "token";
-        infoChannel = config.containsKey("InfoChannel") ? config.getProperty("InfoChannel") : "infoChannel";
-        if (token.equals("token") || infoChannel.equals("infoChannel")) {
-            //Failed print message
+    public JanetSlack(Config config) {
+        token = config.getStringOrDefault("SLACK_TOKEN", "token");
+        infoChannel = config.getStringOrDefault("INFO_CHANNEL", "info_channel");
+        if (token.equals("token") || infoChannel.equals("info_channel")) {
+            System.out.println("[ERROR] Failed to load needed configs for Slack Integration");
             return;
         }
-        if (!setHelp()) {
-            //Failed to set help messages
-        }
-        if (connect()) {
-            //Connected successfully
-        } else {
-            //Failed print message
-        }
+        if (!setHelp())
+            System.out.println("[ERROR] Failed to set help messages.");
+        if (connect())
+            System.out.println("Connected to slack.");
+        else
+            System.out.println("[ERROR] Failed to connect to slack.");
     }
 
     public void disconnect() {
@@ -52,7 +49,6 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
         userMap.clear();
         helpLists.clear();
         sendMessage("Disconnected.", infoChannel);
-        //sendPost("https://slack.com/api/users.setPresence?token=" + token + "&presence=away");//Not needed with RTM api
         isConnected = false;
         if (ws != null)
             ws.disconnect();
@@ -65,12 +61,13 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
             URL url = new URL("https://slack.com/api/rtm.connect?token=" + token);
             HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
             con.setRequestMethod("POST");
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            while ((inputLine = in.readLine()) != null)
-                response.append(inputLine);
-            in.close();
+            StringBuilder response;
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+                String inputLine;
+                response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null)
+                    response.append(inputLine);
+            }
             JsonObject json = Jsoner.deserialize(response.toString(), new JsonObject());
             String webSocketUrl = json.getString(Jsoner.mintJsonKey("url", null));
             if (webSocketUrl != null)
@@ -78,7 +75,6 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
         } catch (Exception ignored) {
             return false;
         }
-        //sendPost("https://slack.com/api/users.setPresence?token=" + this.token + "&presence=auto");//Not needed with RTM api or s
         isConnected = true;
         sendMessage("Connected.", infoChannel);
         return true;
@@ -89,6 +85,8 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
             ws = new WebSocketFactory().createSocket(url).addListener(new WebSocketAdapter() {
                 @Override
                 public void onTextMessage(WebSocket websocket, String message) {//TODO listen back for potential replies to stored message ids
+                    if (IssueTracker.DEBUG)
+                        System.out.println("[DEBUG] Received Slack message: " + message);
                     JsonObject json = Jsoner.deserialize(message, new JsonObject());
                     if (json.containsKey("type")) {
                         if (json.getString(Jsoner.mintJsonKey("type", null)).equals("message")) {//TODO see if there is an id field and how it acts
@@ -116,7 +114,8 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
                     }
                 }
             }).connect();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -158,17 +157,13 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
             if (userInfo.getBooleanOrDefault(Jsoner.mintJsonKey("deleted", false))) //This may not ever even be true, given account is deactivated
                 return null;
             userMap.put(id, user = new SlackUser(userInfo));
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return user;
     }
 
-    public boolean deactivateAccount(SlackUser user) {//TODO: maybe change to id instead of user
-        //TODO: implement using https://github.com/ErikKalkoken/slackApiDoc/blob/master/users.admin.setInactive.md
-        return false;
-    }
-
-    public boolean inviteUser(String email) {//TODO make sure that they are not restricted/ultrarestricted
+    public InviteResponse inviteUser(String email) {//TODO make sure that they are not restricted/ultrarestricted
         try {//TODO check response and make sure there are no errors
             URL url = new URL("https://slack.com/api/users.admin.invite?token=" + token + "&email=" + email);
             HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
@@ -181,10 +176,11 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
             in.close();
             JsonObject jsonResponse = (JsonObject) Jsoner.deserialize(response.toString());
             if (!jsonResponse.getBooleanOrDefault(Jsoner.mintJsonKey("ok", false)))
-                return false; //Cannot be invited
+                return InviteResponse.fromString(jsonResponse.getStringOrDefault(Jsoner.mintJsonKey("error", "other")));
         } catch (Exception ignored) {
+            return InviteResponse.OTHER;
         }
-        return true;
+        return InviteResponse.SUCCESS;
     }
 
     private String getLine(int page, int time, ArrayList<String> helpList) {
