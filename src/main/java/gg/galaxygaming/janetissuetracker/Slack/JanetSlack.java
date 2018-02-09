@@ -22,16 +22,18 @@ public class JanetSlack {
     //TODO: Replace SlackUser with BaseSlackUser after implementing some required methods
     private final HashMap<String, SlackUser> userMap = new HashMap<>();
     private boolean isConnected;
-    private String token;
-    private String infoChannel;//TODO: maybe convert it to an array
+    private final String token;
+    private final String userToken;
+    private final String infoChannel;//TODO: maybe convert it to an array
     private WebSocket ws;
     private int id;
     //TODO: use RTM member_joined_channel to tell when they joined the server, this can be used to invite them to the proper server rooms
 
     public JanetSlack(Config config) {
-        token = config.getStringOrDefault("SLACK_TOKEN", "token");
-        infoChannel = config.getStringOrDefault("INFO_CHANNEL", "info_channel");
-        if (token.equals("token") || infoChannel.equals("info_channel")) {
+        this.token = config.getStringOrDefault("SLACK_TOKEN", "token");
+        this.userToken = config.getStringOrDefault("USER_SLACK_TOKEN", "token");
+        this.infoChannel = config.getStringOrDefault("INFO_CHANNEL", "info_channel");
+        if (this.token.equals("token") || this.infoChannel.equals("info_channel") || this.userToken.equals("token")) {
             System.out.println("[ERROR] Failed to load needed configs for Slack Integration");
             return;
         }
@@ -174,9 +176,9 @@ public class JanetSlack {
         return user;
     }
 
-    public InviteResponse inviteUser(String email) {//TODO make sure that they are not restricted/ultrarestricted
-        try {//TODO check response and make sure there are no errors
-            URL url = new URL("https://slack.com/api/users.admin.invite?token=" + token + "&email=" + email);
+    public InviteResponse inviteUser(String email) {
+        try {
+            URL url = new URL("https://slack.com/api/users.admin.invite?token=" + this.userToken + "&email=" + email);
             HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
             con.setRequestMethod("POST");
             StringBuilder response;
@@ -189,7 +191,8 @@ public class JanetSlack {
             JsonObject jsonResponse = (JsonObject) Jsoner.deserialize(response.toString());
             if (!jsonResponse.getBooleanOrDefault(Jsoner.mintJsonKey("ok", false)))
                 return InviteResponse.fromString(jsonResponse.getStringOrDefault(Jsoner.mintJsonKey("error", "other")));
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
             return InviteResponse.OTHER;
         }
         return InviteResponse.SUCCESS;

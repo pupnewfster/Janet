@@ -32,6 +32,8 @@ public class Config extends Properties {
         try (OutputStream output = new FileOutputStream(config)) {
             if (!containsKey("SLACK_TOKEN"))
                 setProperty("SLACK_TOKEN", "token");
+            if (!containsKey("USER_SLACK_TOKEN"))
+                setProperty("USER_SLACK_TOKEN", "token");
             if (!containsKey("INFO_CHANNEL"))
                 setProperty("INFO_CHANNEL", "info_channel");
 
