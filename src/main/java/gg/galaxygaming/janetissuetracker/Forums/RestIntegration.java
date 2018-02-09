@@ -26,6 +26,7 @@ public class RestIntegration {
     private final ArrayList<Integer> acceptedForums;
     private final ArrayList<Integer> deniedForums;
     private final int janetID;
+    private Thread scan;
     private String auth = "";
 
     public RestIntegration(Config config) {
@@ -67,8 +68,21 @@ public class RestIntegration {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        //TODO Make this happen in a thread or some way so that it is repeated
-        scanApplications();
+        this.scan = new Thread(() -> {
+            while (true) {
+                scanApplications();
+                try {
+                    Thread.sleep(5 * 60 * 1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        scan.start();
+    }
+
+    public void stop() {
+        scan.interrupt();
     }
 
     //Loop over suggestion forums looking for new posts and things
@@ -125,8 +139,12 @@ public class RestIntegration {
     }
 
     private void scanApplications() {
+        if (IssueTracker.DEBUG)
+            System.out.println("[DEBUG] Scan started.");
         scanNewApplications();
         checkApplicationStatus();
+        if (IssueTracker.DEBUG)
+            System.out.println("[DEBUG] Scan finished.");
     }
 
     //TODO: Maybe make this check in a separate thread
@@ -141,8 +159,11 @@ public class RestIntegration {
             for (Object t : rTopics) {
                 JsonObject topic = (JsonObject) t;
                 Integer topicID = topic.getIntegerOrDefault(Jsoner.mintJsonKey("id", null));
-                if (topicID != null && !topics.contains(topicID))
+                if (topicID != null && !topics.contains(topicID)) {
                     topics.add(topicID);
+                    if (IssueTracker.DEBUG)
+                        System.out.println("[DEBUG] Topic added: " + topicID);
+                }
             }
             //TODO if there are multiple pages scan next pages also
             //totalPages

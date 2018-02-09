@@ -21,7 +21,11 @@ public class IssueTracker {//TODO: add in proper javadoc explanations for method
         this.rest = new RestIntegration(this.config);
     }
 
-    //TODO create a stop method to call things like JanetSlack disconnect
+    //TODO call this method
+    public void stop() {
+        getRestIntegration().stop();
+        getSlack().disconnect();
+    }
 
 
     public static void main(String[] args) {
