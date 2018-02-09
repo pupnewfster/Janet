@@ -5,23 +5,22 @@ import com.github.cliftonlabs.json_simple.Jsoner;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketFactory;
+import gg.galaxygaming.janetissuetracker.CommandHandler.CommandSender;
 import gg.galaxygaming.janetissuetracker.Config;
 import gg.galaxygaming.janetissuetracker.IssueTracker;
-import gg.galaxygaming.janetissuetracker.Utils;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class JanetSlack {//TODO: add in proper javadoc explanations for methods
     //TODO convert more void methods to booleans to give error messages if things go wrong
+    //TODO: Replace SlackUser with BaseSlackUser after implementing some required methods
     private final HashMap<String, SlackUser> userMap = new HashMap<>();
-    private final HashMap<Integer, ArrayList<String>> helpLists = new HashMap<>();
     private boolean isConnected;
     private String token;
     private String infoChannel;//TODO: maybe convert it to an array
@@ -37,8 +36,6 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
             System.out.println("[ERROR] Failed to load needed configs for Slack Integration");
             return;
         }
-        if (!setHelp())
-            System.out.println("[ERROR] Failed to set help messages.");
         if (connect())
             System.out.println("Connected to slack.");
         else
@@ -49,7 +46,6 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
         if (!isConnected)
             return;
         userMap.clear();
-        helpLists.clear();
         sendMessage("Disconnected.", infoChannel);
         isConnected = false;
         if (ws != null)
@@ -200,86 +196,23 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
         return InviteResponse.SUCCESS;
     }
 
-    private String getLine(int page, int time, ArrayList<String> helpList) {
-        if (time == 10)
-            return null;
-        page *= 10;
-        if (helpList.size() < time + page + 1)
-            return null;
-        return helpList.get(page + time);
-    }
-
-    @SuppressWarnings("unchecked")
-    private boolean setHelp() {//TODO: potentially create commands and if so set them here in the help instead of including them all below in sendSlackChat
-        //TODO: try to come up with a way to not require cloning the help lists for higher ranks.
-        //TODO This could be done with them all being individual commands and then checking to see if rank is valid for showing, how to decided on page count
-        ArrayList<String> temp = new ArrayList<>();
-        temp.add("!help <page> ~ View the help messages on <page>.");
-        temp.add("!rank ~ Shows you what rank you have.");
-        helpLists.put(0, (ArrayList<String>) temp.clone());//Member
-        helpLists.put(1, (ArrayList<String>) temp.clone());//Admin
-        helpLists.put(2, (ArrayList<String>) temp.clone());//Owner
-        helpLists.put(3, (ArrayList<String>) temp.clone());//Primary owner
-        temp.clear();
-        return true;
-    }
-
-    private void sendSlackChat(SlackUser info, String message, String channel) {//TODO: Maybe add some functionality if it is a pm
+    private void sendSlackChat(SlackUser info, String message, String channel) {
         if (info == null)
             return;
-        if (info.isRestricted()) {
-            sendMessage("Error: You are " + (info.isUltraRestricted() ? "ultra " : "") + "restricted.", channel);
+        if (info.getRank().isBanned()) {
+            sendMessage("Error: You are restricted.", channel);
             return;
         }
-        if (info.isBot()) //If bot don't send to game
+        if (info.isBot()) //If bot don't send, we should process it but not ever as a command
             return;
-        final String name = info.getName();
-        if (message.startsWith("!")) {
-            boolean isCommand = true;
-            String m = "";
-            if (message.startsWith("!help")) {//TODO: Reformat help to have better line endings/stick out more
-                int page = 0;//TODO see if this can be rewritten to be more efficient instead of being the algorithm that has been slowly upgraded over the years
-                if (message.split(" ").length > 1 && !Utils.legalInt(message.split(" ")[1])) {
-                    sendMessage("Error: You must enter a valid help page.", channel);
-                    return;
-                }
-                if (message.split(" ").length > 1)
-                    page = Integer.parseInt(message.split(" ")[1]);
-                if (message.split(" ").length == 1 || page <= 0)
-                    page = 1;
-                int time = 0;
-                int rounder = 0;
-                ArrayList<String> helpList = helpLists.get(info.getRank());
-                if (helpList.size() % 10 != 0)
-                    rounder = 1;
-                int totalpages = helpList.size() / 10 + rounder;
-                if (page > totalpages) {
-                    sendMessage("Error: Input a number from 1 to " + Integer.toString(totalpages), channel);
-                    return;
-                }
-                m += " ---- Help -- Page " + Integer.toString(page) + '/' + Integer.toString(totalpages) + " ---- \n";
-                page = page - 1;
-                String msg = getLine(page, time, helpList);
-                StringBuilder mBuilder = new StringBuilder(m);
-                while (msg != null) {
-                    mBuilder.append(msg).append('\n');
-                    time++;
-                    msg = getLine(page, time, helpList);
-                }
-                m = mBuilder.toString();
-                if (page + 1 < totalpages)
-                    m += "Type !help " + Integer.toString(page + 2) + " to read the next page.\n";
-            } else if (message.startsWith("!rank"))
-                m += info.getRankName() + '\n';
-            else
-                isCommand = false;
-            if (isCommand) {
-                sendMessage(m, channel);
-                return;
-            }
-        }
+        boolean isCommand = false;
+        CommandSender sender = new CommandSender(info, channel);
+        if (message.startsWith("!"))
+            isCommand = IssueTracker.getCommandHandler().handleCommand(message, sender);
+        if (isCommand)
+            return;
         if (!channel.startsWith("D")) {//If not pm, but should it also check private messages?
             //TODO: evaluate for enough information and then create a new issue on github
-        }
+        }//TODO: Maybe add some functionality if it is a pm
     }
 }
