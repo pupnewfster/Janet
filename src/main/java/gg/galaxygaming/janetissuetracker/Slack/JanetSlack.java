@@ -15,6 +15,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JanetSlack {//TODO: add in proper javadoc explanations for methods
     //TODO convert more void methods to booleans to give error messages if things go wrong
@@ -24,8 +26,8 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
     private String token;
     private String infoChannel;//TODO: maybe convert it to an array
     private WebSocket ws;
-
-    //TODO: use RTM member_joined_channel to tell when they joined the server
+    private int id;
+    //TODO: use RTM member_joined_channel to tell when they joined the server, this can be used to invite them to the proper server rooms
     //TODO: Make sure that user mentions convert to proper name and back
 
     public JanetSlack(Config config) {
@@ -85,11 +87,13 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
             ws = new WebSocketFactory().createSocket(url).addListener(new WebSocketAdapter() {
                 @Override
                 public void onTextMessage(WebSocket websocket, String message) {//TODO listen back for potential replies to stored message ids
-                    if (IssueTracker.DEBUG)
-                        System.out.println("[DEBUG] Received Slack message: " + message);
+                    //if (IssueTracker.DEBUG)
+                        //System.out.println("[DEBUG] Received Slack message: " + message);
                     JsonObject json = Jsoner.deserialize(message, new JsonObject());
                     if (json.containsKey("type")) {
                         if (json.getString(Jsoner.mintJsonKey("type", null)).equals("message")) {//TODO see if there is an id field and how it acts
+                            if (IssueTracker.DEBUG)
+                                System.out.println("[DEBUG] Received Slack message: " + message);
                             if (json.containsKey("bot_id"))
                                 return;//TODO maybe figure out the userid of botid if there is any reason to support bot messages..
                             //TODO will probably require some sort of bot support depending on how the integration with gmod's issue reporting works
@@ -98,18 +102,36 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
                             if (info == null)
                                 return;
                             String text = json.getString(Jsoner.mintJsonKey("text", null));
-                            while (text.contains("<") && text.contains(">")) {
-                                //TODO: test with multiple @mentions, probably does not work and needs a rewrite
-                                //TODO: In rewrite also include the ability to support other formatted things such as channels
-                                String[] split = text.split("<@");
-                                String[] sSplit = split[1].split(">:");
-                                SlackUser user = getUserInfo(sSplit[0]);
-                                text = split[0] + '@' + (user == null ? "null" : user.getName()) + ':' + sSplit[1];
+                            //Users
+                            Matcher matcher = Pattern.compile("\\<@(.*?)\\>").matcher(text);
+                            while (matcher.find()) {
+                                String str = matcher.group(1);
+                                SlackUser user = getUserInfo(str);
+                                text = text.replace("<@" + str + '>', '@' + (user == null ? "null" : user.getName()));
                             }
+                            //Channel
+                            matcher = Pattern.compile("\\<#(.*?\\|.*?)\\>").matcher(text);
+                            while (matcher.find()) {
+                                String str = matcher.group(1);
+                                text = text.replace("<#" + str + '>', '#' + str.split("\\|")[1]);
+                            }
+
+                            //URLS with http or https
+                            matcher = Pattern.compile("\\<(http[^\\|;]+)\\>").matcher(text);
+                            while (matcher.find()) {
+                                String str = matcher.group(1);
+                                text = text.replace('<' + str + '>', str);
+                            }
+
+                            //Date, email address, Remaining URLs
+                            matcher = Pattern.compile("\\<(.*?\\|.*?)\\>").matcher(text);
+                            while (matcher.find()) {
+                                String str = matcher.group(1);
+                                text = text.replace('<' + str + '>', str.split("\\|")[1]);
+                            }
+                            text = text.replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">");
                             String channel = json.getString(Jsoner.mintJsonKey("channel", null));
                             sendSlackChat(info, text, channel);
-                            //if (channel.startsWith("D")) //Direct Message
-                            //else if (channel.startsWith("C") || channel.startsWith("G")) //Channel or Group
                         }
                     }
                 }
@@ -119,21 +141,15 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
         }
     }
 
-    //TODO: Probably remove, unless some use of user info can be found... such as for better indexing of id
-    /*public void sendMessage(String message, String channel, SlackUser u) {
-        sendMessage(message, channel);
-    }*/
-
     public void sendMessage(String message, String channel) {
         if (message.endsWith("\n"))
             message = message.substring(0, message.length() - 1);
         JsonObject json = new JsonObject();
-        int id = 1;//TODO: increment id, and keep track of ones that a response is wanted from
-        json.put("id", id);
+        json.put("id", this.id++);
         json.put("type", "message");
         json.put("channel", channel);
         json.put("text", message);
-        ws.sendText(Jsoner.serialize(json));//TODO make sure this works
+        ws.sendText(Jsoner.serialize(json));
     }
 
     private SlackUser getUserInfo(String id) {//TODO Try to make this more efficient, potentially improving the response reading
@@ -168,12 +184,13 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
             URL url = new URL("https://slack.com/api/users.admin.invite?token=" + token + "&email=" + email);
             HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
             con.setRequestMethod("POST");
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            while ((inputLine = in.readLine()) != null)
-                response.append(inputLine);
-            in.close();
+            StringBuilder response;
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+                String inputLine;
+                response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null)
+                    response.append(inputLine);
+            }
             JsonObject jsonResponse = (JsonObject) Jsoner.deserialize(response.toString());
             if (!jsonResponse.getBooleanOrDefault(Jsoner.mintJsonKey("ok", false)))
                 return InviteResponse.fromString(jsonResponse.getStringOrDefault(Jsoner.mintJsonKey("error", "other")));
@@ -208,7 +225,6 @@ public class JanetSlack {//TODO: add in proper javadoc explanations for methods
     }
 
     private void sendSlackChat(SlackUser info, String message, String channel) {//TODO: Maybe add some functionality if it is a pm
-        //TODO include the channel it is sent from
         if (info == null)
             return;
         if (info.isRestricted()) {

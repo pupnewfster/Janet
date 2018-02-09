@@ -159,13 +159,11 @@ public class RestIntegration {
             for (Integer topicID : topics) {
                 JsonObject topic = sendGET("/forums/topics/" + topicID);
                 if (topic.containsKey("errorCode")) { //Topic was deleted
-                    //TODO make sure that errorCode only shows if there was an error (pretty sure this is how it works)
                     if (IssueTracker.DEBUG)
                         System.out.println("[DEBUG] Error Code:" + topic.getStringOrDefault(Jsoner.mintJsonKey("errorMessage", "UNKNOWN")));
                     remTopics.add(topicID);
                     continue;
                 }
-                //TODO are these .get statements fine
                 JsonObject forum = (JsonObject) topic.get("forum");
                 int forumID = forum.getInteger(Jsoner.mintJsonKey("id", null));
                 if (fid != forumID) {
@@ -184,7 +182,7 @@ public class RestIntegration {
                             json.put("post", "<p>" + response + "</p>");
                             if (IssueTracker.DEBUG)
                                 System.out.println("[DEBUG] Post to forums.");
-                            //sendPOST("/forums/posts", json);//TODO uncomment after testing other stuff, because we dont want janet spamming forums if there is an error in logic
+                            sendPOST("/forums/posts", json);
                         }
                         //Log some sort of error message
                     } else if (this.deniedForums.contains(forumID)) {//Denied
@@ -208,10 +206,9 @@ public class RestIntegration {
             System.out.println("[DEBUG] Response Code: " + response.getMessage());
         if (!response.isUseful())
             return null;//Failed
-        //TODO load messages from a config file
         switch (response) {
             case USER_DISABLED:
-                //Send a message to a channel to inform people the account has to be reactivated
+                //TODO: Send a message to a channel to inform people the account has to be reactivated
                 return null;
             case INVALID_EMAIL:
                 return this.invalidEmail;
