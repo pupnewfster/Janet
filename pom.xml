@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>gg.galaxygaming</groupId>
-    <artifactId>Janet Issue Tracker</artifactId>
+    <artifactId>JanetIssueTracker</artifactId>
     <version>0.1</version>
 
     <repositories>
@@ -52,7 +52,15 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <!-- nothing here -->
+                <version>3.0.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>gg.galaxygaming.janetissuetracker.IssueTracker</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
