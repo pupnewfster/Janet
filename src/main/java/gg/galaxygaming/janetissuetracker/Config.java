@@ -56,6 +56,30 @@ public class Config extends Properties {
             if (!containsKey("INVITE_SUCCESS"))
                 setProperty("INVITE_SUCCESS", "Invited to slack.");
 
+            //Discord
+            if (!containsKey("DISCORD_TOKEN"))
+                setProperty("DISCORD_TOKEN", "token");
+            if (!containsKey("DISCORD_SERVER"))
+                setProperty("DISCORD_SERVER", "server");
+            if (!containsKey("DISCORD_VERIFIED"))
+                setProperty("DISCORD_VERIFIED", "verified");
+            if (!containsKey("DISCORD_STAFF"))
+                setProperty("DISCORD_STAFF", "staff");
+            if (!containsKey("DISCORD_SENIOR"))
+                setProperty("DISCORD_SENIOR", "senior");
+            if (!containsKey("DISCORD_DONOR"))
+                setProperty("DISCORD_DONOR", "donor");
+
+            //MySQL
+            if (!containsKey("DB_HOST"))
+                setProperty("DB_HOST", "127.0.0.1:3306");
+            if (!containsKey("DB_NAME"))
+                setProperty("DB_NAME", "database");
+            if (!containsKey("DB_USER"))
+                setProperty("DB_USER", "user");
+            if (!containsKey("DB_PASSWORD"))
+                setProperty("DB_PASSWORD", "password");
+
             store(output, null);
         } catch (IOException io) {
             io.printStackTrace();

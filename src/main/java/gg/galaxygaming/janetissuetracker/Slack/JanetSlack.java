@@ -1,5 +1,6 @@
 package gg.galaxygaming.janetissuetracker.Slack;
 
+import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 import com.neovisionaries.ws.client.WebSocket;
@@ -10,9 +11,11 @@ import gg.galaxygaming.janetissuetracker.Config;
 import gg.galaxygaming.janetissuetracker.IssueTracker;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -41,6 +44,81 @@ public class JanetSlack {
             System.out.println("Connected to slack.");
         else
             System.out.println("[ERROR] Failed to connect to slack.");
+    }
+
+    private ArrayList<String> array = new ArrayList<>();
+
+    private void scanChannel(String channel, String timestamp) {
+        String type;
+        if (channel.startsWith("C"))
+            type = "channels";
+        else if (channel.startsWith("G"))
+            type = "groups";
+        else
+            return;
+        try {
+            URL url = new URL("https://slack.com/api/" + type + ".history?token=" + userToken + "&count=1000&unreads=1&channel=" + channel + (timestamp == null ? "" : "&latest=" + timestamp));
+            HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
+            StringBuilder response;
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+                String inputLine;
+                response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null)
+                    response.append(inputLine);
+            }
+            JsonObject json = Jsoner.deserialize(response.toString(), new JsonObject());
+            JsonArray curArray = (JsonArray) json.get("messages");
+            if (json.getBooleanOrDefault(Jsoner.mintJsonKey("has_more", false))) {
+                JsonObject message = (JsonObject) curArray.get(curArray.size() - 1);
+                String ts = message.getString(Jsoner.mintJsonKey("ts", null));
+                scanChannel(channel, ts);
+            }
+            for (int i = curArray.size() - 1; i >= 0; i--) {
+                Object o = curArray.get(i);
+                JsonObject message = (JsonObject) o;
+                SlackUser user = getUserInfo(message.getStringOrDefault(Jsoner.mintJsonKey("user", null)));
+                String text = cleanChat(message.getStringOrDefault(Jsoner.mintJsonKey("text", "no text")));
+                long unix_time = Long.parseLong(message.getStringOrDefault(Jsoner.mintJsonKey("ts", "0")).split("\\.")[0]);
+                Date date = Date.from( Instant.ofEpochSecond(unix_time));
+                array.add(date + "| " + (user == null ? "null" : user.getName()) + ": " + text);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String cleanChat(String text) {
+        if (text == null || text.length() == 0)
+            return "";
+        //Users
+        Matcher matcher = Pattern.compile("\\<@(.*?)\\>").matcher(text);
+        while (matcher.find()) {
+            String str = matcher.group(1);
+            SlackUser user = getUserInfo(str);
+            text = text.replace("<@" + str + '>', '@' + (user == null ? "null" : user.getName()));
+        }
+        //Channel
+        matcher = Pattern.compile("\\<#(.*?\\|.*?)\\>").matcher(text);
+        while (matcher.find()) {
+            String str = matcher.group(1);
+            text = text.replace("<#" + str + '>', '#' + str.split("\\|")[1]);
+        }
+
+        //URLS with http or https
+        matcher = Pattern.compile("\\<(http[^\\|;]+)\\>").matcher(text);
+        while (matcher.find()) {
+            String str = matcher.group(1);
+            text = text.replace('<' + str + '>', str);
+        }
+
+        //Date, email address, Remaining URLs
+        matcher = Pattern.compile("\\<(.*?\\|.*?)\\>").matcher(text);
+        while (matcher.find()) {
+            String str = matcher.group(1);
+            text = text.replace('<' + str + '>', str.split("\\|")[1]);
+        }
+        return text.replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">");
     }
 
     public void disconnect() {
@@ -85,7 +163,7 @@ public class JanetSlack {
                 @Override
                 public void onTextMessage(WebSocket websocket, String message) {//TODO listen back for potential replies to stored message ids
                     //if (IssueTracker.DEBUG)
-                        //System.out.println("[DEBUG] Received Slack message: " + message);
+                    //System.out.println("[DEBUG] Received Slack message: " + message);
                     JsonObject json = Jsoner.deserialize(message, new JsonObject());
                     if (json.containsKey("type")) {
                         if (json.getString(Jsoner.mintJsonKey("type", null)).equals("message")) {//TODO see if there is an id field and how it acts

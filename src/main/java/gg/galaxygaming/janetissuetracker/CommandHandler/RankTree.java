@@ -1,12 +1,14 @@
 package gg.galaxygaming.janetissuetracker.CommandHandler;
 
 public enum RankTree {//TODO probably rename this
-    OWNER("Owner", 5),
-    DIRECTOR("Director", 4),
-    MANAGER("Manager", 3),
-    ADMIN("Admin", 2),
-    BOT("Bot", 2),
-    MODERATOR("Moderator", 1),
+    EXECSTAFF("Executive Staff", 7),
+    DIRECTOR("Director", 6),
+    MANAGER("Manager", 5),
+    SRADMIN("SrAdmin", 4),
+    ADMIN("Admin", 3),
+    BOT("Bot", 3),
+    MODERATOR("Moderator", 2),
+    TMOD("TMod", 1),
     MEMBER("Member", 0),
     BANNED("Banned", -1);
 

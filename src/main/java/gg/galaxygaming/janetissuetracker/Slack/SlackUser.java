@@ -15,7 +15,7 @@ public class SlackUser implements BaseSlackUser {
         if (json.getBooleanOrDefault(Jsoner.mintJsonKey("is_bot", false)))
             this.rank = RankTree.BOT;
         else if (json.getBooleanOrDefault(Jsoner.mintJsonKey("is_primary_owner", false)) || json.getBooleanOrDefault(Jsoner.mintJsonKey("is_owner", false)))
-            this.rank = RankTree.OWNER;
+            this.rank = RankTree.EXECSTAFF;
         else if (json.getBooleanOrDefault(Jsoner.mintJsonKey("is_admin", false)))
             this.rank = RankTree.ADMIN;
         else if (json.getBooleanOrDefault(Jsoner.mintJsonKey("is_ultra_restricted", false)) || json.getBooleanOrDefault(Jsoner.mintJsonKey("is_restricted", false)))
@@ -40,7 +40,7 @@ public class SlackUser implements BaseSlackUser {
     }
 
     public String getRankName() {
-        if (rank.equals(RankTree.OWNER))
+        if (rank.equals(RankTree.EXECSTAFF))
             return "Owner";
         else if (rank.equals(RankTree.ADMIN))
             return "Admin";

@@ -5,8 +5,6 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 import gg.galaxygaming.janetissuetracker.Config;
 import gg.galaxygaming.janetissuetracker.IssueTracker;
-import gg.galaxygaming.janetissuetracker.Slack.InviteResponse;
-import gg.galaxygaming.janetissuetracker.Slack.JanetSlack;
 import gg.galaxygaming.janetissuetracker.Utils;
 
 import java.io.BufferedReader;
@@ -221,7 +219,7 @@ public class RestIntegration {
     }
 
     private String sendInvite(String email) {
-        JanetSlack slack = IssueTracker.getSlack();
+        /*JanetSlack slack = IssueTracker.getSlack();
         InviteResponse response = slack.inviteUser(email);
         if (IssueTracker.DEBUG)
             System.out.println("[DEBUG] Response Code: " + response.getMessage());
@@ -237,6 +235,7 @@ public class RestIntegration {
                 return this.inviteSuccess;
             default://Something went wrong
                 return null;
-        }
+        }*/
+        return null;
     }
 }
