@@ -15,6 +15,8 @@ public class CommandSender {
     private RankTree rank;
     private boolean isPrivate;
 
+    //TODO create a console command sender
+
     public CommandSender(SlackUser user, String channel) {
         this.source = CommandSource.Slack;
         this.slackUser = user;
@@ -23,21 +25,33 @@ public class CommandSender {
     }
 
     public CommandSender(User user, String channel) {
-        this(user, channel, false);
+        this(user, channel, false, RankTree.MEMBER);
+    }
+
+    public CommandSender(User user, String channel, RankTree rank) {
+        this(user, channel, false, rank);
     }
 
     public CommandSender(User user, String channel, boolean isPrivate) {
+        this(user, channel, isPrivate, RankTree.MEMBER);
+    }
+
+    public CommandSender(User user, String channel, boolean isPrivate, RankTree rank) {
         this.source = CommandSource.Discord;
         this.discordUser = user;
         this.channel = channel;
         this.isPrivate = isPrivate;
-        this.rank = RankTree.MEMBER;//TODO retrieve actual rank
+        this.rank = rank;//TODO retrieve actual rank
     }
 
     public CommandSender(Client client) {
+        this(client, RankTree.MEMBER);
+    }
+
+    public CommandSender(Client client, RankTree rank) {
         this.source = CommandSource.TeamSpeak;
         this.tsClient = client;
-        this.rank = RankTree.MEMBER;//TODO retrieve actual rank
+        this.rank = rank;
     }
 
     public CommandSource getSource() {
@@ -76,7 +90,6 @@ public class CommandSender {
             case Console:
                 System.out.println(message);
                 break;
-            //TODO implement below methods
             case TeamSpeak:
                 Janet.getTeamspeak().getAsyncApi().sendPrivateMessage(getTeamSpeakClient().getId(), message);
                 break;

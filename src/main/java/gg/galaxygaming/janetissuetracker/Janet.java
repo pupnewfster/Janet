@@ -3,15 +3,18 @@ package gg.galaxygaming.janetissuetracker;
 import gg.galaxygaming.janetissuetracker.CommandHandler.CommandHandler;
 import gg.galaxygaming.janetissuetracker.Discord.DiscordIntegration;
 import gg.galaxygaming.janetissuetracker.Forums.RestIntegration;
+import gg.galaxygaming.janetissuetracker.GMod.GModIntegration;
 import gg.galaxygaming.janetissuetracker.TeamSpeak.TeamSpeakIntegration;
 
 public class Janet {//TODO: add in proper javadoc explanations for methods
+    //TODO make interfaces for integrations and mysql classes??
     private static Janet INSTANCE;
     public static boolean DEBUG = true;//TODO replace with a proper logger
     private final Config config;
     private final CommandHandler cmdHandler;
     private DiscordIntegration discord;
     private TeamSpeakIntegration teamspeak;
+    private GModIntegration gmod;
     //private SlackIntegration slack;
     private RestIntegration rest;
 
@@ -23,6 +26,7 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
         //this.slack = new SlackIntegration();//Disabled
         this.discord = new DiscordIntegration();
         this.teamspeak = new TeamSpeakIntegration();
+        this.gmod = new GModIntegration();
         //this.rest = new RestIntegration(this.config);//TODO bring back when we work on automating suggestions -> githuhb
     }
 
@@ -30,8 +34,12 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
     public void stop() {
         //getRestIntegration().stop();
         //getSlack().disconnect();
-        getDiscord().stop();
-        getTeamspeak().stop();
+        if (getGMod() != null)
+            getGMod().stop();
+        if (getDiscord() != null)
+            getDiscord().stop();
+        if (getTeamspeak() != null)
+            getTeamspeak().stop();
     }
 
 
@@ -58,6 +66,10 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
 
     public static TeamSpeakIntegration getTeamspeak() {
         return INSTANCE.teamspeak;
+    }
+
+    public static GModIntegration getGMod() {
+        return INSTANCE.gmod;
     }
 
     public static CommandHandler getCommandHandler() {

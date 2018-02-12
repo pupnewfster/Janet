@@ -93,6 +93,8 @@ public class TeamSpeakIntegration {//TODO AutoReconnect if teamspeak server goes
             getAsyncApi().logout();
         }
         this.ts3Query.exit();
+        if (this.mysql != null)
+            this.mysql.stop();
     }
 
     public int getDndID() {

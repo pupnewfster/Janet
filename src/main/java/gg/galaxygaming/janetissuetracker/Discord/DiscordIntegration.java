@@ -55,7 +55,8 @@ public class DiscordIntegration {
         /*if (IssueTracker.DEBUG)
             for (Role r : this.server.getRoles())
                 System.out.println(r.getName() + ' ' + r.getId());//*/
-        this.mysql = new DiscordMySQL();
+        if (this.mysql != null)
+            this.mysql = new DiscordMySQL();
     }
 
     public Server getServer() {

@@ -50,10 +50,10 @@ public class DiscordMySQL {
         this.checkThread = new Thread(() -> {
             while (true) {
                 if (Janet.DEBUG)
-                    System.out.println("[DEBUG] Starting user check.");
+                    System.out.println("[DEBUG] Starting user check (Discord).");
                 checkAll();
                 if (Janet.DEBUG)
-                    System.out.println("[DEBUG] User check finished.");
+                    System.out.println("[DEBUG] User check finished (Discord).");
                 try {
                     Thread.sleep(5 * 60 * 1000);
                 } catch (InterruptedException e) {
@@ -142,7 +142,8 @@ public class DiscordMySQL {
                                     isStaff = true;
                             }
                             rs2.close();
-                        }
+                        } else
+                            rs2.close();
                     }
                     stmt2.close();
                     rs.close();
@@ -153,8 +154,10 @@ public class DiscordMySQL {
                         discordRanks.add(this.seniorRank);
                     if (isDonor)
                         discordRanks.add(this.donorRank);
-                }
-            }
+                } else
+                    rs.close();
+            } else
+                rs.close();
             Server server = Janet.getDiscord().getServer();
             Collection<Role> roles = user.getRoles(server);
             boolean changed = false;

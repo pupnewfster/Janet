@@ -7,6 +7,7 @@ import de.btobastian.javacord.entities.message.Message;
 import de.btobastian.javacord.listener.message.MessageCreateListener;
 import de.btobastian.javacord.listener.server.ServerMemberAddListener;
 import gg.galaxygaming.janetissuetracker.CommandHandler.CommandSender;
+import gg.galaxygaming.janetissuetracker.CommandHandler.RankTree;
 import gg.galaxygaming.janetissuetracker.Janet;
 
 public class DiscordListener implements MessageCreateListener, ServerMemberAddListener {
@@ -15,7 +16,8 @@ public class DiscordListener implements MessageCreateListener, ServerMemberAddLi
         String m = message.getContent();
         boolean isCommand = false;
         if (m.startsWith("!")) {
-            CommandSender sender = message.isPrivateMessage() ? new CommandSender(message.getAuthor(), "", true) : new CommandSender(message.getAuthor(), message.getChannelReceiver().getId(), false);
+            RankTree rank = RankTree.MEMBER;//TODO set
+            CommandSender sender = message.isPrivateMessage() ? new CommandSender(message.getAuthor(), "", true, rank) : new CommandSender(message.getAuthor(), message.getChannelReceiver().getId(), false, rank);
             isCommand = Janet.getCommandHandler().handleCommand(m, sender);
         }
     }

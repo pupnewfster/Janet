@@ -47,10 +47,10 @@ public class TeamSpeakMySQL {
         this.checkThread = new Thread(() -> {
             while (true) {
                 if (Janet.DEBUG)
-                    System.out.println("[DEBUG] Starting user check.");
+                    System.out.println("[DEBUG] Starting user check (TeamSpeak).");
                 checkAll();
                 if (Janet.DEBUG)
-                    System.out.println("[DEBUG] User check finished.");
+                    System.out.println("[DEBUG] User check finished (TeamSpeak).");
                 try {
                     Thread.sleep(5 * 60 * 1000);
                 } catch (InterruptedException e) {
@@ -123,8 +123,10 @@ public class TeamSpeakMySQL {
                     }
                     rs.close();
                     teamspeakRanks.add(Janet.getTeamspeak().getVerifiedID());
-                }
-            }
+                } else
+                    rs.close();
+            } else
+                rs.close();
             int[] serverGroups = client.getServerGroups();
             ArrayList<Integer> oldRanks = new ArrayList<>();
             boolean hasRoom = false, hadRoom = false;
@@ -161,8 +163,10 @@ public class TeamSpeakMySQL {
                     properties.put(ChannelProperty.CHANNEL_TOPIC, cname);
                     String finalSiteID = siteID;
                     api.createChannel(cname, properties).onSuccess(channelID -> {
-                        try {
-                            stmt.execute("REPLACE INTO verified_rooms(website_id,ts_room_id) VALUES(" + finalSiteID + ',' + channelID + ')');
+                        try (Connection conn2 = DriverManager.getConnection(this.url, this.properties)) {
+                            Statement stmt2 = conn2.createStatement();
+                            stmt2.execute("REPLACE INTO verified_rooms(website_id,ts_room_id) VALUES(" + finalSiteID + ',' + channelID + ')');
+                            stmt2.close();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -180,7 +184,8 @@ public class TeamSpeakMySQL {
                     stmt.execute("DELETE FROM verified_rooms WHERE website_id = \"" + siteID + '"');
                     //TODO maybe do something if it fails/channel does not exist
                     api.deleteChannel(curRoom);
-                }
+                } else
+                    rs.close();
             }
             stmt.close();
         } catch (Exception e) {

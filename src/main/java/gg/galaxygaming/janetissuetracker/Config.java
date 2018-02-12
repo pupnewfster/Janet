@@ -105,6 +105,12 @@ public class Config extends Properties {
                 setProperty("DB_USER", "user");
             if (!containsKey("DB_PASSWORD"))
                 setProperty("DB_PASSWORD", "password");
+            if (!containsKey("GMOD_DB_USER"))
+                setProperty("GMOD_DB_USER", "user");
+            if (!containsKey("GMOD_DB_PASSWORD"))
+                setProperty("GMOD_DB_PASSWORD", "password");
+            if (!containsKey("GMOD_DB_NAME"))
+                setProperty("GMOD_DB_NAME", "database");
 
             store(output, null);
         } catch (IOException io) {
