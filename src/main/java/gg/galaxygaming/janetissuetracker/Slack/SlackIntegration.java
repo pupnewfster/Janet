@@ -8,7 +8,7 @@ import com.neovisionaries.ws.client.WebSocketAdapter;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import gg.galaxygaming.janetissuetracker.CommandHandler.CommandSender;
 import gg.galaxygaming.janetissuetracker.Config;
-import gg.galaxygaming.janetissuetracker.IssueTracker;
+import gg.galaxygaming.janetissuetracker.Janet;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JanetSlack {
+public class SlackIntegration {
     //TODO convert more void methods to booleans to give error messages if things go wrong
     //TODO: Replace SlackUser with BaseSlackUser after implementing some required methods
     private final HashMap<String, SlackUser> userMap = new HashMap<>();
@@ -32,7 +32,8 @@ public class JanetSlack {
     private int id;
     //TODO: use RTM member_joined_channel to tell when they joined the server, this can be used to invite them to the proper server rooms
 
-    public JanetSlack(Config config) {
+    public SlackIntegration() {
+        Config config = Janet.getConfig();
         this.token = config.getStringOrDefault("SLACK_TOKEN", "token");
         this.userToken = config.getStringOrDefault("USER_SLACK_TOKEN", "token");
         this.infoChannel = config.getStringOrDefault("INFO_CHANNEL", "info_channel");
@@ -167,7 +168,7 @@ public class JanetSlack {
                     JsonObject json = Jsoner.deserialize(message, new JsonObject());
                     if (json.containsKey("type")) {
                         if (json.getString(Jsoner.mintJsonKey("type", null)).equals("message")) {//TODO see if there is an id field and how it acts
-                            if (IssueTracker.DEBUG)
+                            if (Janet.DEBUG)
                                 System.out.println("[DEBUG] Received Slack message: " + message);
                             if (json.containsKey("bot_id"))
                                 return;//TODO maybe figure out the userid of botid if there is any reason to support bot messages..
@@ -288,7 +289,7 @@ public class JanetSlack {
         boolean isCommand = false;
         CommandSender sender = new CommandSender(info, channel);
         if (message.startsWith("!"))
-            isCommand = IssueTracker.getCommandHandler().handleCommand(message, sender);
+            isCommand = Janet.getCommandHandler().handleCommand(message, sender);
         if (isCommand)
             return;
         if (!channel.startsWith("D")) {//If not pm, but should it also check private messages?

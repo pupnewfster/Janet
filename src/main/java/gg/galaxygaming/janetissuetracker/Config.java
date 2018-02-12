@@ -69,6 +69,32 @@ public class Config extends Properties {
                 setProperty("DISCORD_SENIOR", "senior");
             if (!containsKey("DISCORD_DONOR"))
                 setProperty("DISCORD_DONOR", "donor");
+            if (!containsKey("DISCORD_AUTH_MESSAGE"))
+                setProperty("DISCORD_AUTH_MESSAGE", "Go authenticate your account.");
+
+            //Teamspeak
+            if (!containsKey("TEAMSPEAK_VERIFIED"))
+                setProperty("TEAMSPEAK_VERIFIED", "-1");
+            if (!containsKey("TEAMSPEAK_USERNAME"))
+                setProperty("TEAMSPEAK_USERNAME", "username");
+            if (!containsKey("TEAMSPEAK_PASSWORD"))
+                setProperty("TEAMSPEAK_PASSWORD", "password");
+            if (!containsKey("TEAMSPEAK_PASSWORD"))
+                setProperty("TEAMSPEAK_PASSWORD", "-1");
+            if (!containsKey("TEAMSPEAK_JOIN"))
+                setProperty("TEAMSPEAK_JOIN", "Welcome.");
+            if (!containsKey("TEAMSPEAK_VERIFY"))
+                setProperty("TEAMSPEAK_VERIFY", "Go verify.");
+            if (!containsKey("TEAMSPEAK_ROOM_CREATOR"))
+                setProperty("TEAMSPEAK_ROOM_CREATOR", "Join here to create a new room");
+            if (!containsKey("TEAMSPEAK_DEFAULT"))
+                setProperty("TEAMSPEAK_DEFAULT", "-1");
+            if (!containsKey("TEAMSPEAK_USER_ROOMS"))
+                setProperty("TEAMSPEAK_USER_ROOMS", "-1");
+            if (!containsKey("TEAMSPEAK_CHANEL_ADMIN"))
+                setProperty("TEAMSPEAK_CHANEL_ADMIN", "-1");
+            if (!containsKey("TEAMSPEAK_SUPPORTER"))
+                setProperty("TEAMSPEAK_SUPPORTER", "-1");
 
             //MySQL
             if (!containsKey("DB_HOST"))

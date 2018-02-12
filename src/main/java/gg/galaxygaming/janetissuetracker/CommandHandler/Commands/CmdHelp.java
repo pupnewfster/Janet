@@ -3,7 +3,7 @@ package gg.galaxygaming.janetissuetracker.CommandHandler.Commands;
 import gg.galaxygaming.janetissuetracker.CommandHandler.CommandSender;
 import gg.galaxygaming.janetissuetracker.CommandHandler.CommandSource;
 import gg.galaxygaming.janetissuetracker.CommandHandler.RankTree;
-import gg.galaxygaming.janetissuetracker.IssueTracker;
+import gg.galaxygaming.janetissuetracker.Janet;
 import gg.galaxygaming.janetissuetracker.Utils;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ public class CmdHelp implements Cmd {
         if (args.length == 0 || page <= 0)
             page = 1;
         int rounder = 0;
-        ArrayList<String> helpList = IssueTracker.getCommandHandler().getHelpList(sender);
+        ArrayList<String> helpList = Janet.getCommandHandler().getHelpList(sender);
         if (helpList.size() % 10 != 0)
             rounder = 1;
         int totalPages = helpList.size() / 10 + rounder;

@@ -5,16 +5,19 @@ import gg.galaxygaming.janetissuetracker.CommandHandler.CommandSource;
 import gg.galaxygaming.janetissuetracker.CommandHandler.RankTree;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class CmdGetID implements Cmd {
     @Override
     public boolean performCommand(String[] args, CommandSender sender) {
-        if (sender.getIsPrivate())
-            sender.sendMessage(sender.getDiscordUser().getId());
-        else
-            sender.sendMessage("[ERROR] This command can only be performed through a direct message to this bot.");
+        if (sender.getSource().equals(CommandSource.TeamSpeak))
+            sender.sendMessage(sender.getTeamSpeakClient().getUniqueIdentifier());
+        else if (sender.getSource().equals(CommandSource.Discord)) {
+            if (sender.getIsPrivate())
+                sender.sendMessage(sender.getDiscordUser().getId());
+            else
+                sender.sendMessage("[ERROR] This command can only be performed through a direct message to this bot.");
+        }
         return true;
     }
 
@@ -40,7 +43,7 @@ public class CmdGetID implements Cmd {
 
     @Override
     public List<CommandSource> supportedSources() {
-        return Collections.singletonList(CommandSource.Discord);
+        return Arrays.asList(CommandSource.Discord, CommandSource.TeamSpeak);
     }
 
     @Override

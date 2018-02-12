@@ -1,14 +1,15 @@
 package gg.galaxygaming.janetissuetracker.CommandHandler;
 
-import com.google.common.util.concurrent.FutureCallback;
+import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
 import de.btobastian.javacord.entities.User;
-import de.btobastian.javacord.entities.message.Message;
-import gg.galaxygaming.janetissuetracker.IssueTracker;
+import gg.galaxygaming.janetissuetracker.Discord.MessageCallback;
+import gg.galaxygaming.janetissuetracker.Janet;
 import gg.galaxygaming.janetissuetracker.Slack.SlackUser;
 
 public class CommandSender {
     private CommandSource source;
     private SlackUser slackUser;
+    private Client tsClient;
     private User discordUser;
     private String channel;
     private RankTree rank;
@@ -33,6 +34,12 @@ public class CommandSender {
         this.rank = RankTree.MEMBER;//TODO retrieve actual rank
     }
 
+    public CommandSender(Client client) {
+        this.source = CommandSource.TeamSpeak;
+        this.tsClient = client;
+        this.rank = RankTree.MEMBER;//TODO retrieve actual rank
+    }
+
     public CommandSource getSource() {
         return this.source;
     }
@@ -43,6 +50,10 @@ public class CommandSender {
 
     public User getDiscordUser() {
         return this.discordUser;
+    }
+
+    public Client getTeamSpeakClient() {
+        return this.tsClient;
     }
 
     public RankTree getRank() {
@@ -60,36 +71,23 @@ public class CommandSender {
     public void sendMessage(String message) {
         switch (this.source) {
             case Slack:
-                //IssueTracker.getSlack().sendMessage(message, this.channel);
+                //Janet.getSlack().sendMessage(message, this.channel);
                 break;
             case Console:
                 System.out.println(message);
                 break;
             //TODO implement below methods
             case TeamSpeak:
+                Janet.getTeamspeak().getAsyncApi().sendPrivateMessage(getTeamSpeakClient().getId(), message);
                 break;
             case Discord:
                 if (getIsPrivate())
                     getDiscordUser().sendMessage(message, new MessageCallback());
                 else
-                    IssueTracker.getDiscord().getServer().getChannelById(getChannel()).sendMessage(message, new MessageCallback());
+                    Janet.getDiscord().getServer().getChannelById(getChannel()).sendMessage(message, new MessageCallback());
                 break;
             default:
                 break;
-        }
-    }
-
-    private class MessageCallback implements FutureCallback<Message> {
-        @Override
-        public void onSuccess(Message message) {
-            if (IssueTracker.DEBUG)
-                System.out.println("[DEBUG] Message sent successfully");
-        }
-
-        @Override
-        public void onFailure(Throwable t) {
-            System.out.println("[ERROR] Failed to send message.");
-            t.printStackTrace();
         }
     }
 }

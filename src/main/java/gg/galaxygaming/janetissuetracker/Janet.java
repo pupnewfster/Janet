@@ -5,25 +5,25 @@ import gg.galaxygaming.janetissuetracker.Discord.DiscordIntegration;
 import gg.galaxygaming.janetissuetracker.Forums.RestIntegration;
 import gg.galaxygaming.janetissuetracker.TeamSpeak.TeamSpeakIntegration;
 
-public class IssueTracker {//TODO: add in proper javadoc explanations for methods
-    private static IssueTracker INSTANCE;
+public class Janet {//TODO: add in proper javadoc explanations for methods
+    private static Janet INSTANCE;
     public static boolean DEBUG = true;//TODO replace with a proper logger
-    private Config config;
+    private final Config config;
+    private final CommandHandler cmdHandler;
     private DiscordIntegration discord;
     private TeamSpeakIntegration teamspeak;
-    //private JanetSlack slack;
+    //private SlackIntegration slack;
     private RestIntegration rest;
-    private final CommandHandler cmdHandler;
 
-    private IssueTracker() {
+    private Janet() {
+        INSTANCE = this;
         this.config = new Config();
         //TODO: Potentially improve threading, rather than having it all in main thread
-        //TODO: Create exceptions for the two below ones to throw if the required initialization configs are not met
         this.cmdHandler = new CommandHandler("gg.galaxygaming.janetissuetracker.CommandHandler.Commands");
-        //this.slack = new JanetSlack(this.config);//Disabled
-        this.discord = new DiscordIntegration(this.config);
+        //this.slack = new SlackIntegration();//Disabled
+        this.discord = new DiscordIntegration();
+        this.teamspeak = new TeamSpeakIntegration();
         //this.rest = new RestIntegration(this.config);//TODO bring back when we work on automating suggestions -> githuhb
-        Runtime.getRuntime().addShutdownHook(new Thread(this::stop));//TODO test
     }
 
     //TODO call this method
@@ -31,18 +31,20 @@ public class IssueTracker {//TODO: add in proper javadoc explanations for method
         //getRestIntegration().stop();
         //getSlack().disconnect();
         getDiscord().stop();
+        getTeamspeak().stop();
     }
 
 
     public static void main(String[] args) {
-        INSTANCE = new IssueTracker();
+        new Janet();
+        Runtime.getRuntime().addShutdownHook(new Thread(INSTANCE::stop));//TODO test
     }
 
     public static Config getConfig() {
         return INSTANCE.config;
     }
 
-    /*public static JanetSlack getSlack() {
+    /*public static SlackIntegration getSlack() {
         return INSTANCE.slack;
     }*/
 
@@ -62,7 +64,7 @@ public class IssueTracker {//TODO: add in proper javadoc explanations for method
         return INSTANCE.cmdHandler;
     }
 
-    public static IssueTracker getInstance() {
+    public static Janet getInstance() {
         return INSTANCE;
     }
 }

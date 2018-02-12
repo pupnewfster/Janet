@@ -5,18 +5,22 @@ import de.btobastian.javacord.DiscordAPI;
 import de.btobastian.javacord.Javacord;
 import de.btobastian.javacord.entities.Server;
 import gg.galaxygaming.janetissuetracker.Config;
+import gg.galaxygaming.janetissuetracker.Janet;
 
 public class DiscordIntegration {
     private final String token;
     private final String serverID;
+    private final String authMessage;
     private DiscordAPI api;
     private DiscordListener listeners;
     private Server server;
     private DiscordMySQL mysql;
 
-    public DiscordIntegration(Config config) {
+    public DiscordIntegration() {
+        Config config = Janet.getConfig();
         this.token = config.getStringOrDefault("DISCORD_TOKEN", "token");
         this.serverID = config.getStringOrDefault("DISCORD_SERVER", "server");
+        this.authMessage = config.getStringOrDefault("DISCORD_AUTH_MESSAGE", "Go authenticate your account.");
         if (this.token.equals("token") || this.serverID.equals("server")) {
             System.out.println("[ERROR] Failed to load needed configs for Discord Integration");
             return;
@@ -60,5 +64,9 @@ public class DiscordIntegration {
 
     public DiscordAPI getApi() {
         return this.api;
+    }
+
+    public String getAuthMessage() {
+        return this.authMessage;
     }
 }

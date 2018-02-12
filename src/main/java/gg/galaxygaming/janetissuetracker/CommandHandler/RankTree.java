@@ -10,7 +10,7 @@ public enum RankTree {//TODO probably rename this
     MODERATOR("Moderator", 2),
     TMOD("TMod", 1),
     MEMBER("Member", 0),
-    BANNED("Banned", -1);
+    BANNED("Banned", -1);//TODO using the lookup table, add a column for what rank corresponds to what enum value
 
     private String name;
     private int value;

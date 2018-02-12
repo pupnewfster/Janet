@@ -5,7 +5,7 @@ import de.btobastian.javacord.entities.Server;
 import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.permissions.Role;
 import gg.galaxygaming.janetissuetracker.Config;
-import gg.galaxygaming.janetissuetracker.IssueTracker;
+import gg.galaxygaming.janetissuetracker.Janet;
 import gg.galaxygaming.janetissuetracker.Utils;
 
 import java.sql.Connection;
@@ -24,7 +24,7 @@ public class DiscordMySQL {
     private Thread checkThread;
 
     public DiscordMySQL() {
-        Config config = IssueTracker.getConfig();
+        Config config = Janet.getConfig();
         String dbName = config.getStringOrDefault("DB_NAME", "database");
         String dbUser = config.getStringOrDefault("DB_USER", "user");
         String dbPass = config.getStringOrDefault("DB_PASSWORD", "password");
@@ -49,10 +49,10 @@ public class DiscordMySQL {
         indexRanks();
         this.checkThread = new Thread(() -> {
             while (true) {
-                if (IssueTracker.DEBUG)
+                if (Janet.DEBUG)
                     System.out.println("[DEBUG] Starting user check.");
                 checkAll();
-                if (IssueTracker.DEBUG)
+                if (Janet.DEBUG)
                     System.out.println("[DEBUG] User check finished.");
                 try {
                     Thread.sleep(5 * 60 * 1000);
@@ -92,58 +92,60 @@ public class DiscordMySQL {
         this.ranks.add(this.donorRank);
     }
 
-    public void checkAll() {
-        DiscordAPI api = IssueTracker.getDiscord().getApi();
-        for (User u : api.getUsers()) {
+    private void checkAll() {
+        DiscordAPI api = Janet.getDiscord().getApi();
+        for (User u : api.getUsers())
             if (!u.isBot() && !u.isYourself())
                 check(u);
-        }
     }
 
     public void check(User user) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
-            Statement stmt2 = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT website_id FROM discord_verified WHERE discord_id = \"" + user.getId() + '"');
             ArrayList<String> discordRanks = new ArrayList<>();
             if (rs.next()) {
                 String siteID = rs.getString("website_id");
                 rs.close();
-                ResultSet rs2 = stmt.executeQuery("SELECT member_group_id, mgroup_others FROM core_members WHERE member_id = \"" + siteID + '"');
-                if (rs2.next()) {
-                    int primary = rs2.getInt("member_group_id");
-                    String secondary = rs2.getString("mgroup_others");
-                    rs2.close();
+                rs = stmt.executeQuery("SELECT member_group_id, mgroup_others FROM core_members WHERE member_id = \"" + siteID + '"');
+                if (rs.next()) {
+                    int primary = rs.getInt("member_group_id");
+                    String secondary = rs.getString("mgroup_others");
+                    rs.close();
                     String[] secondaries = secondary.split(",");
                     StringBuilder sbGroups = new StringBuilder(Integer.toString(primary));
                     int gCount = 1;
                     for (String s : secondaries)
                         if (Utils.legalInt(s)) {
-                            sbGroups.append(",").append(s);
+                            sbGroups.append(',').append(s);
                             gCount++;
                         }
                     String groups = sbGroups.toString().trim();
                     String query = gCount == 1 ? "site_rank_id = " + groups : "site_rank_id IN (" + groups + ')';
-                    ResultSet rs3 = stmt.executeQuery("SELECT discord_rank_id FROM rank_id_lookup WHERE " + query);
+                    rs = stmt.executeQuery("SELECT discord_rank_id FROM rank_id_lookup WHERE " + query);
                     boolean isStaff = false, isSenior = false, isDonor = false;
-                    while (rs3.next()) {
-                        String id = rs3.getString("discord_rank_id");
+                    Statement stmt2 = conn.createStatement();
+                    while (rs.next()) {
+                        String id = rs.getString("discord_rank_id");
+                        if (id.equals("NULL"))
+                            continue;
                         discordRanks.add(id);
-                        ResultSet rs4 = stmt2.executeQuery("SELECT staff, senior, donor FROM discord_is_staff WHERE discord_rank_id = " + id);
-                        if (rs4.next()) {
-                            if (!isDonor && rs4.getBoolean("donor"))
+                        ResultSet rs2 = stmt2.executeQuery("SELECT staff, senior, donor FROM discord_is_staff WHERE discord_rank_id = " + id);
+                        if (rs2.next()) {
+                            if (!isDonor && rs2.getBoolean("donor"))
                                 isDonor = true;
                             if (!isSenior) {
-                                if (rs4.getBoolean("senior")) {
+                                if (rs2.getBoolean("senior")) {
                                     isStaff = true;
                                     isSenior = true;
-                                } else if (!isStaff && rs4.getBoolean("staff"))
+                                } else if (!isStaff && rs2.getBoolean("staff"))
                                     isStaff = true;
                             }
-                            rs4.close();
+                            rs2.close();
                         }
                     }
-                    rs3.close();
+                    stmt2.close();
+                    rs.close();
                     discordRanks.add(this.verifiedRank);
                     if (isStaff)
                         discordRanks.add(this.staffRank);
@@ -153,7 +155,7 @@ public class DiscordMySQL {
                         discordRanks.add(this.donorRank);
                 }
             }
-            Server server = IssueTracker.getDiscord().getServer();
+            Server server = Janet.getDiscord().getServer();
             Collection<Role> roles = user.getRoles(server);
             boolean changed = false;
             ArrayList<String> newRanks = new ArrayList<>();
@@ -178,7 +180,6 @@ public class DiscordMySQL {
                 server.updateRoles(user, newRoles);
             }
             stmt.close();
-            stmt2.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

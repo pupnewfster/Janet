@@ -27,7 +27,7 @@ public class CommandHandler {
     }
 
 
-    public boolean handleCommand(String message, CommandSender sender) {//TODO: Call this
+    public boolean handleCommand(String message, CommandSender sender) {//TODO: ignore multiple spaces
         if (sender == null)
             return false;
         if (message.startsWith("!"))

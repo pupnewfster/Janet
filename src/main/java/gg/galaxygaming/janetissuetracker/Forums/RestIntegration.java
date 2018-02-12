@@ -4,7 +4,7 @@ import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 import gg.galaxygaming.janetissuetracker.Config;
-import gg.galaxygaming.janetissuetracker.IssueTracker;
+import gg.galaxygaming.janetissuetracker.Janet;
 import gg.galaxygaming.janetissuetracker.Utils;
 
 import java.io.BufferedReader;
@@ -27,7 +27,8 @@ public class RestIntegration {
     private Thread scan;
     private String auth = "";
 
-    public RestIntegration(Config config) {
+    public RestIntegration() {
+        Config config = Janet.getConfig();
         this.restURL = config.getStringOrDefault("REST_URL", "rest_url");
         this.restAPIKey = config.getStringOrDefault("REST_API_KEY", "api_key");
         this.janetID = config.getIntegerOrDefault("JANET_FORUM_ID", 0);
@@ -54,7 +55,7 @@ public class RestIntegration {
         for (String d : denied) {
             if (Utils.legalInt(d))
                 this.deniedForums.add(Integer.parseInt(d));
-            else if (IssueTracker.DEBUG)
+            else if (Janet.DEBUG)
                 System.out.println("[ERROR] Invalid denied forum: " + d);
         }
         if (this.restURL.equals("rest_url") || this.restAPIKey.equals("api_key")) {
@@ -137,11 +138,11 @@ public class RestIntegration {
     }
 
     private void scanApplications() {
-        if (IssueTracker.DEBUG)
+        if (Janet.DEBUG)
             System.out.println("[DEBUG] Scan started.");
         scanNewApplications();
         checkApplicationStatus();
-        if (IssueTracker.DEBUG)
+        if (Janet.DEBUG)
             System.out.println("[DEBUG] Scan finished.");
     }
 
@@ -159,7 +160,7 @@ public class RestIntegration {
                 Integer topicID = topic.getIntegerOrDefault(Jsoner.mintJsonKey("id", null));
                 if (topicID != null && !topics.contains(topicID)) {
                     topics.add(topicID);
-                    if (IssueTracker.DEBUG)
+                    if (Janet.DEBUG)
                         System.out.println("[DEBUG] Topic added: " + topicID);
                 }
             }
@@ -178,7 +179,7 @@ public class RestIntegration {
             for (Integer topicID : topics) {
                 JsonObject topic = sendGET("/forums/topics/" + topicID);
                 if (topic.containsKey("errorCode")) { //Topic was deleted
-                    if (IssueTracker.DEBUG)
+                    if (Janet.DEBUG)
                         System.out.println("[DEBUG] Error Code:" + topic.getStringOrDefault(Jsoner.mintJsonKey("errorMessage", "UNKNOWN")));
                     remTopics.add(topicID);
                     continue;
@@ -188,7 +189,7 @@ public class RestIntegration {
                 if (fid != forumID) {
                     remTopics.add(topicID); //Can be here because it was moved no matter where it is now
                     if (this.acceptedForums.contains(forumID)) {//Accepted
-                        if (IssueTracker.DEBUG)
+                        if (Janet.DEBUG)
                             System.out.println("[DEBUG] Topic " + topicID + " ACCEPTED.");
                         JsonObject post = (JsonObject) topic.get("firstPost");//TODO: maybe move this up if the post info is needed for other things
                         JsonObject member = (JsonObject) post.get("author");
@@ -199,17 +200,17 @@ public class RestIntegration {
                             json.put("topic", topicID);
                             json.put("author", this.janetID);
                             json.put("post", "<p>" + response + "</p>");
-                            if (IssueTracker.DEBUG)
+                            if (Janet.DEBUG)
                                 System.out.println("[DEBUG] Post to forums.");
                             sendPOST("/forums/posts", json);
                         }
                         //Log some sort of error message
                     } else if (this.deniedForums.contains(forumID)) {//Denied
                         //No denied message, may want to send a debug message
-                        if (IssueTracker.DEBUG)
+                        if (Janet.DEBUG)
                             System.out.println("[DEBUG] Topic " + topicID + " DENIED.");
                     } else {
-                        if (IssueTracker.DEBUG)
+                        if (Janet.DEBUG)
                             System.out.println("[DEBUG] Topic " + topicID + " moved to " + forumID + '.');
                     }
                 }
