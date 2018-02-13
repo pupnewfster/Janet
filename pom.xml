@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>gg.galaxygaming</groupId>
-    <artifactId>JanetIssueTracker</artifactId>
-    <version>0.1</version>
+    <artifactId>Janet</artifactId>
+    <version>0.2</version>
 
     <repositories>
         <repository>
@@ -78,7 +78,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>gg.galaxygaming.janetissuetracker.Janet</mainClass>
+                            <mainClass>gg.galaxygaming.janet.Janet</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
