@@ -6,6 +6,7 @@ import com.github.cliftonlabs.json_simple.Jsoner;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
+import gg.galaxygaming.janet.base.AbstractIntegration;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -15,7 +16,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
 
-public class RestIntegration {
+public class RestIntegration extends AbstractIntegration {
     private final String restURL;
     private final String restAPIKey;
     private final String invalidEmail;

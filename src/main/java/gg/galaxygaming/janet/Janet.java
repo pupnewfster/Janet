@@ -4,6 +4,7 @@ import gg.galaxygaming.janet.CommandHandler.CommandHandler;
 import gg.galaxygaming.janet.Discord.DiscordIntegration;
 import gg.galaxygaming.janet.Forums.RestIntegration;
 import gg.galaxygaming.janet.GMod.GModIntegration;
+import gg.galaxygaming.janet.Slack.SlackIntegration;
 import gg.galaxygaming.janet.TeamSpeak.TeamSpeakIntegration;
 
 public class Janet {//TODO: add in proper javadoc explanations for methods
@@ -15,13 +16,12 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
     private DiscordIntegration discord;
     private TeamSpeakIntegration teamspeak;
     private GModIntegration gmod;
-    //private SlackIntegration slack;
+    private SlackIntegration slack;
     private RestIntegration rest;
 
     private Janet() {
         INSTANCE = this;
         this.config = new Config();
-        //TODO: Potentially improve threading, rather than having it all in main thread
         this.cmdHandler = new CommandHandler("gg.galaxygaming.janet.CommandHandler.Commands");
         //this.slack = new SlackIntegration();//Disabled
         this.discord = new DiscordIntegration();
@@ -32,8 +32,10 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
 
     //TODO call this method
     public void stop() {
-        //getRestIntegration().stop();
-        //getSlack().disconnect();
+        if (getRestIntegration() != null)
+            getRestIntegration().stop();
+        if (getSlack() != null)
+            getSlack().stop();
         if (getGMod() != null)
             getGMod().stop();
         if (getDiscord() != null)
@@ -52,9 +54,9 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
         return INSTANCE.config;
     }
 
-    /*public static SlackIntegration getSlack() {
+    public static SlackIntegration getSlack() {
         return INSTANCE.slack;
-    }*/
+    }
 
     public static RestIntegration getRestIntegration() {
         return INSTANCE.rest;

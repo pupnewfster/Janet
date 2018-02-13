@@ -1,6 +1,8 @@
 package gg.galaxygaming.janet.GitHub;
 
-public class IssueManager {
+import gg.galaxygaming.janet.base.AbstractIntegration;
+
+public class GitHubIntegration extends AbstractIntegration {
     public boolean createIssue() {//Needs params
         return false;
     }

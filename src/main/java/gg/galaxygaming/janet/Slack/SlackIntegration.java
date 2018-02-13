@@ -9,6 +9,7 @@ import com.neovisionaries.ws.client.WebSocketFactory;
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
+import gg.galaxygaming.janet.base.AbstractIntegration;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
@@ -20,7 +21,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SlackIntegration {
+public class SlackIntegration extends AbstractIntegration {
     //TODO convert more void methods to booleans to give error messages if things go wrong
     //TODO: Replace SlackUser with BaseSlackUser after implementing some required methods
     private final HashMap<String, SlackUser> userMap = new HashMap<>();
@@ -122,7 +123,7 @@ public class SlackIntegration {
         return text.replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">");
     }
 
-    public void disconnect() {
+    public void stop() {
         if (!isConnected)
             return;
         userMap.clear();
