@@ -48,10 +48,10 @@ public class DiscordIntegration extends AbstractIntegration {
     public void finishConnect() {
         System.out.println("Discord connected, registering listeners...");
         this.listeners = new DiscordListener();
-        api.registerListener(this.listeners);
+        this.api.registerListener(this.listeners);
         System.out.println("Listeners registered.");
         //Start a thread to check ranks
-        this.server = api.getServerById(this.serverID);
+        this.server = this.api.getServerById(this.serverID);
         /*if (IssueTracker.DEBUG)
             for (Role r : this.server.getRoles())
                 System.out.println(r.getName() + ' ' + r.getId());//*/
