@@ -38,7 +38,7 @@ public class TeamSpeakListener extends TS3EventAdapter {
             if (clientInfo != null && clientInfo.isRegularClient()) {
                 Janet.getTeamspeak().checkVerification(clientInfo);
                 handleRoomCreation(clientInfo.getChannelId(), clientInfo.getId());
-                Janet.getTeamspeak().getMySQL().check(clientInfo);
+                ((TeamSpeakMySQL) Janet.getTeamspeak().getMySQL()).check(clientInfo);
             }
         });
     }

@@ -3,6 +3,7 @@ package gg.galaxygaming.janetissuetracker.GMod;
 import gg.galaxygaming.janetissuetracker.Config;
 import gg.galaxygaming.janetissuetracker.Janet;
 import gg.galaxygaming.janetissuetracker.Utils;
+import gg.galaxygaming.janetissuetracker.base.AbstractMySQL;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -10,12 +11,12 @@ import java.net.URL;
 import java.sql.*;
 import java.util.*;
 
-public class GModMySQL {
-    private String url, gmodURL;
-    private Properties properties, gmodProperties;
-    private Thread checkThread;
+public class GModMySQL extends AbstractMySQL {
+    private String gmodURL;
+    private Properties gmodProperties;
 
     public GModMySQL() {
+        super();
         Config config = Janet.getConfig();
         String dbName = config.getStringOrDefault("DB_NAME", "database");
         String dbUser = config.getStringOrDefault("DB_USER", "user");
@@ -30,13 +31,8 @@ public class GModMySQL {
         }
         this.url = "jdbc:mysql://" + config.getStringOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
         this.gmodURL = "jdbc:mysql://" + config.getStringOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + gmodName;
-        this.properties = new Properties();
         this.properties.setProperty("user", dbUser);
         this.properties.setProperty("password", dbPass);
-        this.properties.setProperty("useSSL", "false");
-        this.properties.setProperty("autoReconnect", "true");
-        this.properties.setProperty("useLegacyDatetimeCode", "false");
-        this.properties.setProperty("serverTimezone", "EST");
         this.gmodProperties = new Properties();
         this.gmodProperties.setProperty("user", gmodUser);
         this.gmodProperties.setProperty("password", gmodPass);
@@ -44,20 +40,7 @@ public class GModMySQL {
         this.gmodProperties.setProperty("autoReconnect", "true");
         this.gmodProperties.setProperty("useLegacyDatetimeCode", "false");
         this.gmodProperties.setProperty("serverTimezone", "EST");
-        this.checkThread = new Thread(() -> {
-            while (true) {
-                if (Janet.DEBUG)
-                    System.out.println("[DEBUG] Starting user check (GMOD).");
-                checkAll();
-                if (Janet.DEBUG)
-                    System.out.println("[DEBUG] User check finished (GMOD).");
-                try {
-                    Thread.sleep(5 * 60 * 1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        this.service = "GMod";
         this.checkThread.start();
     }
 
@@ -69,7 +52,7 @@ public class GModMySQL {
         }
     }
 
-    private void checkAll() {
+    protected void checkAll() {
         //TODO load these urls from somewhere instead of hardcoding them
         List<String> urls = Arrays.asList("https://galaxygaming.gg/tttmc/loadingscreen/current_players/steam_ids.txt",
                 "https://galaxygaming.gg/ph/loadingscreen/current_players/steam_ids.txt");
@@ -95,7 +78,7 @@ public class GModMySQL {
             }
     }
 
-    public void check(String steamid) {
+    private void check(String steamid) {
         ArrayList<Rank> gmodRanks = new ArrayList<>();
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
@@ -149,12 +132,12 @@ public class GModMySQL {
                     String rName = rank.getID();
                     if (rName.contains("_")) {
                         String[] rankInfo = rName.split("_");
-                        String server = rankInfo[0], r = rankInfo[1];
-                        if (servers.contains(server + "_rank")) {
+                        String server = rankInfo[0]  + "_rank", r = rankInfo[1];
+                        if (serverRanks.containsKey(server)) {
                             if (rank.getPower() > serverRanks.get(server).getPower())
                                 serverRanks.put(server, new Rank(r, rank.getPower()));
                         } else
-                            serverRanks.put(server + "_rank", new Rank(r, rank.getPower()));
+                            serverRanks.put(server, new Rank(r, rank.getPower()));
                     } else
                         for (String server : servers)
                             if (serverRanks.containsKey(server)) {
@@ -180,17 +163,15 @@ public class GModMySQL {
                 rs.close();
                 if (update) {
                     StringBuilder columns = new StringBuilder("steamid");
-                    StringBuilder values = new StringBuilder(steamid);
+                    StringBuilder values = new StringBuilder('"' + steamid + '"');
                     for (String server : servers) {
                         Rank value = serverRanks.get(server);
                         columns.append(',').append(server);
                         if (value == null)
-                            values.append(",NULL");
+                            values.append(",\"NULL\"");
                         else
-                            values.append(',').append(value.getID());
+                            values.append(",\"").append(value.getID() + '"');
                     }
-                    System.out.println("Columns: " + columns.toString());
-                    System.out.println("Values: " + values.toString());
                     stmt.execute("REPLACE INTO gmod_ranks(" + columns.toString() + ") VALUES(" + values.toString() + ')');
                 }
             }
@@ -200,20 +181,20 @@ public class GModMySQL {
         }
     }
 
-    private class Rank {
+    public class Rank {
         private String id;
         private int power;
 
-        private Rank(String id, int power) {
+        public Rank(String id, int power) {
             this.id = id;
             this.power = power;
         }
 
-        private String getID() {
+        public String getID() {
             return this.id;
         }
 
-        private int getPower() {
+        public int getPower() {
             return this.power;
         }
     }

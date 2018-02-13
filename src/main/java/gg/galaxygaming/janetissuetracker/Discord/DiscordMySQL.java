@@ -7,6 +7,7 @@ import de.btobastian.javacord.entities.permissions.Role;
 import gg.galaxygaming.janetissuetracker.Config;
 import gg.galaxygaming.janetissuetracker.Janet;
 import gg.galaxygaming.janetissuetracker.Utils;
+import gg.galaxygaming.janetissuetracker.base.AbstractMySQL;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -14,14 +15,10 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Properties;
 
-public class DiscordMySQL {
-    private String url;
-    private Properties properties;
+public class DiscordMySQL extends AbstractMySQL {
     private ArrayList<String> ranks = new ArrayList<>();
     private final String verifiedRank, staffRank, seniorRank, donorRank;
-    private Thread checkThread;
 
     public DiscordMySQL() {
         Config config = Janet.getConfig();
@@ -39,28 +36,10 @@ public class DiscordMySQL {
             return;
         }
         this.url = "jdbc:mysql://" + config.getStringOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
-        this.properties = new Properties();
         properties.setProperty("user", dbUser);
         properties.setProperty("password", dbPass);
-        properties.setProperty("useSSL", "false");
-        properties.setProperty("autoReconnect", "true");
-        properties.setProperty("useLegacyDatetimeCode", "false");
-        properties.setProperty("serverTimezone", "EST");
         indexRanks();
-        this.checkThread = new Thread(() -> {
-            while (true) {
-                if (Janet.DEBUG)
-                    System.out.println("[DEBUG] Starting user check (Discord).");
-                checkAll();
-                if (Janet.DEBUG)
-                    System.out.println("[DEBUG] User check finished (Discord).");
-                try {
-                    Thread.sleep(5 * 60 * 1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        this.service = "Discord";
         this.checkThread.start();
     }
 
@@ -92,14 +71,14 @@ public class DiscordMySQL {
         this.ranks.add(this.donorRank);
     }
 
-    private void checkAll() {
+    protected void checkAll() {
         DiscordAPI api = Janet.getDiscord().getApi();
         for (User u : api.getUsers())
             if (!u.isBot() && !u.isYourself())
                 check(u);
     }
 
-    public void check(User user) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
+    private void check(User user) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT website_id FROM discord_verified WHERE discord_id = \"" + user.getId() + '"');

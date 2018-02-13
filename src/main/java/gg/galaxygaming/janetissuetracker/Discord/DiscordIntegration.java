@@ -6,15 +6,15 @@ import de.btobastian.javacord.Javacord;
 import de.btobastian.javacord.entities.Server;
 import gg.galaxygaming.janetissuetracker.Config;
 import gg.galaxygaming.janetissuetracker.Janet;
+import gg.galaxygaming.janetissuetracker.base.AbstractIntegration;
 
-public class DiscordIntegration {
+public class DiscordIntegration extends AbstractIntegration {
     private final String token;
     private final String serverID;
     private final String authMessage;
     private DiscordAPI api;
     private DiscordListener listeners;
     private Server server;
-    private DiscordMySQL mysql;
 
     public DiscordIntegration() {
         Config config = Janet.getConfig();
@@ -41,7 +41,7 @@ public class DiscordIntegration {
     }
 
     public void stop() {
-        this.mysql.stop();
+        super.stop();
         this.api.disconnect();
     }
 
@@ -55,8 +55,7 @@ public class DiscordIntegration {
         /*if (IssueTracker.DEBUG)
             for (Role r : this.server.getRoles())
                 System.out.println(r.getName() + ' ' + r.getId());//*/
-        if (this.mysql != null)
-            this.mysql = new DiscordMySQL();
+        this.mysql = new DiscordMySQL();
     }
 
     public Server getServer() {

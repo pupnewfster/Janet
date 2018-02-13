@@ -6,6 +6,7 @@ import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
 import gg.galaxygaming.janetissuetracker.Config;
 import gg.galaxygaming.janetissuetracker.Janet;
 import gg.galaxygaming.janetissuetracker.Utils;
+import gg.galaxygaming.janetissuetracker.base.AbstractMySQL;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,14 +14,10 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Properties;
 
-public class TeamSpeakMySQL {
+public class TeamSpeakMySQL extends AbstractMySQL {
     private final int channelAdmin, supporterID, userRooms;
-    private String url;
-    private Properties properties;
     private ArrayList<Integer> ranks = new ArrayList<>();
-    private Thread checkThread;
 
     public TeamSpeakMySQL() {
         Config config = Janet.getConfig();
@@ -36,28 +33,10 @@ public class TeamSpeakMySQL {
             return;
         }
         this.url = "jdbc:mysql://" + config.getStringOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
-        this.properties = new Properties();
         properties.setProperty("user", dbUser);
         properties.setProperty("password", dbPass);
-        properties.setProperty("useSSL", "false");
-        properties.setProperty("autoReconnect", "true");
-        properties.setProperty("useLegacyDatetimeCode", "false");
-        properties.setProperty("serverTimezone", "EST");
         indexRanks();
-        this.checkThread = new Thread(() -> {
-            while (true) {
-                if (Janet.DEBUG)
-                    System.out.println("[DEBUG] Starting user check (TeamSpeak).");
-                checkAll();
-                if (Janet.DEBUG)
-                    System.out.println("[DEBUG] User check finished (TeamSpeak).");
-                try {
-                    Thread.sleep(5 * 60 * 1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        this.service = "TeamSpeak";
         this.checkThread.start();
     }
 
@@ -86,12 +65,11 @@ public class TeamSpeakMySQL {
         this.ranks.add(Janet.getTeamspeak().getVerifiedID());
     }
 
-    private void checkAll() {
+    protected void checkAll() {
         Janet.getTeamspeak().getAsyncApi().getClients().onSuccess(clients -> clients.stream().filter(Client::isRegularClient).forEach(this::check));
     }
 
     public void check(Client client) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
-        //TODO create room
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT website_id FROM teamspeak_verified WHERE ts_id = \"" + client.getUniqueIdentifier() + '"');
@@ -152,9 +130,10 @@ public class TeamSpeakMySQL {
                 api.addClientToServerGroup(rID, dbID);
             if (hasRoom) {
                 rs = stmt.executeQuery("SELECT ts_room_id FROM verified_rooms WHERE website_id = \"" + siteID + '"');
-                if (rs.next())
-                    api.setClientChannelGroup(this.channelAdmin, rs.getInt("ts_room_id"), dbID);
-                else {
+                if (rs.next()) {
+                    if (client.getChannelGroupId() != this.channelAdmin)//If they already have channel admin do not bother setting it on them again
+                        api.setClientChannelGroup(this.channelAdmin, rs.getInt("ts_room_id"), dbID);
+                } else {
                     String name = client.getNickname();
                     String cname = name + (name.endsWith("s") ? "'" : "'s") + " Room";
                     final HashMap<ChannelProperty, String> properties = new HashMap<>();

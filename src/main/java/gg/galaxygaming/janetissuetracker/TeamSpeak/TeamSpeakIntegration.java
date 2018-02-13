@@ -6,11 +6,11 @@ import com.github.theholywaffle.teamspeak3.TS3Query;
 import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
 import gg.galaxygaming.janetissuetracker.Config;
 import gg.galaxygaming.janetissuetracker.Janet;
+import gg.galaxygaming.janetissuetracker.base.AbstractIntegration;
 
-public class TeamSpeakIntegration {//TODO AutoReconnect if teamspeak server goes down or restarts
+public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconnect if teamspeak server goes down or restarts
     private final int dndID, verifiedID, defaultChannel;
     private final String joinMessage, verifyMessage, roomCreatorName;
-    private TeamSpeakMySQL mysql;
     private TS3Config ts3Config;
     private TS3Query ts3Query;
     private TS3ApiAsync asyncApi;
@@ -87,14 +87,13 @@ public class TeamSpeakIntegration {//TODO AutoReconnect if teamspeak server goes
     }
 
     public void stop() {
+        super.stop();
         if (getAsyncApi() != null) {
             if (this.listener != null)
                 getAsyncApi().removeTS3Listeners(this.listener);
             getAsyncApi().logout();
         }
         this.ts3Query.exit();
-        if (this.mysql != null)
-            this.mysql.stop();
     }
 
     public int getDndID() {
@@ -123,10 +122,6 @@ public class TeamSpeakIntegration {//TODO AutoReconnect if teamspeak server goes
 
     public int getDefaultChannelID() {
         return this.defaultChannel;
-    }
-
-    public TeamSpeakMySQL getMySQL() {
-        return this.mysql;
     }
 
     public void checkVerification(Client c) {
