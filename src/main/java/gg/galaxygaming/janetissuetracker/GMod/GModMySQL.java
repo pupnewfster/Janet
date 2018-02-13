@@ -116,64 +116,62 @@ public class GModMySQL extends AbstractMySQL {
         }
         try (Connection conn = DriverManager.getConnection(this.gmodURL, this.gmodProperties)) {
             Statement stmt = conn.createStatement();
-            if (!gmodRanks.isEmpty()) {
-                HashMap<String, Rank> serverRanks = new HashMap<>();
-                HashSet<String> servers = new HashSet<>();
-                ResultSet rs = stmt.executeQuery("SELECT * FROM gmod_ranks");
-                ResultSetMetaData rsmd = rs.getMetaData();
-                int count = rsmd.getColumnCount();
-                for (int i = 1; i <= count; i++) {
-                    String name = rsmd.getColumnName(i);
-                    if (name.contains("_"))
-                        servers.add(name);
-                }
-                rs.close();
-                for (Rank rank : gmodRanks) {
-                    String rName = rank.getID();
-                    if (rName.contains("_")) {
-                        String[] rankInfo = rName.split("_");
-                        String server = rankInfo[0]  + "_rank", r = rankInfo[1];
-                        if (serverRanks.containsKey(server)) {
-                            if (rank.getPower() > serverRanks.get(server).getPower())
-                                serverRanks.put(server, new Rank(r, rank.getPower()));
-                        } else
+            HashMap<String, Rank> serverRanks = new HashMap<>();
+            HashSet<String> servers = new HashSet<>();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM gmod_ranks");
+            ResultSetMetaData rsmd = rs.getMetaData();
+            int count = rsmd.getColumnCount();
+            for (int i = 1; i <= count; i++) {
+                String name = rsmd.getColumnName(i);
+                if (name.contains("_"))
+                    servers.add(name);
+            }
+            rs.close();
+            for (Rank rank : gmodRanks) {
+                String rName = rank.getID();
+                if (rName.contains("_")) {
+                    String[] rankInfo = rName.split("_");
+                    String server = rankInfo[0]  + "_rank", r = rankInfo[1];
+                    if (serverRanks.containsKey(server)) {
+                        if (rank.getPower() > serverRanks.get(server).getPower())
                             serverRanks.put(server, new Rank(r, rank.getPower()));
                     } else
-                        for (String server : servers)
-                            if (serverRanks.containsKey(server)) {
-                                if (rank.getPower() > serverRanks.get(server).getPower())
-                                    serverRanks.put(server, rank);
-                            } else
-                                serverRanks.put(server, rank);
-                }
-                //Write to a database so janet gmod can read them
-                boolean update = false;
-                rs = stmt.executeQuery("SELECT * FROM gmod_ranks WHERE steamid = \"" + steamid + "\"");
-                if (rs.next()) {
-                    if (serverRanks.isEmpty())
-                        stmt.execute("DELETE FROM gmod_ranks WHERE steamid = \"" + steamid + '"');
-                    else //If one of the values is not already set, then keep the old value for it
-                        for (String server : servers)
-                            if (!serverRanks.containsKey(server)) {
-                                serverRanks.put(server, new Rank(rs.getString(server), 0));//Power may not be 0 but it does not matter. We are passed where that is checked
-                                update = true;
-                            }
+                        serverRanks.put(server, new Rank(r, rank.getPower()));
                 } else
-                    update = true;
-                rs.close();
-                if (update) {
-                    StringBuilder columns = new StringBuilder("steamid");
-                    StringBuilder values = new StringBuilder('"' + steamid + '"');
-                    for (String server : servers) {
-                        Rank value = serverRanks.get(server);
-                        columns.append(',').append(server);
-                        if (value == null)
-                            values.append(",\"NULL\"");
-                        else
-                            values.append(",\"").append(value.getID() + '"');
-                    }
-                    stmt.execute("REPLACE INTO gmod_ranks(" + columns.toString() + ") VALUES(" + values.toString() + ')');
+                    for (String server : servers)
+                        if (serverRanks.containsKey(server)) {
+                            if (rank.getPower() > serverRanks.get(server).getPower())
+                                serverRanks.put(server, rank);
+                        } else
+                            serverRanks.put(server, rank);
+            }
+            //Write to a database so janet gmod can read them
+            boolean update = false;
+            rs = stmt.executeQuery("SELECT * FROM gmod_ranks WHERE steamid = \"" + steamid + "\"");
+            if (rs.next()) {
+                if (serverRanks.isEmpty())
+                    stmt.execute("DELETE FROM gmod_ranks WHERE steamid = \"" + steamid + '"');
+                else //If one of the values is not already set, then keep the old value for it
+                    for (String server : servers)
+                        if (!serverRanks.containsKey(server)) {
+                            serverRanks.put(server, new Rank(rs.getString(server), 0));//Power may not be 0 but it does not matter. We are passed where that is checked
+                            update = true;
+                        }
+            } else
+                update = true;
+            rs.close();
+            if (update) {
+                StringBuilder columns = new StringBuilder("steamid");
+                StringBuilder values = new StringBuilder('"' + steamid + '"');
+                for (String server : servers) {
+                    Rank value = serverRanks.get(server);
+                    columns.append(',').append(server);
+                    if (value == null)
+                        values.append(",\"NULL\"");
+                    else
+                        values.append(",\"").append(value.getID() + '"');
                 }
+                stmt.execute("REPLACE INTO gmod_ranks(" + columns.toString() + ") VALUES(" + values.toString() + ')');
             }
             stmt.close();
         } catch (Exception e) {
