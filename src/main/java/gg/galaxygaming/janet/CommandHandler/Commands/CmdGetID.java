@@ -13,8 +13,8 @@ public class CmdGetID implements Cmd {
         if (sender.getSource().equals(CommandSource.TeamSpeak))
             sender.sendMessage(sender.getTeamSpeakClient().getUniqueIdentifier());
         else if (sender.getSource().equals(CommandSource.Discord)) {
-            if (sender.getIsPrivate())
-                sender.sendMessage(sender.getDiscordUser().getId());
+            if (sender.isPrivate())
+                sender.sendMessage(Long.toString(sender.getDiscordUser().getId()));
             else
                 sender.sendMessage("[ERROR] This command can only be performed through a direct message to this bot.");
         }

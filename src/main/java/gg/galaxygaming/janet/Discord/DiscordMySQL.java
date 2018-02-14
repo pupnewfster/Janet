@@ -1,8 +1,9 @@
 package gg.galaxygaming.janet.Discord;
 
-import de.btobastian.javacord.DiscordAPI;
+import de.btobastian.javacord.DiscordApi;
 import de.btobastian.javacord.entities.Server;
 import de.btobastian.javacord.entities.User;
+import de.btobastian.javacord.entities.channels.ServerVoiceChannelBuilder;
 import de.btobastian.javacord.entities.permissions.Role;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
@@ -17,21 +18,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class DiscordMySQL extends AbstractMySQL {
-    private ArrayList<String> ranks = new ArrayList<>();
-    private final String verifiedRank, staffRank, seniorRank, donorRank;
+    private ArrayList<Long> ranks = new ArrayList<>();
+    private long verifiedRank, staffRank, seniorRank, donorRank, supporterID, userRooms;
 
     public DiscordMySQL() {
         Config config = Janet.getConfig();
         String dbName = config.getStringOrDefault("DB_NAME", "database");
         String dbUser = config.getStringOrDefault("DB_USER", "user");
         String dbPass = config.getStringOrDefault("DB_PASSWORD", "password");
-        this.verifiedRank = config.getStringOrDefault("DISCORD_VERIFIED", "verified");
-        this.staffRank = config.getStringOrDefault("DISCORD_STAFF", "staff");
-        this.seniorRank = config.getStringOrDefault("DISCORD_SENIOR", "senior");
-        this.donorRank = config.getStringOrDefault("DISCORD_DONOR", "donor");
-        if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") ||
-                this.verifiedRank.equals("verified") || this.staffRank.equals("staff") || this.seniorRank.equals("senior") ||
-                this.donorRank.equals("donor")) {
+        this.verifiedRank = config.getLongOrDefault("DISCORD_VERIFIED", -1);
+        this.staffRank = config.getLongOrDefault("DISCORD_STAFF", -1);
+        this.seniorRank = config.getLongOrDefault("DISCORD_SENIOR", -1);
+        this.donorRank = config.getLongOrDefault("DISCORD_DONOR", -1);
+        this.supporterID = config.getLongOrDefault("DISCORD_SUPPORTER", -1);
+        this.userRooms = config.getLongOrDefault("DISCORD_USER_ROOMS", -1);
+        if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || this.verifiedRank < 0 || this.staffRank < 0 ||
+                this.seniorRank < 0 || this.donorRank < 0 || supporterID < 0 || this.userRooms < 0) {
             System.out.println("[ERROR] Failed to load config for connecting to MySQL Database. (Discord)");
             return;
         }
@@ -57,8 +59,8 @@ public class DiscordMySQL extends AbstractMySQL {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT discord_rank_id FROM rank_id_lookup");
             while (rs.next()) {
-                String rank = rs.getString("discord_rank_id");
-                if (!this.ranks.contains(rank))//If multiple ranks point to the same one (VIP)
+                long rank = rs.getLong("discord_rank_id");
+                if (rank >= 0 && !this.ranks.contains(rank))//If multiple ranks point to the same one (VIP)
                     this.ranks.add(rank);
             }
             rs.close();
@@ -72,8 +74,8 @@ public class DiscordMySQL extends AbstractMySQL {
     }
 
     protected void checkAll() {
-        DiscordAPI api = Janet.getDiscord().getApi();
-        for (User u : api.getUsers())
+        DiscordApi api = Janet.getDiscord().getApi();
+        for (User u : api.getCachedUsers())
             if (!u.isBot() && !u.isYourself())
                 check(u);
     }
@@ -82,9 +84,10 @@ public class DiscordMySQL extends AbstractMySQL {
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT website_id FROM discord_verified WHERE discord_id = \"" + user.getId() + '"');
-            ArrayList<String> discordRanks = new ArrayList<>();
+            ArrayList<Long> discordRanks = new ArrayList<>();
+            String siteID = null;
             if (rs.next()) {
-                String siteID = rs.getString("website_id");
+                siteID = rs.getString("website_id");
                 rs.close();
                 rs = stmt.executeQuery("SELECT member_group_id, mgroup_others FROM core_members WHERE member_id = \"" + siteID + '"');
                 if (rs.next()) {
@@ -105,8 +108,8 @@ public class DiscordMySQL extends AbstractMySQL {
                     boolean isStaff = false, isSenior = false, isDonor = false;
                     Statement stmt2 = conn.createStatement();
                     while (rs.next()) {
-                        String id = rs.getString("discord_rank_id");
-                        if (id.equals("NULL"))
+                        long id = rs.getLong("discord_rank_id");
+                        if (id < 0)
                             continue;
                         discordRanks.add(id);
                         ResultSet rs2 = stmt2.executeQuery("SELECT staff, senior, donor FROM discord_is_staff WHERE discord_rank_id = " + id);
@@ -140,9 +143,10 @@ public class DiscordMySQL extends AbstractMySQL {
             Server server = Janet.getDiscord().getServer();
             Collection<Role> roles = user.getRoles(server);
             boolean changed = false;
-            ArrayList<String> newRanks = new ArrayList<>();
+            ArrayList<Long> newRanks = new ArrayList<>();
+            boolean hadRoom = discordRanks.contains(this.supporterID);
             for (Role r : roles) {
-                String id = r.getId();
+                long id = r.getId();
                 if (!this.ranks.contains(id)) //Rank is not one that gets set by janet
                     newRanks.add(id);
                 else if (discordRanks.contains(id)) {
@@ -155,11 +159,55 @@ public class DiscordMySQL extends AbstractMySQL {
                 newRanks.addAll(discordRanks);
                 changed = true;
             }
+            boolean hasRoom = newRanks.contains(this.supporterID);
             if (changed) {
-                Role[] newRoles = new Role[newRanks.size()];
-                for (int i = 0; i < newRanks.size(); i++)
-                    newRoles[i] = server.getRoleById(newRanks.get(i));
+                ArrayList<Role> newRoles = new ArrayList<>();
+                for (Long newRank : newRanks)
+                    server.getRoleById(newRank).ifPresent(newRoles::add);
                 server.updateRoles(user, newRoles);
+            }
+            int ts = -1;
+            long discord = -1;
+            if (siteID != null) {
+                rs = stmt.executeQuery("SELECT * FROM verified_rooms WHERE website_id = " + siteID);
+                if (rs.next()) {
+                    ts = rs.getInt("ts_room_id");
+                    discord = rs.getLong("discord_room_id");
+                }
+                rs.close();
+            }
+            if (hasRoom || hadRoom || discord >= 0) {
+                int finalTs = ts;
+                String finalSiteID = siteID;
+                if (hasRoom) {
+                    if (!hadRoom || discord < 0) {//Create it for them
+                        String name = user.getDisplayName(server);
+                        String fname = name + (name.endsWith("s") ? "'" : "'s") + " Room";
+                        server.getChannelCategoryById(userRooms).ifPresent(c -> new ServerVoiceChannelBuilder(server).setName(fname).setCategory(c).create().thenAccept(vc -> {
+                            try (Connection conn2 = DriverManager.getConnection(this.url, this.properties)) {
+                                Statement stmt2 = conn2.createStatement();
+                                stmt2.execute("REPLACE INTO verified_rooms(website_id,discord_room_id,ts_room_id) VALUES(" + finalSiteID + ',' + vc.getId() + ',' + finalTs + ')');
+                                stmt2.close();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }));
+                    }
+                } else {//hadRoom, Delete it because they no longer should have it
+                    server.getVoiceChannelById(discord).ifPresent(vc -> vc.delete().thenAccept(v -> {
+                        //If successfully deleted remove it from the table
+                        try (Connection conn2 = DriverManager.getConnection(this.url, this.properties)) {
+                            Statement stmt2 = conn2.createStatement();
+                            if (finalTs < 0)
+                                stmt2.execute("DELETE FROM verified_rooms WHERE website_id = " + finalSiteID);
+                            else
+                                stmt2.executeUpdate("UPDATE verified_rooms SET discord_room_id = -1 WHERE website_id =" + finalSiteID);
+                            stmt2.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }));
+                }
             }
             stmt.close();
         } catch (Exception e) {

@@ -74,7 +74,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT website_id FROM teamspeak_verified WHERE ts_id = \"" + client.getUniqueIdentifier() + '"');
             ArrayList<Integer> teamspeakRanks = new ArrayList<>();
-            String siteID = "";
+            String siteID = null;
             if (rs.next()) {
                 siteID = rs.getString("website_id");
                 rs.close();
@@ -107,18 +107,15 @@ public class TeamSpeakMySQL extends AbstractMySQL {
                 rs.close();
             int[] serverGroups = client.getServerGroups();
             ArrayList<Integer> oldRanks = new ArrayList<>();
-            boolean hasRoom = false, hadRoom = false;
+            boolean hasRoom = teamspeakRanks.contains(this.supporterID), hadRoom = false;
             for (int id : serverGroups) {
                 if (!this.ranks.contains(id)) //Rank is not one that Janet modifies
                     continue;
-                boolean isSupporter = id == this.supporterID;
-                if (teamspeakRanks.contains(id)) {
+                if (teamspeakRanks.contains(id))
                     teamspeakRanks.remove(Integer.valueOf(id)); //Already has the rank assigned so remove it from lists of ones
-                    if (isSupporter)
-                        hasRoom = true;
-                } else {
+                else {
                     oldRanks.add(id);//Add the rank to list to remove
-                    if (isSupporter)
+                    if (id == this.supporterID)
                         hadRoom = true;
                 }
             }
@@ -128,43 +125,50 @@ public class TeamSpeakMySQL extends AbstractMySQL {
                 api.removeClientFromServerGroup(rID, dbID);
             for (int rID : teamspeakRanks)
                 api.addClientToServerGroup(rID, dbID);
-            if (hasRoom) {
-                rs = stmt.executeQuery("SELECT ts_room_id FROM verified_rooms WHERE website_id = \"" + siteID + '"');
+            int curRoom = -1;
+            long discord = -1;
+            if (siteID != null) {
+                rs = stmt.executeQuery("SELECT * FROM verified_rooms WHERE website_id = " + siteID);
                 if (rs.next()) {
-                    if (client.getChannelGroupId() != this.channelAdmin)//If they already have channel admin do not bother setting it on them again
-                        api.setClientChannelGroup(this.channelAdmin, rs.getInt("ts_room_id"), dbID);
-                } else {
-                    String name = client.getNickname();
-                    String cname = name + (name.endsWith("s") ? "'" : "'s") + " Room";
-                    final HashMap<ChannelProperty, String> properties = new HashMap<>();
-                    properties.put(ChannelProperty.CHANNEL_FLAG_PERMANENT, "1");
-                    properties.put(ChannelProperty.CPID, Integer.toString(this.userRooms));
-                    properties.put(ChannelProperty.CHANNEL_TOPIC, cname);
-                    String finalSiteID = siteID;
-                    api.createChannel(cname, properties).onSuccess(channelID -> {
-                        try (Connection conn2 = DriverManager.getConnection(this.url, this.properties)) {
-                            Statement stmt2 = conn2.createStatement();
-                            stmt2.execute("REPLACE INTO verified_rooms(website_id,ts_room_id) VALUES(" + finalSiteID + ',' + channelID + ')');
-                            stmt2.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        api.moveQuery(Janet.getTeamspeak().getDefaultChannelID()).onSuccess(success -> api.setClientChannelGroup(channelAdmin, channelID, dbID));
-                    });
+                    curRoom = rs.getInt("ts_room_id");
+                    discord = rs.getLong("discord_room_id");
                 }
                 rs.close();
-            } else if (hadRoom) {
-                rs = stmt.executeQuery("SELECT ts_room_id FROM verified_rooms WHERE website_id = \"" + siteID + '"');
-                //TODO: Check if they currently have a room made, if so make sure they are channel admin
-                if (rs.next()) { //Delete room
-                    int curRoom = rs.getInt("ts_room_id");
-                    rs.close();
-                    //TODO if discord room support is added check to see if they have one of those before deleting
-                    stmt.execute("DELETE FROM verified_rooms WHERE website_id = \"" + siteID + '"');
+            }
+            if (hasRoom || hadRoom || curRoom >= 0) {
+                if (hasRoom) {
+                    if (curRoom >= 0) {
+                        if (client.getChannelGroupId() != this.channelAdmin)//If they already have channel admin do not bother setting it on them again
+                            api.setClientChannelGroup(this.channelAdmin, curRoom, dbID);
+                    } else {
+                        String name = client.getNickname();
+                        String cname = name + (name.endsWith("s") ? "'" : "'s") + " Room";
+                        final HashMap<ChannelProperty, String> properties = new HashMap<>();
+                        properties.put(ChannelProperty.CHANNEL_FLAG_PERMANENT, "1");
+                        properties.put(ChannelProperty.CPID, Integer.toString(this.userRooms));
+                        properties.put(ChannelProperty.CHANNEL_TOPIC, cname);
+                        String finalSiteID = siteID;
+                        long finalDiscord = discord;
+                        api.createChannel(cname, properties).onSuccess(channelID -> {
+                            try (Connection conn2 = DriverManager.getConnection(this.url, this.properties)) {
+                                Statement stmt2 = conn2.createStatement();
+                                stmt2.execute("REPLACE INTO verified_rooms(website_id,discord_room_id,ts_room_id) VALUES(" + finalSiteID + ',' + finalDiscord + ',' + channelID + ')');
+                                stmt2.close();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            api.moveQuery(Janet.getTeamspeak().getDefaultChannelID()).onSuccess(success -> api.setClientChannelGroup(channelAdmin, channelID, dbID));
+                        });
+                    }
+                } else {//hadRoom
+                    //Delete room
+                    if (discord < 0)
+                        stmt.execute("DELETE FROM verified_rooms WHERE website_id = " + siteID);
+                    else
+                        stmt.executeUpdate("UPDATE verified_rooms SET ts_room_id = -1 WHERE website_id =" + siteID);
                     //TODO maybe do something if it fails/channel does not exist
                     api.deleteChannel(curRoom);
-                } else
-                    rs.close();
+                }
             }
             stmt.close();
         } catch (Exception e) {

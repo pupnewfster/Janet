@@ -81,7 +81,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
         getAsyncApi().registerAllEvents();
         getAsyncApi().addTS3Listeners(this.listener);
 
-        getAsyncApi().getClients().onSuccess(clients -> clients.stream().filter(Client::isRegularClient).forEach(this::checkVerification));
+        //getAsyncApi().getClients().onSuccess(clients -> clients.stream().filter(Client::isRegularClient).forEach(this::checkVerification));
 
         this.mysql = new TeamSpeakMySQL();
     }

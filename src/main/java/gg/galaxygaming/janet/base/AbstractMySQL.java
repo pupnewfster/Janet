@@ -18,8 +18,7 @@ public abstract class AbstractMySQL implements MySQL {
                 System.out.println("[DEBUG] User check finished (" + service + ").");
             try {
                 Thread.sleep(5 * 60 * 1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (InterruptedException ignored) {//It is fine if this is interupted
             }
         }
     });

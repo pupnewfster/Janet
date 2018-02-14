@@ -2,7 +2,8 @@ package gg.galaxygaming.janet.CommandHandler;
 
 import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
 import de.btobastian.javacord.entities.User;
-import gg.galaxygaming.janet.Discord.MessageCallback;
+import de.btobastian.javacord.entities.channels.PrivateChannel;
+import de.btobastian.javacord.entities.channels.TextChannel;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Slack.SlackUser;
 
@@ -14,6 +15,7 @@ public class CommandSender {
     private String channel;
     private RankTree rank;
     private boolean isPrivate;
+    private TextChannel dChannel;
 
     //TODO create a console command sender
 
@@ -24,23 +26,15 @@ public class CommandSender {
         this.rank = this.slackUser.getRank();
     }
 
-    public CommandSender(User user, String channel) {
-        this(user, channel, false, RankTree.MEMBER);
+    public CommandSender(User user, TextChannel channel) {
+        this(user, channel, RankTree.MEMBER);
     }
 
-    public CommandSender(User user, String channel, RankTree rank) {
-        this(user, channel, false, rank);
-    }
-
-    public CommandSender(User user, String channel, boolean isPrivate) {
-        this(user, channel, isPrivate, RankTree.MEMBER);
-    }
-
-    public CommandSender(User user, String channel, boolean isPrivate, RankTree rank) {
+    public CommandSender(User user, TextChannel channel, RankTree rank) {
         this.source = CommandSource.Discord;
         this.discordUser = user;
-        this.channel = channel;
-        this.isPrivate = isPrivate;
+        this.dChannel = channel;
+        this.isPrivate = this.dChannel instanceof PrivateChannel;
         this.rank = rank;//TODO retrieve actual rank
     }
 
@@ -74,7 +68,7 @@ public class CommandSender {
         return this.rank;
     }
 
-    public boolean getIsPrivate() {
+    public boolean isPrivate() {
         return this.isPrivate;
     }
 
@@ -94,10 +88,7 @@ public class CommandSender {
                 Janet.getTeamspeak().getAsyncApi().sendPrivateMessage(getTeamSpeakClient().getId(), message);
                 break;
             case Discord:
-                if (getIsPrivate())
-                    getDiscordUser().sendMessage(message, new MessageCallback());
-                else
-                    Janet.getDiscord().getServer().getChannelById(getChannel()).sendMessage(message, new MessageCallback());
+                this.dChannel.sendMessage(message);
                 break;
             default:
                 break;

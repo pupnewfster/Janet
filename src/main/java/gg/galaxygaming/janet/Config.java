@@ -60,15 +60,19 @@ public class Config extends Properties {
             if (!containsKey("DISCORD_TOKEN"))
                 setProperty("DISCORD_TOKEN", "token");
             if (!containsKey("DISCORD_SERVER"))
-                setProperty("DISCORD_SERVER", "server");
+                setProperty("DISCORD_SERVER", "-1");
             if (!containsKey("DISCORD_VERIFIED"))
-                setProperty("DISCORD_VERIFIED", "verified");
+                setProperty("DISCORD_VERIFIED", "-1");
             if (!containsKey("DISCORD_STAFF"))
-                setProperty("DISCORD_STAFF", "staff");
+                setProperty("DISCORD_STAFF", "-1");
             if (!containsKey("DISCORD_SENIOR"))
-                setProperty("DISCORD_SENIOR", "senior");
+                setProperty("DISCORD_SENIOR", "-1");
             if (!containsKey("DISCORD_DONOR"))
-                setProperty("DISCORD_DONOR", "donor");
+                setProperty("DISCORD_DONOR", "-1");
+            if (!containsKey("DISCORD_SUPPORTER"))
+                setProperty("DISCORD_SUPPORTER", "-1");
+            if (!containsKey("DISCORD_USER_ROOMS"))
+                setProperty("DISCORD_USER_ROOMS", "-1");
             if (!containsKey("DISCORD_AUTH_MESSAGE"))
                 setProperty("DISCORD_AUTH_MESSAGE", "Go authenticate your account.");
 
@@ -139,6 +143,24 @@ public class Config extends Properties {
         String value = getProperty(key);
         try {
             return Integer.valueOf(value);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    public long getLong(String key) {
+        String value = getProperty(key);
+        try {
+            return Long.valueOf(value);
+        } catch (NumberFormatException e) {
+            return 0;//TODO should there be a different default failed value?
+        }
+    }
+
+    public long getLongOrDefault(String key, long defaultValue) {
+        String value = getProperty(key);
+        try {
+            return Long.valueOf(value);
         } catch (NumberFormatException e) {
             return defaultValue;
         }

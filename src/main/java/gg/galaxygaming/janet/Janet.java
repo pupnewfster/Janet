@@ -24,10 +24,10 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
         this.config = new Config();
         this.cmdHandler = new CommandHandler("gg.galaxygaming.janet.CommandHandler.Commands");
         //this.slack = new SlackIntegration();//Disabled
+        //this.rest = new RestIntegration(this.config);//TODO bring back when we work on automating suggestions -> githuhb
         this.discord = new DiscordIntegration();
         this.teamspeak = new TeamSpeakIntegration();
         this.gmod = new GModIntegration();
-        //this.rest = new RestIntegration(this.config);//TODO bring back when we work on automating suggestions -> githuhb
     }
 
     //TODO call this method
