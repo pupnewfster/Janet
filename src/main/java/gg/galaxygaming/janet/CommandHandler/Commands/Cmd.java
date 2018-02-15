@@ -16,9 +16,15 @@ public interface Cmd {
 
     String getName();
 
-    List<String> getAliases();
+    default List<String> getAliases() {
+        return null;
+    }
 
-    List<CommandSource> supportedSources();
+    default List<CommandSource> supportedSources() {
+        return null;
+    }
 
-    Rank getRequiredRank();
+    default Rank getRequiredRank() {
+        return Rank.MEMBER;
+    }
 }

@@ -2,7 +2,6 @@ package gg.galaxygaming.janet.CommandHandler.Commands;
 
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.CommandSource;
-import gg.galaxygaming.janet.CommandHandler.Rank;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,10 +43,5 @@ public class CmdGetID implements Cmd {
     @Override
     public List<CommandSource> supportedSources() {
         return Arrays.asList(CommandSource.Discord, CommandSource.TeamSpeak);
-    }
-
-    @Override
-    public Rank getRequiredRank() {
-        return Rank.MEMBER;
     }
 }

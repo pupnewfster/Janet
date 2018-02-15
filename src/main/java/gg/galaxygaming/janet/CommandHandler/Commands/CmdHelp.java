@@ -1,8 +1,6 @@
 package gg.galaxygaming.janet.CommandHandler.Commands;
 
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
-import gg.galaxygaming.janet.CommandHandler.CommandSource;
-import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
 
@@ -61,15 +59,5 @@ public class CmdHelp implements Cmd {
     @Override
     public List<String> getAliases() {
         return Collections.singletonList("commands");
-    }
-
-    @Override
-    public List<CommandSource> supportedSources() {
-        return null;
-    }
-
-    @Override
-    public Rank getRequiredRank() {
-        return Rank.MEMBER;
     }
 }
