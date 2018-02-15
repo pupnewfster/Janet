@@ -59,7 +59,7 @@ public class SlackIntegration extends AbstractIntegration {
             type = "groups";
         else
             return;
-        try {
+        try {//TODO: Can userToken be replaced with token
             URL url = new URL("https://slack.com/api/" + type + ".history?token=" + userToken + "&count=1000&unreads=1&channel=" + channel + (timestamp == null ? "" : "&latest=" + timestamp));
             HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
             con.setRequestMethod("POST");
@@ -92,7 +92,7 @@ public class SlackIntegration extends AbstractIntegration {
     }
 
     private String cleanChat(String text) {
-        if (text == null || text.length() == 0)
+        if (text == null || text.isEmpty())
             return "";
         //Users
         Matcher matcher = Pattern.compile("\\<@(.*?)\\>").matcher(text);
@@ -170,8 +170,6 @@ public class SlackIntegration extends AbstractIntegration {
                     JsonObject json = Jsoner.deserialize(message, new JsonObject());
                     if (json.containsKey("type")) {
                         if (json.getString(Jsoner.mintJsonKey("type", null)).equals("message")) {//TODO see if there is an id field and how it acts
-                            if (Janet.DEBUG)
-                                System.out.println("[DEBUG] Received Slack message: " + message);
                             if (json.containsKey("bot_id"))
                                 return;//TODO maybe figure out the userid of botid if there is any reason to support bot messages..
                             //TODO will probably require some sort of bot support depending on how the integration with gmod's issue reporting works
@@ -179,37 +177,8 @@ public class SlackIntegration extends AbstractIntegration {
                             SlackUser info = getUserInfo(json.getString(Jsoner.mintJsonKey("user", null)));
                             if (info == null)
                                 return;
-                            String text = json.getString(Jsoner.mintJsonKey("text", null));
-                            //Users
-                            Matcher matcher = Pattern.compile("\\<@(.*?)\\>").matcher(text);
-                            while (matcher.find()) {
-                                String str = matcher.group(1);
-                                SlackUser user = getUserInfo(str);
-                                text = text.replace("<@" + str + '>', '@' + (user == null ? "null" : user.getName()));
-                            }
-                            //Channel
-                            matcher = Pattern.compile("\\<#(.*?\\|.*?)\\>").matcher(text);
-                            while (matcher.find()) {
-                                String str = matcher.group(1);
-                                text = text.replace("<#" + str + '>', '#' + str.split("\\|")[1]);
-                            }
-
-                            //URLS with http or https
-                            matcher = Pattern.compile("\\<(http[^\\|;]+)\\>").matcher(text);
-                            while (matcher.find()) {
-                                String str = matcher.group(1);
-                                text = text.replace('<' + str + '>', str);
-                            }
-
-                            //Date, email address, Remaining URLs
-                            matcher = Pattern.compile("\\<(.*?\\|.*?)\\>").matcher(text);
-                            while (matcher.find()) {
-                                String str = matcher.group(1);
-                                text = text.replace('<' + str + '>', str.split("\\|")[1]);
-                            }
-                            text = text.replaceAll("&amp;", "&").replaceAll("&lt;", "<").replaceAll("&gt;", ">");
                             String channel = json.getString(Jsoner.mintJsonKey("channel", null));
-                            sendSlackChat(info, text, channel);
+                            sendSlackChat(info, cleanChat(json.getString(Jsoner.mintJsonKey("text", null))), channel);
                         }
                     }
                 }
@@ -217,6 +186,10 @@ public class SlackIntegration extends AbstractIntegration {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public String getInfoChannel() {
+        return this.infoChannel;
     }
 
     public void sendMessage(String message, String channel) {
@@ -296,6 +269,10 @@ public class SlackIntegration extends AbstractIntegration {
             return;
         if (!channel.startsWith("D")) {//If not pm, but should it also check private messages?
             //TODO: evaluate for enough information and then create a new issue on github
+            if (this.infoChannel.equals(channel)) {
+                Janet.getDiscord().getServer().getTextChannelById(Janet.getDiscord().getDevChannel()).ifPresent(c ->
+                        c.sendMessage("From Slack - " + info.getDisplayName() + ": " + message));
+            }
         }//TODO: Maybe add some functionality if it is a pm
     }
 }

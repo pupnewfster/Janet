@@ -5,13 +5,16 @@ import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
 import gg.galaxygaming.janet.base.AbstractMySQL;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Properties;
 
 public class GModMySQL extends AbstractMySQL {
+    private final File urlFile;
     private String gmodURL;
     private Properties gmodProperties;
 
@@ -24,13 +27,15 @@ public class GModMySQL extends AbstractMySQL {
         String gmodName = config.getStringOrDefault("GMOD_DB_NAME", "database");
         String gmodUser = config.getStringOrDefault("GMOD_DB_USER", "user");
         String gmodPass = config.getStringOrDefault("GMOD_DB_PASSWORD", "password");
-        if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || gmodPass.equals("password") || gmodUser.equals("user") ||
-                gmodName.equals("database")) {
+        this.urlFile = new File(config.getStringOrDefault("GMOD_STEAMID_FILE", "steamidfile"));
+        if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || gmodPass.equals("password") ||
+                gmodUser.equals("user") || gmodName.equals("database") || !this.urlFile.exists()) {
             System.out.println("[ERROR] Failed to load config for connecting to MySQL Database. (GMod)");
             return;
         }
-        this.url = "jdbc:mysql://" + config.getStringOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
-        this.gmodURL = "jdbc:mysql://" + config.getStringOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + gmodName;
+        String host = config.getStringOrDefault("DB_HOST", "127.0.0.1:3306");
+        this.url = "jdbc:mysql://" + host + '/' + dbName;
+        this.gmodURL = "jdbc:mysql://" + host + '/' + gmodName;
         this.properties.setProperty("user", dbUser);
         this.properties.setProperty("password", dbPass);
         this.gmodProperties = new Properties();
@@ -44,18 +49,18 @@ public class GModMySQL extends AbstractMySQL {
         this.checkThread.start();
     }
 
-    public void stop() {
-        try {
-            this.checkThread.interrupt();
-        } catch (Exception ignored) {
-
-        }
-    }
-
     protected void checkAll() {
-        //TODO load these urls from somewhere instead of hardcoding them
-        List<String> urls = Arrays.asList("https://galaxygaming.gg/tttmc/loadingscreen/current_players/steam_ids.txt",
-                "https://galaxygaming.gg/ph/loadingscreen/current_players/steam_ids.txt");
+        ArrayList<String> urls = new ArrayList<>();
+        try (BufferedReader in = new BufferedReader(new FileReader(this.urlFile))) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                line = line.trim();
+                if (!line.equals(""))
+                    urls.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         for (String u : urls)
             try {
                 URL url = new URL(u);
@@ -68,10 +73,10 @@ public class GModMySQL extends AbstractMySQL {
                 }
                 String r = response.toString().trim();
                 if (!r.isEmpty()) {
-                    r = r.substring(0, r.length() - 1);
-                    String[] steamids = r.split(";");
+                    String[] steamids = r.substring(0, r.length() - 1).split(";");
                     for (String steamid : steamids)
-                        check(steamid);
+                        if (!steamid.isEmpty())
+                            check(steamid);
                 }
             } catch (Exception e) {
                 e.printStackTrace();

@@ -4,7 +4,8 @@ import de.btobastian.javacord.DiscordApi;
 import de.btobastian.javacord.entities.Server;
 import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.channels.ServerVoiceChannelBuilder;
-import de.btobastian.javacord.entities.permissions.Role;
+import de.btobastian.javacord.entities.channels.ServerVoiceChannelUpdater;
+import de.btobastian.javacord.entities.permissions.*;
 import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
@@ -24,6 +25,7 @@ public class DiscordMySQL extends AbstractMySQL {
     private long verifiedRank, staffRank, seniorRank, donorRank, supporterID, userRooms;
 
     public DiscordMySQL() {
+        super();
         Config config = Janet.getConfig();
         String dbName = config.getStringOrDefault("DB_NAME", "database");
         String dbUser = config.getStringOrDefault("DB_USER", "user");
@@ -45,14 +47,6 @@ public class DiscordMySQL extends AbstractMySQL {
         indexRanks();
         this.service = "Discord";
         this.checkThread.start();
-    }
-
-    public void stop() {
-        try {
-            this.checkThread.interrupt();
-        } catch (Exception ignored) {
-
-        }
     }
 
     private void indexRanks() {
@@ -193,6 +187,13 @@ public class DiscordMySQL extends AbstractMySQL {
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
+                            ArrayList<Permissions> perms = new ArrayList<>();
+                            perms.add(new PermissionsBuilder().setState(PermissionType.MANAGE_CHANNELS, PermissionState.ALLOWED).build());
+                            perms.add(new PermissionsBuilder().setState(PermissionType.VOICE_MOVE_MEMBERS, PermissionState.ALLOWED).build());
+                            //TODO maybe add a way to lock room?
+                            ServerVoiceChannelUpdater vcUpdater = vc.getUpdater();
+                            perms.forEach(p -> vcUpdater.addPermissionOverwrite(user, p));
+                            vcUpdater.update();
                         }));
                     }
                 } else {//hadRoom, Delete it because they no longer should have it

@@ -14,11 +14,18 @@ public class DiscordListener implements MessageCreateListener, ServerMemberJoinL
     public void onMessageCreate(MessageCreateEvent event) {
         Message message = event.getMessage();
         message.getAuthor().asUser().ifPresent(u -> {
+            if (u.isBot())
+                return;
             boolean isCommand = false;
-            String m = message.getContent();
+            String m = message.getReadableContent();
+            DiscordIntegration discord = Janet.getDiscord();
             if (m.startsWith("!")) {
-                Rank rank = ((DiscordMySQL) Janet.getDiscord().getMySQL()).getRankPower(u.getRoles(Janet.getDiscord().getServer()));
+                Rank rank = ((DiscordMySQL) discord.getMySQL()).getRankPower(u.getRoles(discord.getServer()));
                 isCommand = Janet.getCommandHandler().handleCommand(m, new CommandSender(u, message.getChannel(), rank));
+            }
+            if (!isCommand) {
+                if (message.getChannel().getId() == discord.getDevChannel())
+                    Janet.getSlack().sendMessage("From Discord - " + u.getDisplayName(discord.getServer()) + ": " + m, Janet.getSlack().getInfoChannel());
             }
         });
     }

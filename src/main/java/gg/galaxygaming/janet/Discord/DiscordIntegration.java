@@ -8,10 +8,10 @@ import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.base.AbstractIntegration;
 
 public class DiscordIntegration extends AbstractIntegration {
+    private final long serverID, devChannel;
     private final String authMessage;
     private DiscordApi api;
     private DiscordListener listeners;
-    private long serverID;
     private Server server;
 
     public DiscordIntegration() {
@@ -19,7 +19,8 @@ public class DiscordIntegration extends AbstractIntegration {
         String token = config.getStringOrDefault("DISCORD_TOKEN", "token");
         this.serverID = config.getLongOrDefault("DISCORD_SERVER", -1);
         this.authMessage = config.getStringOrDefault("DISCORD_AUTH_MESSAGE", "Go authenticate your account.");
-        if (token.equals("token") || this.serverID < 0) {
+        this.devChannel = config.getLongOrDefault("DISCORD_DEV_CHANNEL", -1);
+        if (token.equals("token") || this.serverID < 0 || this.devChannel < 0) {
             System.out.println("[ERROR] Failed to load needed configs for Discord Integration");
             return;
         }
@@ -43,6 +44,10 @@ public class DiscordIntegration extends AbstractIntegration {
         System.out.println("Listeners registered.");
         getApi().getServerById(this.serverID).ifPresent(server -> this.server = server);
         this.mysql = new DiscordMySQL();
+    }
+
+    public long getDevChannel() {
+        return this.devChannel;
     }
 
     public Server getServer() {

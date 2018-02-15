@@ -21,6 +21,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
     private ArrayList<Integer> ranks = new ArrayList<>();
 
     public TeamSpeakMySQL() {
+        super();
         Config config = Janet.getConfig();
         String dbName = config.getStringOrDefault("DB_NAME", "database");
         String dbUser = config.getStringOrDefault("DB_USER", "user");
@@ -39,14 +40,6 @@ public class TeamSpeakMySQL extends AbstractMySQL {
         indexRanks();
         this.service = "TeamSpeak";
         this.checkThread.start();
-    }
-
-    public void stop() {
-        try {
-            this.checkThread.interrupt();
-        } catch (Exception ignored) {
-
-        }
     }
 
     private void indexRanks() {

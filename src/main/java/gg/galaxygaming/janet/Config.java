@@ -73,6 +73,8 @@ public class Config extends Properties {
                 setProperty("DISCORD_SUPPORTER", "-1");
             if (!containsKey("DISCORD_USER_ROOMS"))
                 setProperty("DISCORD_USER_ROOMS", "-1");
+            if (!containsKey("DISCORD_DEV_CHANNEL"))
+                setProperty("DISCORD_DEV_CHANNEL", "-1");
             if (!containsKey("DISCORD_AUTH_MESSAGE"))
                 setProperty("DISCORD_AUTH_MESSAGE", "Go authenticate your account.");
 
@@ -115,6 +117,10 @@ public class Config extends Properties {
                 setProperty("GMOD_DB_PASSWORD", "password");
             if (!containsKey("GMOD_DB_NAME"))
                 setProperty("GMOD_DB_NAME", "database");
+
+            //GMod
+            if (!containsKey("GMOD_STEAMID_FILE"))
+                setProperty("GMOD_STEAMID_FILE", "steamidfile");
 
             store(output, null);
         } catch (IOException io) {
