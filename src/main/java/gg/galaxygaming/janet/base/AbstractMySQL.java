@@ -8,7 +8,6 @@ public abstract class AbstractMySQL implements MySQL {
     protected Properties properties;
     protected String url, service;
 
-
     protected Thread checkThread = new Thread(() -> {
         while (true) {
             if (Janet.DEBUG)

@@ -6,7 +6,7 @@ import de.btobastian.javacord.events.server.member.ServerMemberJoinEvent;
 import de.btobastian.javacord.listeners.message.MessageCreateListener;
 import de.btobastian.javacord.listeners.server.member.ServerMemberJoinListener;
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
-import gg.galaxygaming.janet.CommandHandler.RankTree;
+import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Janet;
 
 public class DiscordListener implements MessageCreateListener, ServerMemberJoinListener {
@@ -17,11 +17,10 @@ public class DiscordListener implements MessageCreateListener, ServerMemberJoinL
             boolean isCommand = false;
             String m = message.getContent();
             if (m.startsWith("!")) {
-                RankTree rank = RankTree.MEMBER;//TODO set
+                Rank rank = ((DiscordMySQL) Janet.getDiscord().getMySQL()).getRankPower(u.getRoles(Janet.getDiscord().getServer()));
                 isCommand = Janet.getCommandHandler().handleCommand(m, new CommandSender(u, message.getChannel(), rank));
             }
         });
-
     }
 
     @Override

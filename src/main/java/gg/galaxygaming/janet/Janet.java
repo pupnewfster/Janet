@@ -10,7 +10,7 @@ import gg.galaxygaming.janet.TeamSpeak.TeamSpeakIntegration;
 public class Janet {//TODO: add in proper javadoc explanations for methods
     //TODO make interfaces for integrations and mysql classes??
     private static Janet INSTANCE;
-    public static boolean DEBUG = true;//TODO replace with a proper logger
+    public static final boolean DEBUG = true;//TODO replace with a proper logger
     private final Config config;
     private final CommandHandler cmdHandler;
     private DiscordIntegration discord;
@@ -24,7 +24,7 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
         this.config = new Config();
         this.cmdHandler = new CommandHandler("gg.galaxygaming.janet.CommandHandler.Commands");
         //this.slack = new SlackIntegration();//Disabled
-        //this.rest = new RestIntegration(this.config);//TODO bring back when we work on automating suggestions -> githuhb
+        //this.rest = new RestIntegration(this.config);//TODO bring back when we work on automating suggestions -> github
         this.discord = new DiscordIntegration();
         this.teamspeak = new TeamSpeakIntegration();
         this.gmod = new GModIntegration();
@@ -43,7 +43,6 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
         if (getTeamspeak() != null)
             getTeamspeak().stop();
     }
-
 
     public static void main(String[] args) {
         new Janet();

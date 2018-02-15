@@ -131,7 +131,7 @@ public class GModMySQL extends AbstractMySQL {
                 String rName = rank.getID();
                 if (rName.contains("_")) {
                     String[] rankInfo = rName.split("_");
-                    String server = rankInfo[0]  + "_rank", r = rankInfo[1];
+                    String server = rankInfo[0] + "_rank", r = rankInfo[1];
                     if (serverRanks.containsKey(server)) {
                         if (rank.getPower() > serverRanks.get(server).getPower())
                             serverRanks.put(server, new Rank(r, rank.getPower()));
@@ -147,7 +147,7 @@ public class GModMySQL extends AbstractMySQL {
             }
             //Write to a database so janet gmod can read them
             boolean update = false;
-            rs = stmt.executeQuery("SELECT * FROM gmod_ranks WHERE steamid = \"" + steamid + "\"");
+            rs = stmt.executeQuery("SELECT * FROM gmod_ranks WHERE steamid = \"" + steamid + '"');
             if (rs.next()) {
                 if (serverRanks.isEmpty())
                     stmt.execute("DELETE FROM gmod_ranks WHERE steamid = \"" + steamid + '"');
@@ -169,7 +169,7 @@ public class GModMySQL extends AbstractMySQL {
                     if (value == null)
                         values.append(",\"NULL\"");
                     else
-                        values.append(",\"").append(value.getID() + '"');
+                        values.append(",\"").append(value.getID()).append('"');
                 }
                 stmt.execute("REPLACE INTO gmod_ranks(" + columns.toString() + ") VALUES(" + values.toString() + ')');
             }

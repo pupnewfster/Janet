@@ -2,7 +2,7 @@ package gg.galaxygaming.janet.CommandHandler.Commands;
 
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.CommandSource;
-import gg.galaxygaming.janet.CommandHandler.RankTree;
+import gg.galaxygaming.janet.CommandHandler.Rank;
 
 import java.util.Arrays;
 import java.util.List;
@@ -47,7 +47,7 @@ public class CmdGetID implements Cmd {
     }
 
     @Override
-    public RankTree getRequiredRank() {
-        return RankTree.MEMBER;
+    public Rank getRequiredRank() {
+        return Rank.MEMBER;
     }
 }

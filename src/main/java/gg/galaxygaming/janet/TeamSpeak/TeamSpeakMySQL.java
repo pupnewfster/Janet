@@ -3,6 +3,7 @@ package gg.galaxygaming.janet.TeamSpeak;
 import com.github.theholywaffle.teamspeak3.TS3ApiAsync;
 import com.github.theholywaffle.teamspeak3.api.ChannelProperty;
 import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
+import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
@@ -174,5 +175,30 @@ public class TeamSpeakMySQL extends AbstractMySQL {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public Rank getRankPower(int[] serverGroups) {
+        Rank r = Rank.MEMBER;
+        StringBuilder sbGroups = new StringBuilder();
+        int gCount = 0;
+        for (int sg : serverGroups) {
+            sbGroups.append(',').append(sg);
+            gCount++;
+        }
+        if (gCount == 0)
+            return r;
+        String groups = sbGroups.toString().substring(1).trim();
+        String query = gCount == 1 ? "ts_rank_id = " + groups : "ts_rank_id IN (" + groups + ')';
+        try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT rank_power FROM rank_id_lookup WHERE " + query + " ORDER BY rank_power DESC");
+            if (rs.next())
+                r = Rank.fromPower(rs.getInt("rank_power"));
+            rs.close();
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return r;
     }
 }

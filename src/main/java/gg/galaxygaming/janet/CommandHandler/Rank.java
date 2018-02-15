@@ -1,11 +1,11 @@
 package gg.galaxygaming.janet.CommandHandler;
 
-public enum RankTree {//TODO probably rename this
+public enum Rank {
     EXECSTAFF("Executive Staff", 8),
     DIRECTOR("Director", 7),
     MANAGER("Manager", 6),
     SRADMIN("SrAdmin", 5),
-    DEV("Dev", 5),
+    DEV("Dev", 4),
     ADMIN("Admin", 4),
     BOT("Bot", 4),
     MODERATOR("Moderator", 3),
@@ -19,14 +19,14 @@ public enum RankTree {//TODO probably rename this
     private String name;
     private int value;
 
-    RankTree(String name, int value) {
+    Rank(String name, int value) {
         this.name = name;
         this.value = value;
     }
 
-    public static RankTree fromPower(int power) {
-        RankTree[] values = values();
-        for (RankTree t : values) {
+    public static Rank fromPower(int power) {
+        Rank[] values = values();
+        for (Rank t : values) {
             if (t.getValue() == power)
                 return t;
         }
@@ -41,11 +41,11 @@ public enum RankTree {//TODO probably rename this
         return this.name;
     }
 
-    public boolean hasRank(RankTree rank) {
+    public boolean hasRank(Rank rank) {
         return this.value >= rank.value;
     }
 
     public boolean isBanned() {
-    return this.equals(BANNED);
+        return this.equals(BANNED);
     }
 }

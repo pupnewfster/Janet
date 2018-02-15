@@ -2,7 +2,7 @@ package gg.galaxygaming.janet.CommandHandler.Commands;
 
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.CommandSource;
-import gg.galaxygaming.janet.CommandHandler.RankTree;
+import gg.galaxygaming.janet.CommandHandler.Rank;
 
 import java.util.List;
 
@@ -20,5 +20,5 @@ public interface Cmd {
 
     List<CommandSource> supportedSources();
 
-    RankTree getRequiredRank();
+    Rank getRequiredRank();
 }

@@ -5,6 +5,7 @@ import de.btobastian.javacord.entities.Server;
 import de.btobastian.javacord.entities.User;
 import de.btobastian.javacord.entities.channels.ServerVoiceChannelBuilder;
 import de.btobastian.javacord.entities.permissions.Role;
+import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
@@ -16,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class DiscordMySQL extends AbstractMySQL {
     private ArrayList<Long> ranks = new ArrayList<>();
@@ -213,5 +215,25 @@ public class DiscordMySQL extends AbstractMySQL {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public Rank getRankPower(List<Role> roles) {
+        Rank r = Rank.MEMBER;
+        try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
+            Statement stmt = conn.createStatement();
+            for (Role role : roles) {
+                ResultSet rs = stmt.executeQuery("SELECT rank_power FROM rank_id_lookup WHERE discord_rank_id = " + role.getId());
+                if (rs.next()) {
+                    r = Rank.fromPower(rs.getInt("rank_power"));
+                    rs.close();
+                    break;
+                }
+                rs.close();
+            }
+            stmt.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return r;
     }
 }

@@ -1,7 +1,6 @@
 package gg.galaxygaming.janet.CommandHandler;
 
 import gg.galaxygaming.janet.CommandHandler.Commands.Cmd;
-
 import org.reflections.Reflections;
 
 import java.util.ArrayList;
@@ -25,7 +24,6 @@ public class CommandHandler {
         } catch (Exception ignored) {
         }
     }
-
 
     public boolean handleCommand(String message, CommandSender sender) {//TODO: ignore multiple spaces
         if (sender == null)

@@ -48,7 +48,6 @@
         <dependency>
             <groupId>de.btobastian</groupId>
             <artifactId>Javacord</artifactId>
-            <!-- See below what to insert here -->
             <version>900b1f9</version>
         </dependency>
     </dependencies>

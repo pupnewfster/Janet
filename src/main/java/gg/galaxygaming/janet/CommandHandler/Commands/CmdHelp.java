@@ -2,11 +2,12 @@ package gg.galaxygaming.janet.CommandHandler.Commands;
 
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.CommandSource;
-import gg.galaxygaming.janet.CommandHandler.RankTree;
+import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class CmdHelp implements Cmd {
@@ -59,7 +60,7 @@ public class CmdHelp implements Cmd {
 
     @Override
     public List<String> getAliases() {
-        return null;
+        return Collections.singletonList("commands");
     }
 
     @Override
@@ -68,7 +69,7 @@ public class CmdHelp implements Cmd {
     }
 
     @Override
-    public RankTree getRequiredRank() {
-        return RankTree.MEMBER;
+    public Rank getRequiredRank() {
+        return Rank.MEMBER;
     }
 }

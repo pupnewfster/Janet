@@ -12,7 +12,8 @@ import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.base.AbstractIntegration;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -82,7 +83,7 @@ public class SlackIntegration extends AbstractIntegration {
                 SlackUser user = getUserInfo(message.getStringOrDefault(Jsoner.mintJsonKey("user", null)));
                 String text = cleanChat(message.getStringOrDefault(Jsoner.mintJsonKey("text", "no text")));
                 long unix_time = Long.parseLong(message.getStringOrDefault(Jsoner.mintJsonKey("ts", "0")).split("\\.")[0]);
-                Date date = Date.from( Instant.ofEpochSecond(unix_time));
+                Date date = Date.from(Instant.ofEpochSecond(unix_time));
                 array.add(date + "| " + (user == null ? "null" : user.getName()) + ": " + text);
             }
         } catch (Exception e) {

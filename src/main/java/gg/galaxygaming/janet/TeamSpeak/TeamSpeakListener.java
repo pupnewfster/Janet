@@ -9,7 +9,7 @@ import com.github.theholywaffle.teamspeak3.api.event.TS3EventAdapter;
 import com.github.theholywaffle.teamspeak3.api.event.TextMessageEvent;
 import com.github.theholywaffle.teamspeak3.api.wrapper.Channel;
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
-import gg.galaxygaming.janet.CommandHandler.RankTree;
+import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
 
@@ -24,7 +24,7 @@ public class TeamSpeakListener extends TS3EventAdapter {
                     String m = e.getMessage();
                     boolean isCommand = false;
                     if (m.startsWith("!")) {
-                        RankTree rank = RankTree.MEMBER;//TODO: set can be done by selecting by rank ids, and then ordering the rank_power column
+                        Rank rank = ((TeamSpeakMySQL) Janet.getTeamspeak().getMySQL()).getRankPower(clientInfo.getServerGroups());
                         isCommand = Janet.getCommandHandler().handleCommand(m, new CommandSender(clientInfo, rank));
                     }
                 }

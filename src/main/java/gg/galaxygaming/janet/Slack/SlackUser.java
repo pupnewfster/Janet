@@ -2,24 +2,24 @@ package gg.galaxygaming.janet.Slack;
 
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
-import gg.galaxygaming.janet.CommandHandler.RankTree;
+import gg.galaxygaming.janet.CommandHandler.Rank;
 
 public class SlackUser implements BaseSlackUser {
     private final String id;
     private final String name;
-    private RankTree rank;
+    private Rank rank;
 
     SlackUser(JsonObject json) {
         this.id = json.getString(Jsoner.mintJsonKey("id", null));
         this.name = json.getString(Jsoner.mintJsonKey("name", null));
         if (json.getBooleanOrDefault(Jsoner.mintJsonKey("is_bot", false)))
-            this.rank = RankTree.BOT;
+            this.rank = Rank.BOT;
         else if (json.getBooleanOrDefault(Jsoner.mintJsonKey("is_primary_owner", false)) || json.getBooleanOrDefault(Jsoner.mintJsonKey("is_owner", false)))
-            this.rank = RankTree.EXECSTAFF;
+            this.rank = Rank.EXECSTAFF;
         else if (json.getBooleanOrDefault(Jsoner.mintJsonKey("is_admin", false)))
-            this.rank = RankTree.ADMIN;
+            this.rank = Rank.ADMIN;
         else if (json.getBooleanOrDefault(Jsoner.mintJsonKey("is_ultra_restricted", false)) || json.getBooleanOrDefault(Jsoner.mintJsonKey("is_restricted", false)))
-            this.rank = RankTree.BANNED;
+            this.rank = Rank.BANNED;
         //else leave it at 0 for member
     }
 
@@ -31,20 +31,20 @@ public class SlackUser implements BaseSlackUser {
         return this.id;
     }
 
-    public RankTree getRank() {
+    public Rank getRank() {
         return this.rank;
     }
 
     public boolean isBot() {
-        return getRank().equals(RankTree.BOT);
+        return getRank().equals(Rank.BOT);
     }
 
     public String getRankName() {
-        if (rank.equals(RankTree.EXECSTAFF))
+        if (rank.equals(Rank.EXECSTAFF))
             return "Owner";
-        else if (rank.equals(RankTree.ADMIN))
+        else if (rank.equals(Rank.ADMIN))
             return "Admin";
-        else if (rank.equals(RankTree.MEMBER))
+        else if (rank.equals(Rank.MEMBER))
             return "Member";
         else if (rank.isBanned())
             return "Restricted";

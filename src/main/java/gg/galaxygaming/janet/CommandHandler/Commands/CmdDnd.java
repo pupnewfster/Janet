@@ -4,7 +4,7 @@ import com.github.theholywaffle.teamspeak3.TS3ApiAsync;
 import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.CommandSource;
-import gg.galaxygaming.janet.CommandHandler.RankTree;
+import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Janet;
 
 import java.util.Collections;
@@ -56,7 +56,7 @@ public class CmdDnd implements Cmd {
     }
 
     @Override
-    public RankTree getRequiredRank() {
-        return RankTree.MEMBER;
+    public Rank getRequiredRank() {
+        return Rank.MEMBER;
     }
 }

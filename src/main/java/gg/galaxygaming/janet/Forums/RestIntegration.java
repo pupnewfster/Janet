@@ -91,13 +91,12 @@ public class RestIntegration extends AbstractIntegration {
 
     //create github issue
 
-
     private JsonObject sendPOST(String urlEnding, JsonObject payload) {
         try {
             URL url = new URL(this.restURL + urlEnding);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setDoOutput(true);
-            con.setRequestProperty ("Authorization", this.auth);
+            con.setRequestProperty("Authorization", this.auth);
             con.setRequestProperty("Content-Type", "application/json;");
             con.setRequestProperty("Accept", "application/json,text/plain");
             con.setRequestMethod("POST");
@@ -121,7 +120,7 @@ public class RestIntegration extends AbstractIntegration {
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setDoOutput(true);
-            con.setRequestProperty ("Authorization", this.auth);
+            con.setRequestProperty("Authorization", this.auth);
             con.setRequestProperty("Content-Type", "application/json");
             con.setRequestProperty("Accept", "application/json,text/plain");//Does having this break things?
             try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
