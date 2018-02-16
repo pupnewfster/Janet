@@ -46,7 +46,7 @@ public class DonationMySQL extends AbstractMySQL {
             while (rs.next()) {
                 int points = rs.getInt("points");
                 String server = rs.getString("server");
-                if (points == 0 || server == null)
+                if (points == 0)
                     continue;
                 int siteID = rs.getInt("site_id");
                 String steamid = null;
@@ -78,6 +78,7 @@ public class DonationMySQL extends AbstractMySQL {
     private void checkRanks() {
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
+            Statement stmt2 = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM donation_info");
             while (rs.next()) {
                 int siteID = rs.getInt("website_id");
@@ -88,16 +89,21 @@ public class DonationMySQL extends AbstractMySQL {
                 if (expired) {
                     if (given) {
                         if (removeRank(siteID, rankID)) //Remove the row from the table
-                            rs.deleteRow();
+                            stmt2.execute("DELETE FROM donation_info WHERE website_id = " + siteID + ", rank_id = " + rankID);//Delete the row
                     } else
-                        rs.deleteRow(); //Remove the row from the table
+                        stmt2.execute("DELETE FROM donation_info WHERE website_id = " + siteID + ", rank_id = " + rankID);//Delete the row
                 } else if (!given) {
-                    if (addRank(siteID, rankID))
-                        rs.updateBoolean("given", true);
+                    if (addRank(siteID, rankID)) {
+                        if (expires == null)
+                            stmt2.execute("DELETE FROM donation_info WHERE website_id = " + siteID + ", rank_id = " + rankID);//Delete the row
+                        else
+                            stmt2.executeUpdate("UPDATE donation_info SET given = true WHERE website_id =" + siteID + ", rank_id = " + rankID);//Mark as given
+                    }
                 }
             }
             rs.close();
             stmt.close();
+            stmt2.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
