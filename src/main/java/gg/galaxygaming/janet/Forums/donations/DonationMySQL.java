@@ -60,7 +60,7 @@ public class DonationMySQL extends AbstractMySQL {
                 GModMySQL gmodsql = (GModMySQL) Janet.getGMod().getMySQL();
                 try (Connection conn2 = DriverManager.getConnection(gmodsql.getGModURL(), gmodsql.getGModProperties())) {
                     Statement stmt3 = conn2.createStatement();
-                    stmt3.execute("INSERT INTO donated_points (steamid,points,is_premium,server) VALUES(" + steamid + ',' + points + ',' + premium + ',' + server + ')');
+                    stmt3.execute("INSERT INTO donated_points (steamid,points,is_premium,server) VALUES(" + steamid + ',' + points + ',' + premium + ",\"" + server + "\")");
                     stmt3.close();
                     stmt2.execute("DELETE FROM ps2_info WHERE id = " + rs.getInt("id"));//Delete the row
                 } catch (Exception e) {
@@ -89,15 +89,15 @@ public class DonationMySQL extends AbstractMySQL {
                 if (expired) {
                     if (given) {
                         if (removeRank(siteID, rankID)) //Remove the row from the table
-                            stmt2.execute("DELETE FROM donation_info WHERE website_id = " + siteID + ", rank_id = " + rankID);//Delete the row
+                            stmt2.execute("DELETE FROM donation_info WHERE website_id = " + siteID + " AND rank_id = " + rankID);//Delete the row
                     } else
-                        stmt2.execute("DELETE FROM donation_info WHERE website_id = " + siteID + ", rank_id = " + rankID);//Delete the row
+                        stmt2.execute("DELETE FROM donation_info WHERE website_id = " + siteID + " AND rank_id = " + rankID);//Delete the row
                 } else if (!given) {
                     if (addRank(siteID, rankID)) {
                         if (expires == null)
-                            stmt2.execute("DELETE FROM donation_info WHERE website_id = " + siteID + ", rank_id = " + rankID);//Delete the row
+                            stmt2.execute("DELETE FROM donation_info WHERE website_id = " + siteID + " AND rank_id = " + rankID);//Delete the row
                         else
-                            stmt2.executeUpdate("UPDATE donation_info SET given = true WHERE website_id =" + siteID + ", rank_id = " + rankID);//Mark as given
+                            stmt2.executeUpdate("UPDATE donation_info SET given = true WHERE website_id =" + siteID + " AND rank_id = " + rankID);//Mark as given
                     }
                 }
             }
@@ -121,7 +121,7 @@ public class DonationMySQL extends AbstractMySQL {
         if (ranks.contains(oldPrimary))
             for (int i = 1; i < ranks.size(); i++)
                 if (primaries.get(ranks.get(i)) == oldPrimary) { //If one of secondaries still has the old primary, remove and recalculate it
-                    ranks.remove(oldPrimary);
+                    ranks.remove(Integer.valueOf(oldPrimary));
                     break;
                 }
         if (ranks.size() > 1 && ranks.contains(this.memberID))
@@ -145,9 +145,8 @@ public class DonationMySQL extends AbstractMySQL {
         ranks.remove(Integer.valueOf(rankID));
         if (ranks.contains(primaries.get(rankID)))
             ranks.remove(primaries.get(rankID)); //Remove old primary
-        if (ranks.isEmpty()) {
+        if (ranks.isEmpty())
             return updateRanks(siteID, this.memberID, ranks);
-        }
         int highest = getHighest(ranks);
         if (primaries.containsKey(highest)) {
             Integer primary = primaries.get(highest);
@@ -181,8 +180,8 @@ public class DonationMySQL extends AbstractMySQL {
                     sbGroups.append(',');
                 sbGroups.append(secondaries.get(i));
             }
-            stmt.executeUpdate("UPDATE core_members SET member_groupd_id = " + primary + (secondaries.isEmpty() ? ", mgroup_others = " + sbGroups.toString().trim() :
-                    "") + " WHERE member_id = " + siteID);
+            String values = "member_group_id = " + primary + (secondaries.isEmpty() ? "" : ", mgroup_others = \"" + sbGroups.toString().trim() + '\"');
+            stmt.executeUpdate("UPDATE core_members SET " + values + " WHERE member_id = " + siteID);
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
