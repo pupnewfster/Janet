@@ -31,7 +31,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
         this.supporterID = config.getIntegerOrDefault("TEAMSPEAK_SUPPORTER", -1);
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") ||
                 this.userRooms < 0 || this.channelAdmin < 0 || this.supporterID < 0) {
-            System.out.println("[ERROR] Failed to load config for connecting to MySQL Database. (TeamSpeak)");
+            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (TeamSpeak)");
             return;
         }
         this.url = "jdbc:mysql://" + config.getStringOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;

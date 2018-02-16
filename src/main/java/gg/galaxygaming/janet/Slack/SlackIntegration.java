@@ -40,13 +40,13 @@ public class SlackIntegration extends AbstractIntegration {
         this.userToken = config.getStringOrDefault("USER_SLACK_TOKEN", "token");
         this.infoChannel = config.getStringOrDefault("INFO_CHANNEL", "info_channel");
         if (this.token.equals("token") || this.infoChannel.equals("info_channel") || this.userToken.equals("token")) {
-            System.out.println("[ERROR] Failed to load needed configs for Slack Integration");
+            Janet.getLogger().error("Failed to load needed configs for Slack Integration");
             return;
         }
         if (connect())
-            System.out.println("Connected to slack.");
+            Janet.getLogger().info("Connected to slack.");
         else
-            System.out.println("[ERROR] Failed to connect to slack.");
+            Janet.getLogger().error("Failed to connect to slack.");
     }
 
     private ArrayList<String> array = new ArrayList<>();
@@ -165,8 +165,7 @@ public class SlackIntegration extends AbstractIntegration {
             ws = new WebSocketFactory().createSocket(url).addListener(new WebSocketAdapter() {
                 @Override
                 public void onTextMessage(WebSocket websocket, String message) {//TODO listen back for potential replies to stored message ids
-                    //if (IssueTracker.DEBUG)
-                    //System.out.println("[DEBUG] Received Slack message: " + message);
+                    //Janet.getLogger().debug("Received Slack message: " + message);
                     JsonObject json = Jsoner.deserialize(message, new JsonObject());
                     if (json.containsKey("type")) {
                         if (json.getString(Jsoner.mintJsonKey("type", null)).equals("message")) {//TODO see if there is an id field and how it acts
@@ -271,7 +270,7 @@ public class SlackIntegration extends AbstractIntegration {
             //TODO: evaluate for enough information and then create a new issue on github
             if (this.infoChannel.equals(channel)) {
                 Janet.getDiscord().getServer().getTextChannelById(Janet.getDiscord().getDevChannel()).ifPresent(c ->
-                        c.sendMessage("From Slack - " + info.getDisplayName() + ": " + message));
+                        c.sendMessage(info.getDisplayName() + ": " + message));
             }
         }//TODO: Maybe add some functionality if it is a pm
     }

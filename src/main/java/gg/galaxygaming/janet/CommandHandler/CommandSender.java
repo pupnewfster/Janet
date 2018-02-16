@@ -84,7 +84,7 @@ public class CommandSender {
                 Janet.getSlack().sendMessage(message, this.channel);
                 break;
             case Console:
-                System.out.println(message);
+                Janet.getLogger().info(message);
                 break;
             case TeamSpeak:
                 Janet.getTeamspeak().getAsyncApi().sendPrivateMessage(getTeamSpeakClient().getId(), message);

@@ -22,7 +22,7 @@ public class DiscordIntegration extends AbstractIntegration {
         this.authMessage = config.getStringOrDefault("DISCORD_AUTH_MESSAGE", "Go authenticate your account.");
         this.devChannel = config.getLongOrDefault("DISCORD_DEV_CHANNEL", -1);
         if (token.equals("token") || this.serverID < 0 || this.devChannel < 0) {
-            System.out.println("[ERROR] Failed to load needed configs for Discord Integration");
+            Janet.getLogger().error("Failed to load needed configs for Discord Integration");
             return;
         }
         new DiscordApiBuilder().setToken(token).login().thenAccept(api -> {
@@ -38,11 +38,11 @@ public class DiscordIntegration extends AbstractIntegration {
     }
 
     public void finishConnect() {
-        System.out.println("Discord connected, registering listeners...");
+        Janet.getLogger().info("Discord connected, registering listeners...");
         this.listeners = new DiscordListener();
         getApi().addMessageCreateListener(this.listeners);
         getApi().addServerMemberJoinListener(this.listeners);
-        System.out.println("Listeners registered.");
+        Janet.getLogger().info("Discord listeners registered.");
         getApi().getServerById(this.serverID).ifPresent(server -> this.server = server);
         this.mysql = new DiscordMySQL();
     }

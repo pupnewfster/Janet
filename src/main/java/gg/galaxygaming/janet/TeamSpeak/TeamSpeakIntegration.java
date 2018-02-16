@@ -28,7 +28,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
         this.verifyMessage = config.getStringOrDefault("TEAMSPEAK_VERIFY", "Go verify.");
         this.roomCreatorName = config.getStringOrDefault("TEAMSPEAK_ROOM_CREATOR", "Join here to create a new room");
         if (username.equals("username") || password.equals("password") || this.dndID < 0 || this.verifiedID < 0 || this.defaultChannel < 0) {
-            System.out.println("[ERROR] Failed to load needed configs for TeamSpeak Integration");
+            Janet.getLogger().error("Failed to load needed configs for TeamSpeak Integration");
             return;
         }
         this.ts3Config = new TS3Config();
@@ -48,7 +48,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
             if (loggedIn)
                 selectServer();
             else
-                System.out.println("[ERROR] Failed to authenticate TeamSpeak Query.");
+                Janet.getLogger().error("Failed to authenticate TeamSpeak Query.");
         });
     }
 
@@ -57,7 +57,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
             if (serverSelected)
                 setNickName();
             else
-                System.out.println("[ERROR] Failed to select TeamSpeak server.");
+                Janet.getLogger().error("Failed to select TeamSpeak server.");
         });
     }
 
@@ -66,7 +66,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
             if (nickSet)
                 findDefaultChannel();
             else
-                System.out.println("[ERROR] Failed to set nickname.");
+                Janet.getLogger().error("Failed to set TeamSpeak nickname.");
         });
     }
 
@@ -137,8 +137,8 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
                     }
                 if (!verified)
                     getAsyncApi().sendPrivateMessage(c.getId(), getVerifyMessage());
-            } else if (Janet.DEBUG)
-                System.out.println("[DEBUG] Failed to send message.");
+            } else
+                Janet.getLogger().debug("Failed to send message to " + c.getNickname() + '.');
         });
     }
 }

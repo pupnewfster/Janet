@@ -38,7 +38,7 @@ public class DiscordMySQL extends AbstractMySQL {
         this.userRooms = config.getLongOrDefault("DISCORD_USER_ROOMS", -1);
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || this.verifiedRank < 0 || this.staffRank < 0 ||
                 this.seniorRank < 0 || this.donorRank < 0 || supporterID < 0 || this.userRooms < 0) {
-            System.out.println("[ERROR] Failed to load config for connecting to MySQL Database. (Discord)");
+            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (Discord)");
             return;
         }
         this.url = "jdbc:mysql://" + config.getStringOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;

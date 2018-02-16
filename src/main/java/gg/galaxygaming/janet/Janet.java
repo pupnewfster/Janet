@@ -7,10 +7,12 @@ import gg.galaxygaming.janet.Forums.donations.DonationIntegration;
 import gg.galaxygaming.janet.GMod.GModIntegration;
 import gg.galaxygaming.janet.Slack.SlackIntegration;
 import gg.galaxygaming.janet.TeamSpeak.TeamSpeakIntegration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Janet {//TODO: add in proper javadoc explanations for methods
     private static Janet INSTANCE;
-    public static final boolean DEBUG = true;//TODO replace with a proper logger
+    private final Logger logger;
     private final Config config;
     private final CommandHandler cmdHandler;
     private TeamSpeakIntegration teamspeak;
@@ -22,6 +24,7 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
 
     private Janet() {
         INSTANCE = this;
+        this.logger = LogManager.getLogger("Janet");
         this.config = new Config();
         this.cmdHandler = new CommandHandler("gg.galaxygaming.janet.CommandHandler.Commands");
         this.slack = new SlackIntegration();
@@ -80,6 +83,10 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
 
     public static CommandHandler getCommandHandler() {
         return INSTANCE.cmdHandler;
+    }
+
+    public static Logger getLogger() {
+        return INSTANCE.logger;
     }
 
     public static Janet getInstance() {

@@ -30,7 +30,7 @@ public class GModMySQL extends AbstractMySQL {
         this.urlFile = new File(config.getStringOrDefault("GMOD_STEAMID_FILE", "steamidfile"));
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || gmodPass.equals("password") ||
                 gmodUser.equals("user") || gmodName.equals("database") || !this.urlFile.exists()) {
-            System.out.println("[ERROR] Failed to load config for connecting to MySQL Database. (GMod)");
+            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (GMod)");
             return;
         }
         String host = config.getStringOrDefault("DB_HOST", "127.0.0.1:3306");

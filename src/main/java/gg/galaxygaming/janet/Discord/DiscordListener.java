@@ -25,7 +25,7 @@ public class DiscordListener implements MessageCreateListener, ServerMemberJoinL
             }
             if (!isCommand) {
                 if (message.getChannel().getId() == discord.getDevChannel())
-                    Janet.getSlack().sendMessage("From Discord - " + u.getDisplayName(discord.getServer()) + ": " + m, Janet.getSlack().getInfoChannel());
+                    Janet.getSlack().sendMessage(u.getDisplayName(discord.getServer()) + ": " + m, Janet.getSlack().getInfoChannel());
             }
         });
     }

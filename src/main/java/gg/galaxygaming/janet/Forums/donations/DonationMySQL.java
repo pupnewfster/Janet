@@ -22,7 +22,7 @@ public class DonationMySQL extends AbstractMySQL {
         String dbPass = config.getStringOrDefault("DB_PASSWORD", "password");
         this.memberID = config.getIntegerOrDefault("FORUM_MEMBER_ID", -1);
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || this.memberID < 0) {
-            System.out.println("[ERROR] Failed to load config for connecting to MySQL Database. (Donations)");
+            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (Donations)");
             return;
         }
         this.url = "jdbc:mysql://" + config.getStringOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
@@ -133,7 +133,7 @@ public class DonationMySQL extends AbstractMySQL {
                 ranks.remove(primary);
             return updateRanks(siteID, primary, ranks);
         } //Else something went wrong
-        System.out.println("Failed to add rank " + rankID + " from " + siteID);
+        Janet.getLogger().warn("Failed to add rank " + rankID + " from " + siteID);
         return true;
     }
 
@@ -154,7 +154,7 @@ public class DonationMySQL extends AbstractMySQL {
                 ranks.remove(primary);
             return updateRanks(siteID, primary, ranks);
         } //Else something went wrong
-        System.out.println("Failed to remove rank " + rankID + " from " + siteID);
+        Janet.getLogger().warn("Failed to remove rank " + rankID + " from " + siteID);
         return false;
     }
 

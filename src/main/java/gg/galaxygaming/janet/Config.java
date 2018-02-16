@@ -13,7 +13,7 @@ public class Config extends Properties {
         if (!config.exists()) {
             try {
                 if (!config.createNewFile()) {
-                    System.out.println("[WARNING] Failed to create config file");
+                    Janet.getLogger().warn("Failed to create config file.");
                     return;
                 }
             } catch (IOException e) {

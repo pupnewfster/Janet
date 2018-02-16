@@ -41,7 +41,7 @@ public class RestIntegration extends AbstractIntegration {
             if (Utils.legalInt(a))
                 this.applicationForums.put(Integer.parseInt(a), new ArrayList<>());
             else
-                System.out.println("[ERROR] Invalid application forum: " + a);
+                Janet.getLogger().error("Invalid application forum: " + a);
         }
         this.acceptedForums = new ArrayList<>();
         String[] accepted = config.getStringOrDefault("ACCEPTED_FORUMS", "").split(",");
@@ -49,18 +49,18 @@ public class RestIntegration extends AbstractIntegration {
             if (Utils.legalInt(a))
                 this.acceptedForums.add(Integer.parseInt(a));
             else
-                System.out.println("[ERROR] Invalid accepted forum: " + a);
+                Janet.getLogger().error("Invalid accepted forum: " + a);
         }
         this.deniedForums = new ArrayList<>();
         String[] denied = config.getStringOrDefault("DENIED_FORUMS", "").split(",");
         for (String d : denied) {
             if (Utils.legalInt(d))
                 this.deniedForums.add(Integer.parseInt(d));
-            else if (Janet.DEBUG)
-                System.out.println("[ERROR] Invalid denied forum: " + d);
+            else
+                Janet.getLogger().error("Invalid denied forum: " + d);
         }
         if (this.restURL.equals("rest_url") || this.restAPIKey.equals("api_key")) {
-            System.out.println("[ERROR] Failed to load needed configs for Rest Integration");
+            Janet.getLogger().error("Failed to load needed configs for Rest Integration");
             return;
         }
         try {
@@ -138,12 +138,10 @@ public class RestIntegration extends AbstractIntegration {
     }
 
     private void scanApplications() {
-        if (Janet.DEBUG)
-            System.out.println("[DEBUG] Scan started.");
+        Janet.getLogger().info("Application scan started.");
         scanNewApplications();
         checkApplicationStatus();
-        if (Janet.DEBUG)
-            System.out.println("[DEBUG] Scan finished.");
+        Janet.getLogger().info("Application scan finished.");
     }
 
     //TODO: Maybe make this check in a separate thread
@@ -160,8 +158,7 @@ public class RestIntegration extends AbstractIntegration {
                 Integer topicID = topic.getIntegerOrDefault(Jsoner.mintJsonKey("id", null));
                 if (topicID != null && !topics.contains(topicID)) {
                     topics.add(topicID);
-                    if (Janet.DEBUG)
-                        System.out.println("[DEBUG] Topic added: " + topicID);
+                    Janet.getLogger().debug("Topic added: " + topicID);
                 }
             }
             //TODO if there are multiple pages scan next pages also
@@ -179,8 +176,7 @@ public class RestIntegration extends AbstractIntegration {
             for (Integer topicID : topics) {
                 JsonObject topic = sendGET("/forums/topics/" + topicID);
                 if (topic.containsKey("errorCode")) { //Topic was deleted
-                    if (Janet.DEBUG)
-                        System.out.println("[DEBUG] Error Code:" + topic.getStringOrDefault(Jsoner.mintJsonKey("errorMessage", "UNKNOWN")));
+                    Janet.getLogger().debug("Error Code:" + topic.getStringOrDefault(Jsoner.mintJsonKey("errorMessage", "UNKNOWN")));
                     remTopics.add(topicID);
                     continue;
                 }
@@ -189,8 +185,7 @@ public class RestIntegration extends AbstractIntegration {
                 if (fid != forumID) {
                     remTopics.add(topicID); //Can be here because it was moved no matter where it is now
                     if (this.acceptedForums.contains(forumID)) {//Accepted
-                        if (Janet.DEBUG)
-                            System.out.println("[DEBUG] Topic " + topicID + " ACCEPTED.");
+                        Janet.getLogger().debug("Topic " + topicID + " ACCEPTED.");
                         JsonObject post = (JsonObject) topic.get("firstPost");//TODO: maybe move this up if the post info is needed for other things
                         JsonObject member = (JsonObject) post.get("author");
                         String email = member.getString(Jsoner.mintJsonKey("email", null));
@@ -200,18 +195,15 @@ public class RestIntegration extends AbstractIntegration {
                             json.put("topic", topicID);
                             json.put("author", this.janetID);
                             json.put("post", "<p>" + response + "</p>");
-                            if (Janet.DEBUG)
-                                System.out.println("[DEBUG] Post to forums.");
+                            Janet.getLogger().debug("Post to forums.");
                             sendPOST("/forums/posts", json);
                         }
                         //Log some sort of error message
                     } else if (this.deniedForums.contains(forumID)) {//Denied
                         //No denied message, may want to send a debug message
-                        if (Janet.DEBUG)
-                            System.out.println("[DEBUG] Topic " + topicID + " DENIED.");
+                        Janet.getLogger().info("Topic " + topicID + " DENIED.");
                     } else {
-                        if (Janet.DEBUG)
-                            System.out.println("[DEBUG] Topic " + topicID + " moved to " + forumID + '.');
+                        Janet.getLogger().info("[DEBUG] Topic " + topicID + " moved to " + forumID + '.');
                     }
                 }
             }
@@ -222,8 +214,7 @@ public class RestIntegration extends AbstractIntegration {
     private String sendInvite(String email) {
         /*JanetSlack slack = IssueTracker.getSlack();
         InviteResponse response = slack.inviteUser(email);
-        if (IssueTracker.DEBUG)
-            System.out.println("[DEBUG] Response Code: " + response.getMessage());
+        Janet.getLogger().debug("Response Code: " + response.getMessage());
         if (!response.isUseful())
             return null;//Failed
         switch (response) {
