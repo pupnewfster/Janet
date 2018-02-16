@@ -79,13 +79,13 @@ public class DiscordMySQL extends AbstractMySQL {
     private void check(User user) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT website_id FROM discord_verified WHERE discord_id = \"" + user.getId() + '"');
+            ResultSet rs = stmt.executeQuery("SELECT website_id FROM discord_verified WHERE discord_id = " + user.getId());
             ArrayList<Long> discordRanks = new ArrayList<>();
             String siteID = null;
             if (rs.next()) {
                 siteID = rs.getString("website_id");
                 rs.close();
-                rs = stmt.executeQuery("SELECT member_group_id, mgroup_others FROM core_members WHERE member_id = \"" + siteID + '"');
+                rs = stmt.executeQuery("SELECT member_group_id, mgroup_others FROM core_members WHERE member_id = " + siteID);
                 if (rs.next()) {
                     int primary = rs.getInt("member_group_id");
                     String secondary = rs.getString("mgroup_others");

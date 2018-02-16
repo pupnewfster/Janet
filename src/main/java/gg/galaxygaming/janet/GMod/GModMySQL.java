@@ -49,6 +49,14 @@ public class GModMySQL extends AbstractMySQL {
         this.checkThread.start();
     }
 
+    public Properties getGModProperties() {
+        return this.gmodProperties;
+    }
+
+    public String getGModURL() {
+        return this.gmodURL;
+    }
+
     protected void checkAll() {
         ArrayList<String> urls = new ArrayList<>();
         try (BufferedReader in = new BufferedReader(new FileReader(this.urlFile))) {
@@ -118,8 +126,9 @@ public class GModMySQL extends AbstractMySQL {
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
+            return;
         }
-        try (Connection conn = DriverManager.getConnection(this.gmodURL, this.gmodProperties)) {
+        try (Connection conn = DriverManager.getConnection(getGModURL(), getGModProperties())) {
             Statement stmt = conn.createStatement();
             HashMap<String, Rank> serverRanks = new HashMap<>();
             HashSet<String> servers = new HashSet<>();

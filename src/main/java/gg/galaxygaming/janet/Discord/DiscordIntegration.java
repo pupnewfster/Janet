@@ -15,6 +15,7 @@ public class DiscordIntegration extends AbstractIntegration {
     private Server server;
 
     public DiscordIntegration() {
+        super();
         Config config = Janet.getConfig();
         String token = config.getStringOrDefault("DISCORD_TOKEN", "token");
         this.serverID = config.getLongOrDefault("DISCORD_SERVER", -1);

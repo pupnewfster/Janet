@@ -72,7 +72,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
             if (rs.next()) {
                 siteID = rs.getString("website_id");
                 rs.close();
-                rs = stmt.executeQuery("SELECT member_group_id, mgroup_others FROM core_members WHERE member_id = \"" + siteID + '"');
+                rs = stmt.executeQuery("SELECT member_group_id, mgroup_others FROM core_members WHERE member_id = " + siteID);
                 if (rs.next()) {
                     int primary = rs.getInt("member_group_id");
                     String secondary = rs.getString("mgroup_others");

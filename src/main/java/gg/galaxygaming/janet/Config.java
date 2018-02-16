@@ -37,7 +37,7 @@ public class Config extends Properties {
             if (!containsKey("INFO_CHANNEL"))
                 setProperty("INFO_CHANNEL", "info_channel");
 
-            //REST Config Options
+            //Forums
             if (!containsKey("REST_URL"))
                 setProperty("REST_URL", "rest_url");
             if (!containsKey("REST_API_KEY"))
@@ -50,11 +50,12 @@ public class Config extends Properties {
                 setProperty("ACCEPTED_FORUMS", "");
             if (!containsKey("DENIED_FORUMS"))
                 setProperty("DENIED_FORUMS", "");
-
             if (!containsKey("INVALID_EMAIL"))
                 setProperty("INVALID_EMAIL", "Invalid email, contact Senior Staff.");
             if (!containsKey("INVITE_SUCCESS"))
                 setProperty("INVITE_SUCCESS", "Invited to slack.");
+            if (!containsKey("FORUM_MEMBER_ID"))
+                setProperty("FORUM_MEMBER_ID", "-1");
 
             //Discord
             if (!containsKey("DISCORD_TOKEN"))

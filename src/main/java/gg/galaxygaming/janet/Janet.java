@@ -3,20 +3,21 @@ package gg.galaxygaming.janet;
 import gg.galaxygaming.janet.CommandHandler.CommandHandler;
 import gg.galaxygaming.janet.Discord.DiscordIntegration;
 import gg.galaxygaming.janet.Forums.RestIntegration;
+import gg.galaxygaming.janet.Forums.donations.DonationIntegration;
 import gg.galaxygaming.janet.GMod.GModIntegration;
 import gg.galaxygaming.janet.Slack.SlackIntegration;
 import gg.galaxygaming.janet.TeamSpeak.TeamSpeakIntegration;
 
 public class Janet {//TODO: add in proper javadoc explanations for methods
-    //TODO make interfaces for integrations and mysql classes??
     private static Janet INSTANCE;
     public static final boolean DEBUG = true;//TODO replace with a proper logger
     private final Config config;
     private final CommandHandler cmdHandler;
-    private DiscordIntegration discord;
     private TeamSpeakIntegration teamspeak;
-    private GModIntegration gmod;
+    private DonationIntegration donations;
+    private DiscordIntegration discord;
     private SlackIntegration slack;
+    private GModIntegration gmod;
     private RestIntegration rest;
 
     private Janet() {
@@ -28,9 +29,9 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
         this.discord = new DiscordIntegration();
         this.teamspeak = new TeamSpeakIntegration();
         this.gmod = new GModIntegration();
+        this.donations = new DonationIntegration();//THIS has to be after gmod initialization
     }
 
-    //TODO call this method
     public void stop() {
         if (getRestIntegration() != null)
             getRestIntegration().stop();
@@ -46,7 +47,7 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
 
     public static void main(String[] args) {
         new Janet();
-        Runtime.getRuntime().addShutdownHook(new Thread(INSTANCE::stop));//TODO test
+        Runtime.getRuntime().addShutdownHook(new Thread(INSTANCE::stop));
     }
 
     public static Config getConfig() {
@@ -71,6 +72,10 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
 
     public static GModIntegration getGMod() {
         return INSTANCE.gmod;
+    }
+
+    public static DonationIntegration getDonations() {
+        return INSTANCE.donations;
     }
 
     public static CommandHandler getCommandHandler() {

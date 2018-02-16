@@ -17,6 +17,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
     private TeamSpeakListener listener;
 
     public TeamSpeakIntegration() {
+        super();
         Config config = Janet.getConfig();
         String username = config.getStringOrDefault("TEAMSPEAK_USERNAME", "username");
         String password = config.getStringOrDefault("TEAMSPEAK_PASSWORD", "password");
