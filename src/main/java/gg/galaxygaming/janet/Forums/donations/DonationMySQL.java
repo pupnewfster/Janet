@@ -55,6 +55,8 @@ public class DonationMySQL extends AbstractMySQL {
             Statement stmt2 = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM ps2_info");
             while (rs.next()) {
+                if (stop)
+                    break;
                 int points = rs.getInt("points");
                 String server = rs.getString("server");
                 if (points == 0)
@@ -94,6 +96,8 @@ public class DonationMySQL extends AbstractMySQL {
             Statement stmt2 = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM donation_info");
             while (rs.next()) {
+                if (stop)
+                    break;
                 int siteID = rs.getInt("website_id");
                 int rankID = rs.getInt("rank_id");
                 boolean given = rs.getBoolean("given");

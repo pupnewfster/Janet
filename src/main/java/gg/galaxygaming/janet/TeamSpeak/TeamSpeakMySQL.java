@@ -53,8 +53,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
      * Index all the ranks that {@link Janet} can assign.
      */
     private void indexRanks() {
-        try {
-            Connection conn = DriverManager.getConnection(this.url, this.properties);
+        try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT ts_rank_id FROM rank_id_lookup");
             while (rs.next()) {
@@ -63,14 +62,18 @@ public class TeamSpeakMySQL extends AbstractMySQL {
                     this.ranks.add(rank);
             }
             rs.close();
+            stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
         this.ranks.add(Janet.getTeamspeak().getVerifiedID());
     }
 
-    protected void checkAll() {
-        Janet.getTeamspeak().getAsyncApi().getClients().onSuccess(clients -> clients.stream().filter(Client::isRegularClient).forEach(this::check));
+    protected void checkAll() {//TODO: Does this need better stop support added
+        Janet.getTeamspeak().getAsyncApi().getClients().onSuccess(clients -> clients.stream().filter(Client::isRegularClient).forEach(c -> {
+            if (!stop)
+                check(c);
+        }));
     }
 
     /**
@@ -156,11 +159,11 @@ public class TeamSpeakMySQL extends AbstractMySQL {
                         properties.put(ChannelProperty.CPID, Integer.toString(this.userRooms));
                         properties.put(ChannelProperty.CHANNEL_TOPIC, cname);
                         String finalSiteID = siteID;
-                        long finalDiscord = discord;
                         api.createChannel(cname, properties).onSuccess(channelID -> {
                             try (Connection conn2 = DriverManager.getConnection(this.url, this.properties)) {
                                 Statement stmt2 = conn2.createStatement();
-                                stmt2.execute("REPLACE INTO verified_rooms(website_id,discord_room_id,ts_room_id) VALUES(" + finalSiteID + ',' + finalDiscord + ',' + channelID + ')');
+                                stmt2.execute("INSERT INTO verified_rooms(website_id,discord_room_id,ts_room_id) VALUES(" + finalSiteID + ",-1," + channelID +
+                                        ") ON DUPLICATE KEY UPDATE ts_room_id = " + channelID);
                                 stmt2.close();
                             } catch (Exception e) {
                                 e.printStackTrace();

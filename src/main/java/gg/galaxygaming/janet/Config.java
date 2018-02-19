@@ -118,10 +118,6 @@ public class Config extends Properties {
             if (!containsKey("GMOD_DB_NAME"))
                 setProperty("GMOD_DB_NAME", "database");
 
-            //GMod
-            if (!containsKey("GMOD_STEAMID_FILE"))
-                setProperty("GMOD_STEAMID_FILE", "steamidfile");
-
             store(output, null);
         } catch (IOException io) {
             io.printStackTrace();

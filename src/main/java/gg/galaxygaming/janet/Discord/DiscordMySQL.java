@@ -58,8 +58,7 @@ public class DiscordMySQL extends AbstractMySQL {
      * Index all the ranks that {@link Janet} can assign.
      */
     private void indexRanks() {
-        try {
-            Connection conn = DriverManager.getConnection(this.url, this.properties);
+        try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT discord_rank_id FROM rank_id_lookup");
             while (rs.next()) {
@@ -68,6 +67,7 @@ public class DiscordMySQL extends AbstractMySQL {
                     this.ranks.add(rank);
             }
             rs.close();
+            stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -79,9 +79,12 @@ public class DiscordMySQL extends AbstractMySQL {
 
     protected void checkAll() {
         DiscordApi api = Janet.getDiscord().getApi();
-        for (User u : api.getCachedUsers())
+        for (User u : api.getCachedUsers()) {
+            if (stop)
+                break;
             if (!u.isBot() && !u.isYourself())
                 check(u);
+        }
     }
 
     /**
@@ -185,7 +188,6 @@ public class DiscordMySQL extends AbstractMySQL {
                 rs.close();
             }
             if (hasRoom || hadRoom || discord >= 0) {
-                int finalTs = ts;
                 String finalSiteID = siteID;
                 if (hasRoom) {
                     if (!hadRoom || discord < 0) {//Create it for them
@@ -194,7 +196,8 @@ public class DiscordMySQL extends AbstractMySQL {
                         server.getChannelCategoryById(userRooms).ifPresent(c -> new ServerVoiceChannelBuilder(server).setName(finalName).setCategory(c).create().thenAccept(vc -> {
                             try (Connection conn2 = DriverManager.getConnection(this.url, this.properties)) {
                                 Statement stmt2 = conn2.createStatement();
-                                stmt2.execute("REPLACE INTO verified_rooms(website_id,discord_room_id,ts_room_id) VALUES(" + finalSiteID + ',' + vc.getId() + ',' + finalTs + ')');
+                                stmt2.execute("INSERT INTO verified_rooms(website_id,discord_room_id,ts_room_id) VALUES(" + finalSiteID + ',' + vc.getId() + ",-1)" +
+                                        " ON DUPLICATE KEY UPDATE discord_room_id = " + vc.getId());
                                 stmt2.close();
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -209,6 +212,7 @@ public class DiscordMySQL extends AbstractMySQL {
                         }));
                     }
                 } else {//hadRoom, Delete it because they no longer should have it
+                    int finalTs = ts;
                     server.getVoiceChannelById(discord).ifPresent(vc -> vc.delete().thenAccept(v -> {
                         //If successfully deleted remove it from the table
                         try (Connection conn2 = DriverManager.getConnection(this.url, this.properties)) {

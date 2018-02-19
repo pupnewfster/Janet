@@ -7,8 +7,6 @@ import gg.galaxygaming.janet.api.AbstractMySQL;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.*;
-import java.net.URL;
 import java.sql.*;
 import java.util.*;
 
@@ -17,7 +15,6 @@ import java.util.*;
  * interactions with the tables pertaining to GMod.
  */
 public class GModMySQL extends AbstractMySQL {
-    private final File urlFile;
     private String gmodURL;
     private Properties gmodProperties;
 
@@ -30,9 +27,8 @@ public class GModMySQL extends AbstractMySQL {
         String gmodName = config.getStringOrDefault("GMOD_DB_NAME", "database");
         String gmodUser = config.getStringOrDefault("GMOD_DB_USER", "user");
         String gmodPass = config.getStringOrDefault("GMOD_DB_PASSWORD", "password");
-        this.urlFile = new File(config.getStringOrDefault("GMOD_STEAMID_FILE", "steamidfile"));
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || gmodPass.equals("password") ||
-                gmodUser.equals("user") || gmodName.equals("database") || !this.urlFile.exists()) {
+                gmodUser.equals("user") || gmodName.equals("database")) {
             Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (GMod)");
             return;
         }
@@ -71,52 +67,22 @@ public class GModMySQL extends AbstractMySQL {
     }
 
     protected void checkAll() {
-        List<String> urls = new ArrayList<>();
-        try (BufferedReader in = new BufferedReader(new FileReader(this.urlFile))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                line = line.trim();
-                if (!line.equals(""))
-                    urls.add(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        for (String u : urls)
-            try {
-                URL url = new URL(u);
-                StringBuilder response;
-                try (BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()))) {
-                    String inputLine;
-                    response = new StringBuilder();
-                    while ((inputLine = in.readLine()) != null)
-                        response.append(inputLine);
-                }
-                String r = response.toString().trim();
-                if (!r.isEmpty()) {
-                    String[] steamids = r.substring(0, r.length() - 1).split(";");
-                    for (String steamid : steamids)
-                        if (!steamid.isEmpty())
-                            check(steamid);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-    }
-
-    /**
-     * Checks to see if a the user with the give steam64 id is authenticated and if so give them their ranks.
-     * @param steamid The steam64 id to check.
-     */
-    private void check(@Nonnull String steamid) {
-        List<Rank> gmodRanks = new ArrayList<>();
+        Set<String> servers = getServers(); //Server list changes during a current check do not matter, just cache the value
+        if (servers.isEmpty())
+            return;
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT member_group_id, mgroup_others FROM core_members WHERE steamid = \"" + steamid + '"');
-            if (rs.next()) {
+            Statement stmt2 = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT member_group_id, mgroup_others, steamid FROM core_members WHERE steamid IS NOT NULL");
+            while (rs.next()) {
+                if (stop)
+                    break;
+                List<Rank> gmodRanks = new ArrayList<>();
+                String steamid = rs.getString("steamid");
+                if (steamid.isEmpty() || steamid.equals("0"))
+                    continue;
                 int primary = rs.getInt("member_group_id");
                 String secondary = rs.getString("mgroup_others");
-                rs.close();
                 String[] secondaries = secondary.split(",");
                 StringBuilder sbGroups = new StringBuilder(Integer.toString(primary));
                 int gCount = 1;
@@ -127,28 +93,93 @@ public class GModMySQL extends AbstractMySQL {
                     }
                 String groups = sbGroups.toString().trim();
                 String query = gCount == 1 ? "site_rank_id = " + groups : "site_rank_id IN (" + groups + ')';
-                rs = stmt.executeQuery("SELECT gmod_rank_id, rank_power FROM rank_id_lookup WHERE " + query);
-                while (rs.next()) {
-                    String id = rs.getString("gmod_rank_id");
-                    if (id.equals("NULL"))
-                        continue;
-                    gmodRanks.add(new Rank(id, rs.getInt("rank_power")));
+                ResultSet rs2 = stmt2.executeQuery("SELECT gmod_rank_id, rank_power FROM rank_id_lookup WHERE " + query);
+                while (rs2.next()) {
+                    String id = rs2.getString("gmod_rank_id");
+                    if (id != null)
+                        gmodRanks.add(new Rank(id, rs2.getInt("rank_power")));
                 }
-                rs.close();
-            } else {//No one has that steam id linked with their account
-                rs.close();
-                stmt.close();
-                return;
+                rs2.close();
+                check(steamid, gmodRanks, servers);
+            }
+            rs.close();
+            stmt.close();
+            stmt2.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Gives the user with the given steam64 id any ranks that they have on the GMod servers.
+     * @param steamid   The steam64 id to check.
+     * @param gmodRanks The ranks to set.
+     * @param servers   The servers we are tracking.
+     */
+    private void check(@Nonnull String steamid, @Nonnull List<Rank> gmodRanks, @Nonnull Set<String> servers) {
+        Map<String, Rank> serverRanks = new HashMap<>();
+        for (Rank rank : gmodRanks) {
+            String rName = rank.getID();
+            if (rName.contains("_")) {
+                String[] rankInfo = rName.split("_");
+                String server = rankInfo[0] + "_rank", r = rankInfo[1];
+                if (!serverRanks.containsKey(server) || rank.getPower() > serverRanks.get(server).getPower())
+                    serverRanks.put(server, new Rank(r, rank.getPower()));
+            } else
+                for (String server : servers)
+                    if (!serverRanks.containsKey(server) || rank.getPower() > serverRanks.get(server).getPower())
+                        serverRanks.put(server, rank);
+        }
+        try (Connection conn = DriverManager.getConnection(this.gmodURL, this.gmodProperties)) {//Write to a database so janet gmod can read them
+            Statement stmt = conn.createStatement();
+            boolean update = false;
+            ResultSet rs = stmt.executeQuery("SELECT * FROM gmod_ranks WHERE steamid = \"" + steamid + '"');
+            if (rs.next()) {
+                if (serverRanks.isEmpty())
+                    stmt.execute("DELETE FROM gmod_ranks WHERE steamid = \"" + steamid + '"');
+                else
+                    for (String server : servers)
+                        if (!serverRanks.containsKey(server)) {//If one of the values is not already set, then keep the old value for it
+                            serverRanks.put(server, new Rank(rs.getString(server), 0));//Power may not be 0 but it does not matter. We are passed where that is checked
+                            update = true;
+                        } else if (!serverRanks.get(server).getID().equals(rs.getString(server)))
+                            update = true;
+            } else if (!serverRanks.isEmpty())
+                update = true;
+            rs.close();
+            if (update) {
+                StringBuilder columns = new StringBuilder("steamid");
+                StringBuilder values = new StringBuilder('"' + steamid + '"');
+                StringBuilder valuesUpdate = new StringBuilder();
+                for (String server : servers) {
+                    columns.append(',').append(server);
+                    if (serverRanks.containsKey(server)) {
+                        Rank value = serverRanks.get(server);
+                        values.append(",\"").append(value.getID()).append('"');
+                        valuesUpdate.append(',').append(server).append(" = \"").append(value.getID()).append('"');
+                    } else {
+                        values.append(",\"NULL\"");
+                        valuesUpdate.append(',').append(server).append(" = \"NULL\"");
+                    }
+                }
+                stmt.execute("INSERT INTO gmod_ranks(" + columns.toString() + ") VALUES(" + values.toString() + ") ON DUPLICATE KEY UPDATE "
+                        + valuesUpdate.toString().substring(1));
             }
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
-            return;
         }
+    }
+
+    /**
+     * Gets all the GMod servers that we know the ranks of.
+     * @return A {@link Set} containing all the GMod servers that we know the ranks of.
+     */
+    @Nonnull
+    private Set<String> getServers() {
+        Set<String> servers = new HashSet<>();
         try (Connection conn = DriverManager.getConnection(this.gmodURL, this.gmodProperties)) {
             Statement stmt = conn.createStatement();
-            Map<String, Rank> serverRanks = new HashMap<>();
-            Set<String> servers = new HashSet<>();
             ResultSet rs = stmt.executeQuery("SELECT * FROM gmod_ranks");
             ResultSetMetaData meta = rs.getMetaData();
             int count = meta.getColumnCount();
@@ -158,56 +189,11 @@ public class GModMySQL extends AbstractMySQL {
                     servers.add(name);
             }
             rs.close();
-            for (Rank rank : gmodRanks) {
-                String rName = rank.getID();
-                if (rName.contains("_")) {
-                    String[] rankInfo = rName.split("_");
-                    String server = rankInfo[0] + "_rank", r = rankInfo[1];
-                    if (serverRanks.containsKey(server)) {
-                        if (rank.getPower() > serverRanks.get(server).getPower())
-                            serverRanks.put(server, new Rank(r, rank.getPower()));
-                    } else
-                        serverRanks.put(server, new Rank(r, rank.getPower()));
-                } else
-                    for (String server : servers)
-                        if (serverRanks.containsKey(server)) {
-                            if (rank.getPower() > serverRanks.get(server).getPower())
-                                serverRanks.put(server, rank);
-                        } else
-                            serverRanks.put(server, rank);
-            }
-            //Write to a database so janet gmod can read them
-            boolean update = false;
-            rs = stmt.executeQuery("SELECT * FROM gmod_ranks WHERE steamid = \"" + steamid + '"');
-            if (rs.next()) {
-                if (serverRanks.isEmpty())
-                    stmt.execute("DELETE FROM gmod_ranks WHERE steamid = \"" + steamid + '"');
-                else //If one of the values is not already set, then keep the old value for it
-                    for (String server : servers)
-                        if (!serverRanks.containsKey(server)) {
-                            serverRanks.put(server, new Rank(rs.getString(server), 0));//Power may not be 0 but it does not matter. We are passed where that is checked
-                            update = true;
-                        }
-            } else
-                update = true;
-            rs.close();
-            if (update) {
-                StringBuilder columns = new StringBuilder("steamid");
-                StringBuilder values = new StringBuilder('"' + steamid + '"');
-                for (String server : servers) {
-                    Rank value = serverRanks.get(server);
-                    columns.append(',').append(server);
-                    if (value == null)
-                        values.append(",\"NULL\"");
-                    else
-                        values.append(",\"").append(value.getID()).append('"');
-                }
-                stmt.execute("REPLACE INTO gmod_ranks(" + columns.toString() + ") VALUES(" + values.toString() + ')');
-            }
             stmt.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return servers;
     }
 
     /**

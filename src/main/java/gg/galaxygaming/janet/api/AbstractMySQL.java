@@ -13,6 +13,7 @@ public abstract class AbstractMySQL implements MySQL {
     private final long TIME = 2 * 60 * 1000;
     protected final Properties properties;
     protected String url, service;
+    protected boolean stop;
 
     /**
      * Runs a {@link #checkAll()} ever five minutes.
@@ -44,6 +45,7 @@ public abstract class AbstractMySQL implements MySQL {
     protected abstract void checkAll();
 
     public void stop() {
+        this.stop = true;
         try {
             this.checkThread.interrupt();
         } catch (Exception ignored) {
