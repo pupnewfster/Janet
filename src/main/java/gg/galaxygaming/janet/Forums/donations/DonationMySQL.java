@@ -7,6 +7,7 @@ import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
 import gg.galaxygaming.janet.api.AbstractMySQL;
 
+import javax.annotation.Nonnull;
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
@@ -46,6 +47,9 @@ public class DonationMySQL extends AbstractMySQL {
      * Checks PointShop 2 donations.
      */
     private void checkPS2() {
+        GModMySQL gmodSQL = (GModMySQL) Janet.getGMod().getMySQL();
+        if (gmodSQL.getGModURL() == null || gmodSQL.getGModProperties() == null)
+            return;
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             Statement stmt2 = conn.createStatement();
@@ -64,8 +68,7 @@ public class DonationMySQL extends AbstractMySQL {
                 if (steamid == null)
                     continue;
                 boolean premium = rs.getBoolean("is_premium");
-                GModMySQL gmodsql = (GModMySQL) Janet.getGMod().getMySQL();
-                try (Connection conn2 = DriverManager.getConnection(gmodsql.getGModURL(), gmodsql.getGModProperties())) {
+                try (Connection conn2 = DriverManager.getConnection(gmodSQL.getGModURL(), gmodSQL.getGModProperties())) {
                     Statement stmt3 = conn2.createStatement();
                     stmt3.execute("INSERT INTO donated_points (steamid,points,is_premium,server) VALUES(" + steamid + ',' + points + ',' + premium + ",\"" + server + "\")");
                     stmt3.close();
@@ -126,12 +129,12 @@ public class DonationMySQL extends AbstractMySQL {
      * @return True if rank was successfully added, false if something went wrong.
      */
     private boolean addRank(int siteID, int rankID) {
-        ArrayList<Integer> ranks = getRanks(siteID);
+        List<Integer> ranks = getRanks(siteID);
         if (ranks.contains(rankID))
             return true;
         int oldPrimary = ranks.get(0);
         ranks.add(rankID);//Add the rank to the list of ranks
-        HashMap<Integer, Integer> primaries = getPrimaries(ranks);
+        Map<Integer, Integer> primaries = getPrimaries(ranks);
         if (primaries.isEmpty())
             return false; //Invalid new rank
         if (ranks.contains(oldPrimary))
@@ -160,10 +163,10 @@ public class DonationMySQL extends AbstractMySQL {
      * @return True if rank was successfully removed, false if something went wrong.
      */
     private boolean removeRank(int siteID, int rankID) {
-        ArrayList<Integer> ranks = getRanks(siteID);
+        List<Integer> ranks = getRanks(siteID);
         if (!ranks.contains(rankID))
             return true;
-        HashMap<Integer, Integer> primaries = getPrimaries(ranks);
+        Map<Integer, Integer> primaries = getPrimaries(ranks);
         ranks.remove(Integer.valueOf(rankID));
         if (ranks.contains(primaries.get(rankID)))
             ranks.remove(primaries.get(rankID)); //Remove old primary
@@ -185,9 +188,9 @@ public class DonationMySQL extends AbstractMySQL {
      * @param ranks The list of forum rank ids to calculate the highest rank from.
      * @return The id of the highest rank in the input list.
      */
-    private int getHighest(ArrayList<Integer> ranks) {
+    private int getHighest(@Nonnull List<Integer> ranks) {
         int highest = 0, highPower = 0;
-        HashMap<Integer, Rank> rankPower = getRankPower(ranks);
+        Map<Integer, Rank> rankPower = getRankPower(ranks);
         for (Map.Entry<Integer, Rank> entry : rankPower.entrySet()) {
             int cur = entry.getValue().getPower();
             if (cur > highPower) {
@@ -205,7 +208,7 @@ public class DonationMySQL extends AbstractMySQL {
      * @param secondaries The list of secondary ranks of the member.
      * @return True if it successfully updated the ranks, false if something went wrong.
      */
-    private boolean updateRanks(int siteID, int primary, ArrayList<Integer> secondaries) {
+    private boolean updateRanks(int siteID, int primary, @Nonnull List<Integer> secondaries) {
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             StringBuilder sbGroups = new StringBuilder();
@@ -229,8 +232,9 @@ public class DonationMySQL extends AbstractMySQL {
      * @param siteID The id of the member to get the ranks of.
      * @return The list of all ranks the given member has.
      */
-    private ArrayList<Integer> getRanks(int siteID) {
-        ArrayList<Integer> ranks = new ArrayList<>();
+    @Nonnull
+    private List<Integer> getRanks(int siteID) {
+        List<Integer> ranks = new ArrayList<>();
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT member_group_id, mgroup_others FROM core_members WHERE member_id = " + siteID);
@@ -256,8 +260,9 @@ public class DonationMySQL extends AbstractMySQL {
      * @param ranks The list of ranks to get the primary ids of.
      * @return The map of rank ids to id of the primary rank.
      */
-    private HashMap<Integer, Integer> getPrimaries(List<Integer> ranks) {
-        HashMap<Integer, Integer> rInfo = new HashMap<>();
+    @Nonnull
+    private Map<Integer, Integer> getPrimaries(@Nonnull List<Integer> ranks) {
+        Map<Integer, Integer> rInfo = new HashMap<>();
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             for (int rank : ranks) {
@@ -280,8 +285,9 @@ public class DonationMySQL extends AbstractMySQL {
      * @param ranks The list of ranks to get the power values of.
      * @return The map of rank ids to the power associated with that rank
      */
-    private HashMap<Integer, Rank> getRankPower(List<Integer> ranks) {
-        HashMap<Integer, Rank> rInfo = new HashMap<>();
+    @Nonnull
+    private Map<Integer, Rank> getRankPower(@Nonnull List<Integer> ranks) {
+        Map<Integer, Rank> rInfo = new HashMap<>();
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             for (int rank : ranks) {

@@ -7,11 +7,13 @@ import de.btobastian.javacord.entities.channels.TextChannel;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Slack.SlackUser;
 
+import javax.annotation.Nonnull;
+
 /**
  * Stores general information about who sent a {@link gg.galaxygaming.janet.api.Cmd}.
  */
-public class CommandSender {
-    private CommandSource source;
+public final class CommandSender {
+    private final CommandSource source;
     private SlackUser slackUser;
     private Client tsClient;
     private User discordUser;
@@ -114,7 +116,7 @@ public class CommandSender {
     }
 
     /**
-     * Gets the Channel ID of the slack channel the message was sent in.
+     * Gets the Channel ID of the Slack channel the message was sent in.
      * @return The Slack Channel ID.
      */
     public String getChannel() {
@@ -125,7 +127,7 @@ public class CommandSender {
      * Sends a message to the {@link CommandSender}.
      * @param message The message to send.
      */
-    public void sendMessage(String message) {
+    public void sendMessage(@Nonnull String message) {
         switch (this.source) {
             case Slack:
                 Janet.getSlack().sendMessage(message, this.channel);
@@ -134,7 +136,7 @@ public class CommandSender {
                 Janet.getLogger().info(message);
                 break;
             case TeamSpeak:
-                Janet.getTeamspeak().getAsyncApi().sendPrivateMessage(getTeamSpeakClient().getId(), message);
+                Janet.getTeamspeak().getAsyncApi().sendPrivateMessage(this.tsClient.getId(), message);
                 break;
             case Discord:
                 this.dChannel.sendMessage(message);

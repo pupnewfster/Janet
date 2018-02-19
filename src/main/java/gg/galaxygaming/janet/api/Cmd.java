@@ -4,6 +4,8 @@ import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.CommandSource;
 import gg.galaxygaming.janet.CommandHandler.Rank;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -16,30 +18,34 @@ public interface Cmd {//TODO should this be moved to the api package?
      * @param args A List of the arguments passed to this {@link Cmd}.
      * @param info The {@link CommandSender} that performed this {@link Cmd}.
      */
-    void performCommand(String[] args, CommandSender info);
+    void performCommand(String[] args, @Nonnull CommandSender info);
 
     /**
      * Retrieves help documentation for this {@link Cmd}. This shows up in when using {@link gg.galaxygaming.janet.CommandHandler.Commands.CmdHelp}.
      * @return The help documentation for this {@link Cmd}.
      */
+    @Nonnull
     String helpDoc();
 
     /**
      * Retrieves the proper usage for this {@link Cmd}. This shows up in when using {@link gg.galaxygaming.janet.CommandHandler.Commands.CmdHelp}.
      * @return The proper usage for this {@link Cmd}.
      */
+    @Nonnull
     String getUsage();//TODO: Improve and add a way to show examples
 
     /**
      * Retrieves the proper Name for this {@link Cmd}.
      * @return The proper Name for this {@link Cmd}.
      */
+    @Nonnull
     String getName();
 
     /**
      * Retrieves a {@link List} of all supported aliases, or null if there are no aliases for this {@link Cmd}
      * @return A {@link List} of all supported aliases for this {@link Cmd}, or null if there are no aliases.
      */
+    @Nullable
     default List<String> getAliases() {
         return null;
     }
@@ -48,12 +54,13 @@ public interface Cmd {//TODO should this be moved to the api package?
      * Retrieves a {@link List} of all supported {@link CommandSource}s, or null if it the {@link Cmd} supports all {@link CommandSource}s.
      * @return A {@link List} composed of {@link CommandSource}, or null if it supports all sources.
      */
+    @Nullable
     default List<CommandSource> supportedSources() {
         return null;
     }
 
     /**
-     * Retrieves the minimum {@link Rank} required to perform this command.
+     * Retrieves the minimum {@link Rank} required to perform this command. Defaults to {@link Rank#GUEST}.
      * @return The required {@link Rank} to use this command.
      */
     default Rank getRequiredRank() {

@@ -1,5 +1,7 @@
 package gg.galaxygaming.janet.CommandHandler;
 
+import javax.annotation.Nonnull;
+
 /**
  * An enum representing the {@link Rank} structure of our community.
  */
@@ -9,7 +11,7 @@ public enum Rank {
      * <p>
      * This includes the Owner, Executive Director, and Head Developer.
      */
-    EXECSTAFF("Executive Staff", 12),
+    EXECUTIVE_STAFF("Executive Staff", 12),
     /**
      * {@link Rank} representing all the Directors of our servers.
      */
@@ -25,7 +27,7 @@ public enum Rank {
     /**
      * {@link Rank} representing all Developers.
      */
-    DEV("Dev", 8),
+    DEV("Developer", 8),
     /**
      * {@link Rank} representing all the Admins of our servers.
      */
@@ -63,8 +65,8 @@ public enum Rank {
      */
     BANNED("Banned", -1);
 
-    private String name;
-    private int power;
+    private final String name;
+    private final int power;
 
     Rank(String name, int power) {
         this.name = name;
@@ -104,7 +106,7 @@ public enum Rank {
      * @param rank The {@link Rank} to check.
      * @return True if this {@link Rank}'s power is the same or higher than the given {@link Rank}'s power.
      */
-    public boolean hasRank(Rank rank) {
+    public boolean hasRank(@Nonnull Rank rank) {
         return this.power >= rank.power;
     }
 

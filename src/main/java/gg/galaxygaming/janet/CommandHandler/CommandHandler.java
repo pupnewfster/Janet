@@ -3,6 +3,7 @@ package gg.galaxygaming.janet.CommandHandler;
 import gg.galaxygaming.janet.api.Cmd;
 import org.reflections.Reflections;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -10,8 +11,8 @@ import java.util.Set;
 /**
  * Handles all the commands that {@link gg.galaxygaming.janet.Janet} implements.
  */
-public class CommandHandler {
-    private final ArrayList<Cmd> cmds = new ArrayList<>();
+public final class CommandHandler {
+    private final List<Cmd> cmds = new ArrayList<>();
 
     public CommandHandler(String path) {
         Reflections reflections = new Reflections(path);
@@ -19,7 +20,7 @@ public class CommandHandler {
         subTypes.forEach(c -> loadCommand(c.getSimpleName(), path + '.'));
     }
 
-    private void loadCommand(String name, String pkg) {
+    private void loadCommand(@Nonnull String name, @Nonnull String pkg) {
         try {
             Cmd command = (Cmd) Cmd.class.getClassLoader().loadClass(pkg + name).newInstance();
             if (command != null)
@@ -34,9 +35,7 @@ public class CommandHandler {
      * @param sender  The {@link CommandSender} trying to perform a {@link Cmd}.
      * @return True if a {@link Cmd} was found and successfully run, false if no {@link Cmd} was found or the sender does not have permission to run the {@link Cmd}.
      */
-    public boolean handleCommand(String message, CommandSender sender) {
-        if (sender == null)
-            return false;
+    public boolean handleCommand(@Nonnull String message, @Nonnull CommandSender sender) {
         message = message.trim().replaceAll("\\s\\s+", " ");//Replace all multiple spaces with a single space
         if (message.startsWith("!"))
             message = message.replaceFirst("!", "");
@@ -76,10 +75,10 @@ public class CommandHandler {
      * @param sender The {@link CommandSender} to retrieve the help list for.
      * @return The complete help list of commands that {@link CommandSender} can perform.
      */
-    public ArrayList<String> getHelpList(CommandSender sender) {
-        ArrayList<String> help = new ArrayList<>();
-        this.cmds.stream().filter(cmd -> cmd.getName() != null && cmd.getUsage() != null && cmd.helpDoc() != null &&
-                sender.getRank().hasRank(cmd.getRequiredRank())).forEachOrdered(cmd -> {
+    @Nonnull
+    public List<String> getHelpList(@Nonnull CommandSender sender) {
+        List<String> help = new ArrayList<>();
+        this.cmds.stream().filter(cmd -> sender.getRank().hasRank(cmd.getRequiredRank())).forEachOrdered(cmd -> {
             List<CommandSource> sources = cmd.supportedSources();
             if (sources == null || sources.contains(sender.getSource()))
                 help.add(cmd.getUsage() + " ~ " + cmd.helpDoc());

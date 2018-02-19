@@ -7,12 +7,13 @@ import gg.galaxygaming.janet.CommandHandler.CommandSource;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.api.Cmd;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 
 public class CmdDnd implements Cmd {
     @Override
-    public void performCommand(String[] args, CommandSender sender) {
+    public void performCommand(String[] args, @Nonnull CommandSender sender) {
         int dnd = Janet.getTeamspeak().getDndID();
         TS3ApiAsync api = Janet.getTeamspeak().getAsyncApi();
         Client c = sender.getTeamSpeakClient();
@@ -30,16 +31,19 @@ public class CmdDnd implements Cmd {
     }
 
     @Override
+    @Nonnull
     public String helpDoc() {
         return "Toggles do not disturb.";
     }
 
     @Override
+    @Nonnull
     public String getUsage() {
         return "!dnd";
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return "DND";
     }

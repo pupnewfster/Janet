@@ -10,10 +10,12 @@ import gg.galaxygaming.janet.TeamSpeak.TeamSpeakIntegration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nonnull;
+
 /**
  * The main class.
  */
-public class Janet {//TODO: add @NotNull annotation in places?
+public class Janet {
     private static Janet INSTANCE;
     private final Logger logger;//TODO add printStackTract to logger?
     private final Config config;
@@ -24,9 +26,8 @@ public class Janet {//TODO: add @NotNull annotation in places?
     private SlackIntegration slack;
     private GModIntegration gmod;
     private RestIntegration rest;
-    //TODO: convert some arraylists to lists
 
-    private Janet() {
+    private Janet() {//TODO Throw exceptions if something failed to initialize, and then add @Nullable to the get methods
         INSTANCE = this;
         this.logger = LogManager.getLogger("Janet");
         this.config = new Config();
@@ -64,6 +65,7 @@ public class Janet {//TODO: add @NotNull annotation in places?
      * Retrieves the {@link Config}.
      * @return The {@link Config}.
      */
+    @Nonnull
     public static Config getConfig() {
         return INSTANCE.config;
     }
@@ -120,6 +122,7 @@ public class Janet {//TODO: add @NotNull annotation in places?
      * Retrieves the {@link CommandHandler}.
      * @return The {@link CommandHandler}.
      */
+    @Nonnull
     public static CommandHandler getCommandHandler() {
         return INSTANCE.cmdHandler;
     }
@@ -128,6 +131,7 @@ public class Janet {//TODO: add @NotNull annotation in places?
      * Retrieves the {@link Logger}.
      * @return The {@link Logger}.
      */
+    @Nonnull
     public static Logger getLogger() {
         return INSTANCE.logger;
     }
@@ -136,6 +140,7 @@ public class Janet {//TODO: add @NotNull annotation in places?
      * Retrieves the nonstatic instance of {@link Janet}.
      * @return The nonstatic instance of {@link Janet}.
      */
+    @Nonnull
     public static Janet getInstance() {
         return INSTANCE;
     }

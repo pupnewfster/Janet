@@ -22,11 +22,9 @@ import java.util.*;
 public class RestIntegration extends AbstractIntegration {//TODO: JavaDoc this when writing autopromote
     private final String restURL;
     private final String restAPIKey;
-    private final String invalidEmail;
-    private final String inviteSuccess;
-    private final HashMap<Integer, ArrayList<Integer>> applicationForums;
-    private final ArrayList<Integer> acceptedForums;
-    private final ArrayList<Integer> deniedForums;
+    private final Map<Integer, ArrayList<Integer>> applicationForums;
+    private final List<Integer> acceptedForums;
+    private final List<Integer> deniedForums;
     private final int janetID;
     private Thread scan;
     private String auth = "";
@@ -36,8 +34,6 @@ public class RestIntegration extends AbstractIntegration {//TODO: JavaDoc this w
         this.restURL = config.getStringOrDefault("REST_URL", "rest_url");
         this.restAPIKey = config.getStringOrDefault("REST_API_KEY", "api_key");
         this.janetID = config.getIntegerOrDefault("JANET_FORUM_ID", 0);
-        this.invalidEmail = config.getStringOrDefault("INVALID_EMAIL", "Invalid email, contact Senior Staff.");
-        this.inviteSuccess = config.getStringOrDefault("INVITE_SUCCESS", "Invited to slack.");
         this.applicationForums = new HashMap<>();
         String[] application = config.getStringOrDefault("APPLICATION_FORUMS", "").split(",");
         for (String a : application) {
@@ -176,7 +172,7 @@ public class RestIntegration extends AbstractIntegration {//TODO: JavaDoc this w
         for (Map.Entry<Integer, ArrayList<Integer>> forumInfo : appForums) {
             int fid = forumInfo.getKey();
             ArrayList<Integer> topics = forumInfo.getValue();
-            ArrayList<Integer> remTopics = new ArrayList<>();
+            List<Integer> remTopics = new ArrayList<>();
             for (Integer topicID : topics) {
                 JsonObject topic = sendGET("/forums/topics/" + topicID);
                 if (topic.containsKey("errorCode")) { //Topic was deleted
@@ -216,22 +212,7 @@ public class RestIntegration extends AbstractIntegration {//TODO: JavaDoc this w
     }
 
     private String sendInvite(String email) {
-        /*JanetSlack slack = IssueTracker.getSlack();
-        InviteResponse response = slack.inviteUser(email);
-        Janet.getLogger().debug("Response Code: " + response.getMessage());
-        if (!response.isUseful())
-            return null;//Failed
-        switch (response) {
-            case USER_DISABLED:
-                //TODO: Send a message to a channel to inform people the account has to be reactivated
-                return null;
-            case INVALID_EMAIL:
-                return this.invalidEmail;
-            case SUCCESS:
-                return this.inviteSuccess;
-            default://Something went wrong
-                return null;
-        }*/
+        //TODO remove this method and change what checkApplicationStatus does
         return null;
     }
 }

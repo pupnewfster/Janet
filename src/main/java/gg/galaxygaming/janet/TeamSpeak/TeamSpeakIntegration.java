@@ -8,6 +8,8 @@ import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.api.AbstractIntegration;
 
+import javax.annotation.Nonnull;
+
 /**
  * An implementation of {@link gg.galaxygaming.janet.api.Integration} to connect to the TeamSpeak server.
  */
@@ -46,7 +48,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
         login(username, password);
     }
 
-    private void login(String username, String password) {
+    private void login(@Nonnull String username, @Nonnull String password) {
         getAsyncApi().login(username, password).onSuccess(loggedIn -> {
             if (loggedIn)
                 selectServer();
@@ -120,6 +122,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
      * Retrieves the name that will be used to check if a room should be automatically generated.
      * @return The name that will be used to check if a room should be automatically generated.
      */
+    @Nonnull
     public String getRoomCreatorName() {
         return this.roomCreatorName;
     }
@@ -146,7 +149,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
      * This also sends them a message every time they join so that they can message {@link gg.galaxygaming.janet.Janet} commands.
      * @param c The {@link Client} to check the verification status of.
      */
-    public void checkVerification(Client c) {
+    public void checkVerification(@Nonnull Client c) {
         getAsyncApi().sendPrivateMessage(c.getId(), joinMessage).onSuccess(sent -> {
             if (sent) {
                 int[] serverGroups = c.getServerGroups();

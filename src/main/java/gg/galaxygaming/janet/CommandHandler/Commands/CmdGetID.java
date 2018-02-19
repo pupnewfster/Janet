@@ -4,12 +4,13 @@ import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.CommandSource;
 import gg.galaxygaming.janet.api.Cmd;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
 
 public class CmdGetID implements Cmd {
     @Override
-    public void performCommand(String[] args, CommandSender sender) {
+    public void performCommand(String[] args, @Nonnull CommandSender sender) {
         if (sender.getSource().equals(CommandSource.TeamSpeak))
             sender.sendMessage(sender.getTeamSpeakClient().getUniqueIdentifier());
         else if (sender.getSource().equals(CommandSource.Discord)) {
@@ -21,23 +22,21 @@ public class CmdGetID implements Cmd {
     }
 
     @Override
+    @Nonnull
     public String helpDoc() {
         return "Returns your discord ID.";
     }
 
     @Override
+    @Nonnull
     public String getUsage() {
         return "!getid";
     }
 
     @Override
+    @Nonnull
     public String getName() {
         return "GetID";
-    }
-
-    @Override
-    public List<String> getAliases() {
-        return Arrays.asList("getdiscordid", "discordid");
     }
 
     @Override

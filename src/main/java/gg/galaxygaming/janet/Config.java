@@ -1,5 +1,6 @@
 package gg.galaxygaming.janet;
 
+import javax.annotation.Nonnull;
 import java.io.*;
 import java.util.Properties;
 
@@ -52,10 +53,6 @@ public class Config extends Properties {
                 setProperty("ACCEPTED_FORUMS", "");
             if (!containsKey("DENIED_FORUMS"))
                 setProperty("DENIED_FORUMS", "");
-            if (!containsKey("INVALID_EMAIL"))
-                setProperty("INVALID_EMAIL", "Invalid email, contact Senior Staff.");
-            if (!containsKey("INVITE_SUCCESS"))
-                setProperty("INVITE_SUCCESS", "Invited to slack.");
             if (!containsKey("FORUM_MEMBER_ID"))
                 setProperty("FORUM_MEMBER_ID", "-1");
 
@@ -136,7 +133,7 @@ public class Config extends Properties {
      * @param key The key to search the config for.
      * @return The value in the config for the specified key.
      */
-    public String getString(String key) {
+    public String getString(@Nonnull String key) {
         return getProperty(key);
     }
 
@@ -146,7 +143,7 @@ public class Config extends Properties {
      * @param defaultValue The value to return if the key is not found in the config.
      * @return The value in the config for the specified key, or returns the given value if the key is not found
      */
-    public String getStringOrDefault(String key, String defaultValue) {
+    public String getStringOrDefault(@Nonnull String key, String defaultValue) {
         return getProperty(key, defaultValue);
     }
 
@@ -155,7 +152,7 @@ public class Config extends Properties {
      * @param key The key to search the config for.
      * @return The value in the config for the specified key.
      */
-    public int getInteger(String key) {
+    public int getInteger(@Nonnull String key) {
         String value = getProperty(key);
         try {
             return Integer.valueOf(value);
@@ -170,7 +167,7 @@ public class Config extends Properties {
      * @param defaultValue The value to return if the key is not found in the config.
      * @return The value in the config for the specified key.
      */
-    public int getIntegerOrDefault(String key, int defaultValue) {
+    public int getIntegerOrDefault(@Nonnull String key, int defaultValue) {
         String value = getProperty(key);
         try {
             return Integer.valueOf(value);
@@ -184,7 +181,7 @@ public class Config extends Properties {
      * @param key The key to search the config for.
      * @return The value in the config for the specified key.
      */
-    public long getLong(String key) {
+    public long getLong(@Nonnull String key) {
         String value = getProperty(key);
         try {
             return Long.valueOf(value);
@@ -199,7 +196,7 @@ public class Config extends Properties {
      * @param defaultValue The value to return if the key is not found in the config.
      * @return The value in the config for the specified key.
      */
-    public long getLongOrDefault(String key, long defaultValue) {
+    public long getLongOrDefault(@Nonnull String key, long defaultValue) {
         String value = getProperty(key);
         try {
             return Long.valueOf(value);

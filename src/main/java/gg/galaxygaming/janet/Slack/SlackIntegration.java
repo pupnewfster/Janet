@@ -10,11 +10,14 @@ import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.api.AbstractIntegration;
 
+import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,7 +27,7 @@ import java.util.regex.Pattern;
 public class SlackIntegration extends AbstractIntegration {
     //TODO convert more void methods to booleans to give error messages if things go wrong
     //TODO: Replace SlackUser with BaseSlackUser after implementing some required methods
-    private final HashMap<String, SlackUser> userMap = new HashMap<>();
+    private final Map<String, SlackUser> userMap = new HashMap<>();
     private boolean isConnected;
     private final String token;
     private final String infoChannel;//TODO: maybe convert it to an array
@@ -50,32 +53,33 @@ public class SlackIntegration extends AbstractIntegration {
      * @param text The message to decode.
      * @return The clean readable message.
      */
+    @Nonnull
     private String cleanChat(String text) {
         if (text == null || text.isEmpty())
             return "";
         //Users
-        Matcher matcher = Pattern.compile("\\<@(.*?)\\>").matcher(text);
+        Matcher matcher = Pattern.compile("<@(.*?)>").matcher(text);
         while (matcher.find()) {
             String str = matcher.group(1);
             SlackUser user = getUserInfo(str);
             text = text.replace("<@" + str + '>', '@' + (user == null ? "null" : user.getName()));
         }
         //Channel
-        matcher = Pattern.compile("\\<#(.*?\\|.*?)\\>").matcher(text);
+        matcher = Pattern.compile("<#(.*?\\|.*?)>").matcher(text);
         while (matcher.find()) {
             String str = matcher.group(1);
             text = text.replace("<#" + str + '>', '#' + str.split("\\|")[1]);
         }
 
         //URLS with http or https
-        matcher = Pattern.compile("\\<(http[^\\|;]+)\\>").matcher(text);
+        matcher = Pattern.compile("<(http[^|;]+)>").matcher(text);
         while (matcher.find()) {
             String str = matcher.group(1);
             text = text.replace('<' + str + '>', str);
         }
 
         //Date, email address, Remaining URLs
-        matcher = Pattern.compile("\\<(.*?\\|.*?)\\>").matcher(text);
+        matcher = Pattern.compile("<(.*?\\|.*?)>").matcher(text);
         while (matcher.find()) {
             String str = matcher.group(1);
             text = text.replace('<' + str + '>', str.split("\\|")[1]);
@@ -128,7 +132,7 @@ public class SlackIntegration extends AbstractIntegration {
      * Opens a {@link WebSocket} to the specified url.
      * @param url The url of the {@link WebSocket}.
      */
-    private void openWebSocket(String url) {
+    private void openWebSocket(@Nonnull String url) {
         try {
             ws = new WebSocketFactory().createSocket(url).addListener(new WebSocketAdapter() {
                 @Override
@@ -138,9 +142,9 @@ public class SlackIntegration extends AbstractIntegration {
                     if (json.containsKey("type")) {
                         if (json.getString(Jsoner.mintJsonKey("type", null)).equals("message")) {
                             if (json.containsKey("bot_id"))
-                                return;//TODO maybe figure out the userid of botid if there is any reason to support bot messages..
+                                return;//TODO maybe figure out the userid of bot id if there is any reason to support bot messages..
                             //TODO will probably require some sort of bot support depending on how the integration with gmod's issue reporting works
-                            //TODO: Or create a class that is a superclass of SlackUser and also make a bot subytpe of it
+                            //TODO: Or create a class that is a superclass of SlackUser and also make a bot subtype of it
                             SlackUser info = getUserInfo(json.getString(Jsoner.mintJsonKey("user", null)));
                             if (info == null)
                                 return;
@@ -159,6 +163,7 @@ public class SlackIntegration extends AbstractIntegration {
      * Retrieves the ID of the channel that this {@link gg.galaxygaming.janet.api.Integration} sends messages to.
      * @return The ID of the channel to send messages to.
      */
+    @Nonnull
     public String getInfoChannel() {
         return this.infoChannel;
     }
@@ -168,7 +173,7 @@ public class SlackIntegration extends AbstractIntegration {
      * @param message The message to send.
      * @param channel The ID of the Slack channel to send the message to.
      */
-    public void sendMessage(String message, String channel) {
+    public void sendMessage(@Nonnull String message, @Nonnull String channel) {
         if (message.endsWith("\n"))
             message = message.substring(0, message.length() - 1);
         JsonObject json = new JsonObject();
@@ -184,6 +189,7 @@ public class SlackIntegration extends AbstractIntegration {
      * @param id The ID of the {@link SlackUser} to get.
      * @return The {@link SlackUser} with the given ID, or null if no {@link SlackUser} was found with the given ID.
      */
+    @Nullable
     private SlackUser getUserInfo(String id) {//TODO Try to make this more efficient, potentially improving the response reading
         SlackUser user = userMap.get(id);
         if (user != null)
@@ -217,7 +223,7 @@ public class SlackIntegration extends AbstractIntegration {
      * @param message The message the {@link SlackUser} sent.
      * @param channel The ID of the channel the message was sent in.
      */
-    private void sendSlackChat(SlackUser info, String message, String channel) {
+    private void sendSlackChat(SlackUser info, @Nonnull String message, @Nonnull String channel) {
         if (info == null)
             return;
         if (info.getRank().isBanned()) {

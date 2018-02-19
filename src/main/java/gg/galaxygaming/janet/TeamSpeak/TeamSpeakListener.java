@@ -14,6 +14,7 @@ import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A listener to listen to events that happen on TeamSpeak.
@@ -94,7 +95,7 @@ public class TeamSpeakListener extends TS3EventAdapter {
                                 }
                                 bcid = c.getId();
                             }
-                        final HashMap<ChannelProperty, String> properties = new HashMap<>();
+                        final Map<ChannelProperty, String> properties = new HashMap<>();
                         properties.put(ChannelProperty.CPID, Integer.toString(pid));
                         properties.put(ChannelProperty.CHANNEL_DESCRIPTION, "Janet generated " + pInfo.getName() + " channel");
                         properties.put(ChannelProperty.CHANNEL_ORDER, Integer.toString(bcid));

@@ -9,12 +9,15 @@ import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
 import gg.galaxygaming.janet.api.AbstractMySQL;
 
+import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * An implementation of {@link gg.galaxygaming.janet.api.MySQL} to handle all MySQL
@@ -22,7 +25,7 @@ import java.util.HashMap;
  */
 public class TeamSpeakMySQL extends AbstractMySQL {
     private final int channelAdmin, supporterID, userRooms;
-    private ArrayList<Integer> ranks = new ArrayList<>();
+    private final List<Integer> ranks = new ArrayList<>();
 
     public TeamSpeakMySQL() {
         super();
@@ -74,11 +77,11 @@ public class TeamSpeakMySQL extends AbstractMySQL {
      * Checks to see if a {@link Client} is authenticated and if so give them their ranks.
      * @param client The {@link Client} to check.
      */
-    public void check(Client client) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
+    public void check(@Nonnull Client client) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT website_id FROM teamspeak_verified WHERE ts_id = \"" + client.getUniqueIdentifier() + '"');
-            ArrayList<Integer> teamspeakRanks = new ArrayList<>();
+            List<Integer> teamspeakRanks = new ArrayList<>();
             String siteID = null;
             if (rs.next()) {
                 siteID = rs.getString("website_id");
@@ -111,7 +114,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
             } else
                 rs.close();
             int[] serverGroups = client.getServerGroups();
-            ArrayList<Integer> oldRanks = new ArrayList<>();
+            List<Integer> oldRanks = new ArrayList<>();
             boolean hasRoom = teamspeakRanks.contains(this.supporterID), hadRoom = false;
             for (int id : serverGroups) {
                 if (!this.ranks.contains(id)) //Rank is not one that Janet modifies
@@ -148,7 +151,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
                     } else {
                         String name = client.getNickname();
                         String cname = name + (name.endsWith("s") ? "'" : "'s") + " Room";
-                        final HashMap<ChannelProperty, String> properties = new HashMap<>();
+                        final Map<ChannelProperty, String> properties = new HashMap<>();
                         properties.put(ChannelProperty.CHANNEL_FLAG_PERMANENT, "1");
                         properties.put(ChannelProperty.CPID, Integer.toString(this.userRooms));
                         properties.put(ChannelProperty.CHANNEL_TOPIC, cname);
@@ -186,6 +189,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
      * @param serverGroups The list of server groups to calculate the highest {@link Rank} from.
      * @return The highest {@link Rank} that is contained by the list of serverGroups.
      */
+    @Nonnull
     public Rank getRankPower(int[] serverGroups) {
         Rank r = Rank.MEMBER;
         StringBuilder sbGroups = new StringBuilder();

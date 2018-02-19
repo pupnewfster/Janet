@@ -7,6 +7,8 @@ import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.api.AbstractIntegration;
 
+import javax.annotation.Nonnull;
+
 /**
  * An implementation of {@link gg.galaxygaming.janet.api.Integration} to connect to the Discord server.
  */
@@ -77,6 +79,7 @@ public class DiscordIntegration extends AbstractIntegration {
      * Retrieves the message to send new users when they join telling them to authenticate.
      * @return The message to send new users when they join telling them to authenticate.
      */
+    @Nonnull
     public String getAuthMessage() {
         return this.authMessage;
     }

@@ -12,6 +12,7 @@ import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
 import gg.galaxygaming.janet.api.AbstractMySQL;
 
+import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -25,8 +26,8 @@ import java.util.List;
  * interactions with the tables pertaining to Discord.
  */
 public class DiscordMySQL extends AbstractMySQL {
-    private ArrayList<Long> ranks = new ArrayList<>();
-    private long verifiedRank, staffRank, seniorRank, donorRank, supporterID, userRooms;
+    private final List<Long> ranks = new ArrayList<>();
+    private final long verifiedRank, staffRank, seniorRank, donorRank, supporterID, userRooms;
 
     public DiscordMySQL() {
         super();
@@ -87,7 +88,7 @@ public class DiscordMySQL extends AbstractMySQL {
      * Checks to see if a {@link User} is authenticated and if so give them their ranks.
      * @param user The {@link User} to check.
      */
-    private void check(User user) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
+    private void check(@Nonnull User user) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT website_id FROM discord_verified WHERE discord_id = " + user.getId());
@@ -189,8 +190,8 @@ public class DiscordMySQL extends AbstractMySQL {
                 if (hasRoom) {
                     if (!hadRoom || discord < 0) {//Create it for them
                         String name = user.getDisplayName(server);
-                        String fname = name + (name.endsWith("s") ? "'" : "'s") + " Room";
-                        server.getChannelCategoryById(userRooms).ifPresent(c -> new ServerVoiceChannelBuilder(server).setName(fname).setCategory(c).create().thenAccept(vc -> {
+                        String finalName = name + (name.endsWith("s") ? "'" : "'s") + " Room";
+                        server.getChannelCategoryById(userRooms).ifPresent(c -> new ServerVoiceChannelBuilder(server).setName(finalName).setCategory(c).create().thenAccept(vc -> {
                             try (Connection conn2 = DriverManager.getConnection(this.url, this.properties)) {
                                 Statement stmt2 = conn2.createStatement();
                                 stmt2.execute("REPLACE INTO verified_rooms(website_id,discord_room_id,ts_room_id) VALUES(" + finalSiteID + ',' + vc.getId() + ',' + finalTs + ')');
@@ -234,6 +235,7 @@ public class DiscordMySQL extends AbstractMySQL {
      * @param roles The list of roles to calculate the highest {@link Rank} from.
      * @return The highest {@link Rank} that is contained by the list of {@link Role}s.
      */
+    @Nonnull
     public Rank getRankPower(List<Role> roles) {
         Rank r = Rank.MEMBER;
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {

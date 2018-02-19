@@ -11,13 +11,13 @@ import java.util.Properties;
  */
 public abstract class AbstractMySQL implements MySQL {
     private final long TIME = 2 * 60 * 1000;
-    protected Properties properties;
+    protected final Properties properties;
     protected String url, service;
 
     /**
      * Runs a {@link #checkAll()} ever five minutes.
      */
-    protected Thread checkThread = new Thread(() -> {
+    protected final Thread checkThread = new Thread(() -> {
         while (true) {
             Janet.getLogger().info("Starting check (" + service + ").");
             checkAll();

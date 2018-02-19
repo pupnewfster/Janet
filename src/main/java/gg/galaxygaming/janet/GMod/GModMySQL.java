@@ -5,13 +5,12 @@ import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
 import gg.galaxygaming.janet.api.AbstractMySQL;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.*;
 import java.net.URL;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * An implementation of {@link gg.galaxygaming.janet.api.MySQL} to handle all MySQL
@@ -57,6 +56,7 @@ public class GModMySQL extends AbstractMySQL {
      * Gets the database properties for the GMod MySQL database.
      * @return The database properties for the GMod MySQL database.
      */
+    @Nullable
     public Properties getGModProperties() {
         return this.gmodProperties;
     }
@@ -65,12 +65,13 @@ public class GModMySQL extends AbstractMySQL {
      * Gets the database url for the GMod MySQL database.
      * @return The database url for the GMod MySQL database.
      */
+    @Nullable
     public String getGModURL() {
         return this.gmodURL;
     }
 
     protected void checkAll() {
-        ArrayList<String> urls = new ArrayList<>();
+        List<String> urls = new ArrayList<>();
         try (BufferedReader in = new BufferedReader(new FileReader(this.urlFile))) {
             String line;
             while ((line = in.readLine()) != null) {
@@ -107,8 +108,8 @@ public class GModMySQL extends AbstractMySQL {
      * Checks to see if a the user with the give steam64 id is authenticated and if so give them their ranks.
      * @param steamid The steam64 id to check.
      */
-    private void check(String steamid) {
-        ArrayList<Rank> gmodRanks = new ArrayList<>();
+    private void check(@Nonnull String steamid) {
+        List<Rank> gmodRanks = new ArrayList<>();
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT member_group_id, mgroup_others FROM core_members WHERE steamid = \"" + steamid + '"');
@@ -144,15 +145,15 @@ public class GModMySQL extends AbstractMySQL {
             e.printStackTrace();
             return;
         }
-        try (Connection conn = DriverManager.getConnection(getGModURL(), getGModProperties())) {
+        try (Connection conn = DriverManager.getConnection(this.gmodURL, this.gmodProperties)) {
             Statement stmt = conn.createStatement();
-            HashMap<String, Rank> serverRanks = new HashMap<>();
-            HashSet<String> servers = new HashSet<>();
+            Map<String, Rank> serverRanks = new HashMap<>();
+            Set<String> servers = new HashSet<>();
             ResultSet rs = stmt.executeQuery("SELECT * FROM gmod_ranks");
-            ResultSetMetaData rsmd = rs.getMetaData();
-            int count = rsmd.getColumnCount();
+            ResultSetMetaData meta = rs.getMetaData();
+            int count = meta.getColumnCount();
             for (int i = 1; i <= count; i++) {
-                String name = rsmd.getColumnName(i);
+                String name = meta.getColumnName(i);
                 if (name.contains("_"))
                     servers.add(name);
             }
@@ -213,10 +214,10 @@ public class GModMySQL extends AbstractMySQL {
      * A wrapper that stores the gmod rank name and the power associated with it.
      */
     public class Rank {
-        private String id;
-        private int power;
+        private final String id;
+        private final int power;
 
-        public Rank(String id, int power) {
+        public Rank(@Nonnull String id, int power) {
             this.id = id;
             this.power = power;
         }
@@ -225,6 +226,7 @@ public class GModMySQL extends AbstractMySQL {
          * Retrieves the name of this gmod rank.
          * @return The name of this gmod rank.
          */
+        @Nonnull
         public String getID() {
             return this.id;
         }
