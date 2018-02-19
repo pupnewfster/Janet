@@ -3,7 +3,7 @@ package gg.galaxygaming.janet.GMod;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
-import gg.galaxygaming.janet.base.AbstractMySQL;
+import gg.galaxygaming.janet.api.AbstractMySQL;
 
 import java.io.*;
 import java.net.URL;
@@ -13,6 +13,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 
+/**
+ * An implementation of {@link gg.galaxygaming.janet.api.MySQL} to handle all MySQL
+ * interactions with the tables pertaining to GMod.
+ */
 public class GModMySQL extends AbstractMySQL {
     private final File urlFile;
     private String gmodURL;
@@ -49,10 +53,18 @@ public class GModMySQL extends AbstractMySQL {
         this.checkThread.start();
     }
 
+    /**
+     * Gets the database properties for the GMod MySQL database.
+     * @return The database properties for the GMod MySQL database.
+     */
     public Properties getGModProperties() {
         return this.gmodProperties;
     }
 
+    /**
+     * Gets the database url for the GMod MySQL database.
+     * @return The database url for the GMod MySQL database.
+     */
     public String getGModURL() {
         return this.gmodURL;
     }
@@ -91,6 +103,10 @@ public class GModMySQL extends AbstractMySQL {
             }
     }
 
+    /**
+     * Checks to see if a the user with the give steam64 id is authenticated and if so give them their ranks.
+     * @param steamid The steam64 id to check.
+     */
     private void check(String steamid) {
         ArrayList<Rank> gmodRanks = new ArrayList<>();
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
@@ -193,6 +209,9 @@ public class GModMySQL extends AbstractMySQL {
         }
     }
 
+    /**
+     * A wrapper that stores the gmod rank name and the power associated with it.
+     */
     public class Rank {
         private String id;
         private int power;
@@ -202,10 +221,18 @@ public class GModMySQL extends AbstractMySQL {
             this.power = power;
         }
 
+        /**
+         * Retrieves the name of this gmod rank.
+         * @return The name of this gmod rank.
+         */
         public String getID() {
             return this.id;
         }
 
+        /**
+         * Retrieves the power this gmod rank has.
+         * @return The power of this gmod rank.
+         */
         public int getPower() {
             return this.power;
         }

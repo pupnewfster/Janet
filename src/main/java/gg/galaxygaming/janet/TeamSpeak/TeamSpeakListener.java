@@ -15,7 +15,13 @@ import gg.galaxygaming.janet.Utils;
 
 import java.util.HashMap;
 
+/**
+ * A listener to listen to events that happen on TeamSpeak.
+ */
 public class TeamSpeakListener extends TS3EventAdapter {
+    /**
+     * Called when a message is sent on the TeamSpeak server.
+     */
     @Override
     public void onTextMessage(TextMessageEvent e) {
         if (e.getTargetMode() == TextMessageTargetMode.CLIENT) {
@@ -32,6 +38,9 @@ public class TeamSpeakListener extends TS3EventAdapter {
         }
     }
 
+    /**
+     * Called when a client connects to the TeamSpeak server.
+     */
     @Override
     public void onClientJoin(ClientJoinEvent e) {
         Janet.getTeamspeak().getAsyncApi().getClientInfo(e.getClientId()).onSuccess(clientInfo -> {
@@ -43,6 +52,9 @@ public class TeamSpeakListener extends TS3EventAdapter {
         });
     }
 
+    /**
+     * Called when a client changes channel on the TeamSpeak server.
+     */
     @Override
     public void onClientMoved(ClientMovedEvent e) {
         Janet.getTeamspeak().getAsyncApi().getClientInfo(e.getClientId()).onSuccess(clientInfo -> {
@@ -51,6 +63,11 @@ public class TeamSpeakListener extends TS3EventAdapter {
         });
     }
 
+    /**
+     * Handles automatic room creation.
+     * @param cid      The id of the channel to check if it is valid to create rooms from.
+     * @param clientID The id of the client who joined the specified channel.
+     */
     private void handleRoomCreation(int cid, int clientID) {
         TeamSpeakIntegration ts = Janet.getTeamspeak();
         TS3ApiAsync api = ts.getAsyncApi();

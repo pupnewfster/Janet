@@ -7,7 +7,7 @@ import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
-import gg.galaxygaming.janet.base.AbstractMySQL;
+import gg.galaxygaming.janet.api.AbstractMySQL;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -16,6 +16,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * An implementation of {@link gg.galaxygaming.janet.api.MySQL} to handle all MySQL
+ * interactions with the tables pertaining to TeamSpeak.
+ */
 public class TeamSpeakMySQL extends AbstractMySQL {
     private final int channelAdmin, supporterID, userRooms;
     private ArrayList<Integer> ranks = new ArrayList<>();
@@ -42,6 +46,9 @@ public class TeamSpeakMySQL extends AbstractMySQL {
         this.checkThread.start();
     }
 
+    /**
+     * Index all the ranks that {@link Janet} can assign.
+     */
     private void indexRanks() {
         try {
             Connection conn = DriverManager.getConnection(this.url, this.properties);
@@ -63,6 +70,10 @@ public class TeamSpeakMySQL extends AbstractMySQL {
         Janet.getTeamspeak().getAsyncApi().getClients().onSuccess(clients -> clients.stream().filter(Client::isRegularClient).forEach(this::check));
     }
 
+    /**
+     * Checks to see if a {@link Client} is authenticated and if so give them their ranks.
+     * @param client The {@link Client} to check.
+     */
     public void check(Client client) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
@@ -170,6 +181,11 @@ public class TeamSpeakMySQL extends AbstractMySQL {
         }
     }
 
+    /**
+     * Retrieves the highest {@link Rank} that is contained by the list of serverGroups.
+     * @param serverGroups The list of server groups to calculate the highest {@link Rank} from.
+     * @return The highest {@link Rank} that is contained by the list of serverGroups.
+     */
     public Rank getRankPower(int[] serverGroups) {
         Rank r = Rank.MEMBER;
         StringBuilder sbGroups = new StringBuilder();

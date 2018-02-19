@@ -3,8 +3,12 @@ package gg.galaxygaming.janet.Slack;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 import gg.galaxygaming.janet.CommandHandler.Rank;
+import gg.galaxygaming.janet.api.AbstractSlackUser;
 
-public class SlackUser implements BaseSlackUser {
+/**
+ * An implementation for users of {@link AbstractSlackUser}
+ */
+public class SlackUser implements AbstractSlackUser {
     private final String id;
     private final String name, displayName;
     private Rank rank;
@@ -25,22 +29,42 @@ public class SlackUser implements BaseSlackUser {
             this.rank = Rank.MEMBER;
     }
 
+    /**
+     * Retrieves the name of this {@link SlackUser}.
+     * @return The name of this {@link SlackUser}.
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Retrieves the display name of this {@link SlackUser}.
+     * @return The display name of this {@link SlackUser}.
+     */
     public String getDisplayName() {
         return this.displayName;
     }
 
+    /**
+     * Retrieves the Slack ID of this {@link SlackUser}.
+     * @return The Slack ID of this {@link SlackUser}.
+     */
     public String getID() {
         return this.id;
     }
 
+    /**
+     * Retrieves the {@link Rank} of this {@link SlackUser}.
+     * @return The {@link Rank} of this {@link SlackUser}.
+     */
     public Rank getRank() {
         return this.rank;
     }
 
+    /**
+     * Checks if this {@link SlackUser} is a bot. In the future this will be replaced with {@link gg.galaxygaming.janet.Slack.BotUser}.
+     * @return True if this user is a bot, false otherwise.
+     */
     public boolean isBot() {
         return getRank().equals(Rank.BOT);
     }

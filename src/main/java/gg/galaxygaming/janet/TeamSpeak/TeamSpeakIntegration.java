@@ -6,8 +6,11 @@ import com.github.theholywaffle.teamspeak3.TS3Query;
 import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
-import gg.galaxygaming.janet.base.AbstractIntegration;
+import gg.galaxygaming.janet.api.AbstractIntegration;
 
+/**
+ * An implementation of {@link gg.galaxygaming.janet.api.Integration} to connect to the TeamSpeak server.
+ */
 public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconnect if teamspeak server goes down or restarts
     private final int dndID, verifiedID, defaultChannel;
     private final String joinMessage, verifyMessage, roomCreatorName;
@@ -97,36 +100,54 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
         this.ts3Query.exit();
     }
 
+    /**
+     * Retrieves the TeamSpeak rank to give when a user toggles DND.
+     * @return The TeamSpeak rank to give when a user toggles DND.
+     */
     public int getDndID() {
         return this.dndID;
     }
 
+    /**
+     * Retrieves the TeamSpeak rank to give when a user verifies.
+     * @return The TeamSpeak rank to give when a user verifies.
+     */
     public int getVerifiedID() {
         return this.verifiedID;
     }
 
-    public String getVerifyMessage() {
-        return this.verifyMessage;
-    }
-
-    public String getJoinMessage() {
-        return this.joinMessage;
-    }
-
+    /**
+     * Retrieves the name that will be used to check if a room should be automatically generated.
+     * @return The name that will be used to check if a room should be automatically generated.
+     */
     public String getRoomCreatorName() {
         return this.roomCreatorName;
     }
 
+    /**
+     * Retrieves the {@link TS3ApiAsync} instance of this {@link TeamSpeakIntegration}.
+     * @return The {@link TS3ApiAsync} instance of this {@link TeamSpeakIntegration}.
+     */
     public TS3ApiAsync getAsyncApi() {
         return this.asyncApi;
     }
 
+    /**
+     * Retrieves the ID of the default channel.
+     * @return The ID of the default channel.
+     */
     public int getDefaultChannelID() {
         return this.defaultChannel;
     }
 
+    /**
+     * Checks if the specified {@link Client} has verified, and if not send them a message telling them how to verify.
+     * <p>
+     * This also sends them a message every time they join so that they can message {@link gg.galaxygaming.janet.Janet} commands.
+     * @param c The {@link Client} to check the verification status of.
+     */
     public void checkVerification(Client c) {
-        getAsyncApi().sendPrivateMessage(c.getId(), getJoinMessage()).onSuccess(sent -> {
+        getAsyncApi().sendPrivateMessage(c.getId(), joinMessage).onSuccess(sent -> {
             if (sent) {
                 int[] serverGroups = c.getServerGroups();
                 boolean verified = false;
@@ -136,7 +157,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
                         break;
                     }
                 if (!verified)
-                    getAsyncApi().sendPrivateMessage(c.getId(), getVerifyMessage());
+                    getAsyncApi().sendPrivateMessage(c.getId(), verifyMessage);
             } else
                 Janet.getLogger().debug("Failed to send message to " + c.getNickname() + '.');
         });

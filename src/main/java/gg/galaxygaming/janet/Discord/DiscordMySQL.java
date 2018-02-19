@@ -10,7 +10,7 @@ import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
-import gg.galaxygaming.janet.base.AbstractMySQL;
+import gg.galaxygaming.janet.api.AbstractMySQL;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,6 +20,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * An implementation of {@link gg.galaxygaming.janet.api.MySQL} to handle all MySQL
+ * interactions with the tables pertaining to Discord.
+ */
 public class DiscordMySQL extends AbstractMySQL {
     private ArrayList<Long> ranks = new ArrayList<>();
     private long verifiedRank, staffRank, seniorRank, donorRank, supporterID, userRooms;
@@ -49,6 +53,9 @@ public class DiscordMySQL extends AbstractMySQL {
         this.checkThread.start();
     }
 
+    /**
+     * Index all the ranks that {@link Janet} can assign.
+     */
     private void indexRanks() {
         try {
             Connection conn = DriverManager.getConnection(this.url, this.properties);
@@ -76,6 +83,10 @@ public class DiscordMySQL extends AbstractMySQL {
                 check(u);
     }
 
+    /**
+     * Checks to see if a {@link User} is authenticated and if so give them their ranks.
+     * @param user The {@link User} to check.
+     */
     private void check(User user) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
@@ -218,6 +229,11 @@ public class DiscordMySQL extends AbstractMySQL {
         }
     }
 
+    /**
+     * Retrieves the highest {@link Rank} that is contained by the list of {@link Role}s.
+     * @param roles The list of roles to calculate the highest {@link Rank} from.
+     * @return The highest {@link Rank} that is contained by the list of {@link Role}s.
+     */
     public Rank getRankPower(List<Role> roles) {
         Rank r = Rank.MEMBER;
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {

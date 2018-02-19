@@ -10,9 +10,12 @@ import gg.galaxygaming.janet.TeamSpeak.TeamSpeakIntegration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class Janet {//TODO: add in proper javadoc explanations for methods
+/**
+ * The main class.
+ */
+public class Janet {//TODO: add @NotNull annotation in places?
     private static Janet INSTANCE;
-    private final Logger logger;
+    private final Logger logger;//TODO add printStackTract to logger?
     private final Config config;
     private final CommandHandler cmdHandler;
     private TeamSpeakIntegration teamspeak;
@@ -21,6 +24,7 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
     private SlackIntegration slack;
     private GModIntegration gmod;
     private RestIntegration rest;
+    //TODO: convert some arraylists to lists
 
     private Janet() {
         INSTANCE = this;
@@ -35,6 +39,9 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
         this.donations = new DonationIntegration();//THIS has to be after gmod initialization
     }
 
+    /**
+     * Called when {@link Janet} is stopped to gracefully close all open {@link gg.galaxygaming.janet.api.Integration}s.
+     */
     public void stop() {
         if (getRestIntegration() != null)
             getRestIntegration().stop();
@@ -53,42 +60,82 @@ public class Janet {//TODO: add in proper javadoc explanations for methods
         Runtime.getRuntime().addShutdownHook(new Thread(INSTANCE::stop));
     }
 
+    /**
+     * Retrieves the {@link Config}.
+     * @return The {@link Config}.
+     */
     public static Config getConfig() {
         return INSTANCE.config;
     }
 
+    /**
+     * Retrieves the {@link SlackIntegration}.
+     * @return The {@link SlackIntegration}.
+     */
     public static SlackIntegration getSlack() {
         return INSTANCE.slack;
     }
 
+    /**
+     * Retrieves the {@link RestIntegration}.
+     * @return The {@link RestIntegration}.
+     */
     public static RestIntegration getRestIntegration() {
         return INSTANCE.rest;
     }
 
+    /**
+     * Retrieves the {@link DiscordIntegration}.
+     * @return The {@link DiscordIntegration}.
+     */
     public static DiscordIntegration getDiscord() {
         return INSTANCE.discord;
     }
 
+    /**
+     * Retrieves the {@link TeamSpeakIntegration}.
+     * @return The {@link TeamSpeakIntegration}.
+     */
     public static TeamSpeakIntegration getTeamspeak() {
         return INSTANCE.teamspeak;
     }
 
+    /**
+     * Retrieves the {@link GModIntegration}.
+     * @return The {@link GModIntegration}.
+     */
     public static GModIntegration getGMod() {
         return INSTANCE.gmod;
     }
 
+    /**
+     * Retrieves the {@link DonationIntegration}.
+     * @return The {@link DonationIntegration}.
+     */
     public static DonationIntegration getDonations() {
         return INSTANCE.donations;
     }
 
+    /**
+     * Retrieves the {@link CommandHandler}.
+     * @return The {@link CommandHandler}.
+     */
     public static CommandHandler getCommandHandler() {
         return INSTANCE.cmdHandler;
     }
 
+    /**
+     * Retrieves the {@link Logger}.
+     * @return The {@link Logger}.
+     */
     public static Logger getLogger() {
         return INSTANCE.logger;
     }
 
+    /**
+     * Retrieves the nonstatic instance of {@link Janet}.
+     * @return The nonstatic instance of {@link Janet}.
+     */
     public static Janet getInstance() {
         return INSTANCE;
     }

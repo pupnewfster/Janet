@@ -1,4 +1,9 @@
 package gg.galaxygaming.janet.Slack;
 
-public class BotUser implements BaseSlackUser {
+import gg.galaxygaming.janet.api.AbstractSlackUser;
+
+/**
+ * An implementation for bots of {@link AbstractSlackUser}
+ */
+public class BotUser implements AbstractSlackUser {
 }

@@ -1,15 +1,15 @@
 package gg.galaxygaming.janet.CommandHandler.Commands;
 
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
+import gg.galaxygaming.janet.api.Cmd;
 
 import java.util.Collections;
 import java.util.List;
 
 public class CmdRank implements Cmd {
     @Override
-    public boolean performCommand(String[] args, CommandSender sender) {
+    public void performCommand(String[] args, CommandSender sender) {
         sender.sendMessage(sender.getRank().getName());
-        return true;
     }
 
     @Override

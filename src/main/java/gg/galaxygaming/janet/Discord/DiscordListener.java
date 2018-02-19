@@ -9,7 +9,14 @@ import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Janet;
 
-public class DiscordListener implements MessageCreateListener, ServerMemberJoinListener {
+/**
+ * A listener to listen to events that happen on Discord.
+ */
+public class DiscordListener implements MessageCreateListener, ServerMemberJoinListener {//TODO: listen to message edit events/delete and pass it on to slack??
+
+    /**
+     * Called when a message is sent on Discord.
+     */
     @Override
     public void onMessageCreate(MessageCreateEvent event) {
         Message message = event.getMessage();
@@ -30,6 +37,9 @@ public class DiscordListener implements MessageCreateListener, ServerMemberJoinL
         });
     }
 
+    /**
+     * Called when a new member joins the Discord server.
+     */
     @Override
     public void onServerMemberJoin(ServerMemberJoinEvent event) {
         if (Janet.getDiscord().getServer().equals(event.getServer())) {

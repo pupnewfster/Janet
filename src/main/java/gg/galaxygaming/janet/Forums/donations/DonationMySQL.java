@@ -5,12 +5,16 @@ import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.GMod.GModMySQL;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
-import gg.galaxygaming.janet.base.AbstractMySQL;
+import gg.galaxygaming.janet.api.AbstractMySQL;
 
 import java.sql.*;
 import java.sql.Date;
 import java.util.*;
 
+/**
+ * An implementation of {@link gg.galaxygaming.janet.api.MySQL} to handle all MySQL
+ * interactions with the tables pertaining to Donations.
+ */
 public class DonationMySQL extends AbstractMySQL {
     private final int memberID;
 
@@ -38,6 +42,9 @@ public class DonationMySQL extends AbstractMySQL {
         checkPS2();
     }
 
+    /**
+     * Checks PointShop 2 donations.
+     */
     private void checkPS2() {
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
@@ -75,6 +82,9 @@ public class DonationMySQL extends AbstractMySQL {
         }
     }
 
+    /**
+     * Checks donations made for ranks.
+     */
     private void checkRanks() {
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
@@ -109,6 +119,12 @@ public class DonationMySQL extends AbstractMySQL {
         }
     }
 
+    /**
+     * Adds the specified rank to the member represented by the specified siteID.
+     * @param siteID The id representing the member to add a rank to.
+     * @param rankID The id representing the rank to add the member to.
+     * @return True if rank was successfully added, false if something went wrong.
+     */
     private boolean addRank(int siteID, int rankID) {
         ArrayList<Integer> ranks = getRanks(siteID);
         if (ranks.contains(rankID))
@@ -134,9 +150,15 @@ public class DonationMySQL extends AbstractMySQL {
             return updateRanks(siteID, primary, ranks);
         } //Else something went wrong
         Janet.getLogger().warn("Failed to add rank " + rankID + " from " + siteID);
-        return true;
+        return false;
     }
 
+    /**
+     * Removes the specified rank from the member represented by the specified siteID.
+     * @param siteID The id representing the member to remove a rank from.
+     * @param rankID The id representing the rank to remove the member from.
+     * @return True if rank was successfully removed, false if something went wrong.
+     */
     private boolean removeRank(int siteID, int rankID) {
         ArrayList<Integer> ranks = getRanks(siteID);
         if (!ranks.contains(rankID))
@@ -158,11 +180,16 @@ public class DonationMySQL extends AbstractMySQL {
         return false;
     }
 
+    /**
+     * Calculates which rank in the input list is the highest.
+     * @param ranks The list of forum rank ids to calculate the highest rank from.
+     * @return The id of the highest rank in the input list.
+     */
     private int getHighest(ArrayList<Integer> ranks) {
         int highest = 0, highPower = 0;
         HashMap<Integer, Rank> rankPower = getRankPower(ranks);
         for (Map.Entry<Integer, Rank> entry : rankPower.entrySet()) {
-            int cur = entry.getValue().getValue();
+            int cur = entry.getValue().getPower();
             if (cur > highPower) {
                 highPower = cur;
                 highest = entry.getKey();
@@ -171,6 +198,13 @@ public class DonationMySQL extends AbstractMySQL {
         return highest;
     }
 
+    /**
+     * Updates the list of ranks a user has on the site.
+     * @param siteID      The member id to update the ranks of.
+     * @param primary     The new primary rank of the member. (May be the same as it was before).
+     * @param secondaries The list of secondary ranks of the member.
+     * @return True if it successfully updated the ranks, false if something went wrong.
+     */
     private boolean updateRanks(int siteID, int primary, ArrayList<Integer> secondaries) {
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
@@ -190,6 +224,11 @@ public class DonationMySQL extends AbstractMySQL {
         return true;
     }
 
+    /**
+     * Gets all the ranks that the member with the specified siteID has.
+     * @param siteID The id of the member to get the ranks of.
+     * @return The list of all ranks the given member has.
+     */
     private ArrayList<Integer> getRanks(int siteID) {
         ArrayList<Integer> ranks = new ArrayList<>();
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
@@ -212,7 +251,12 @@ public class DonationMySQL extends AbstractMySQL {
         return ranks;
     }
 
-    public HashMap<Integer, Integer> getPrimaries(List<Integer> ranks) {
+    /**
+     * Retrieves a map of rank ids to id of the primary rank.
+     * @param ranks The list of ranks to get the primary ids of.
+     * @return The map of rank ids to id of the primary rank.
+     */
+    private HashMap<Integer, Integer> getPrimaries(List<Integer> ranks) {
         HashMap<Integer, Integer> rInfo = new HashMap<>();
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
@@ -231,7 +275,12 @@ public class DonationMySQL extends AbstractMySQL {
         return rInfo;
     }
 
-    public HashMap<Integer, Rank> getRankPower(List<Integer> ranks) {
+    /**
+     * Retrieves a map of rank ids to the power associated with that rank.
+     * @param ranks The list of ranks to get the power values of.
+     * @return The map of rank ids to the power associated with that rank
+     */
+    private HashMap<Integer, Rank> getRankPower(List<Integer> ranks) {
         HashMap<Integer, Rank> rInfo = new HashMap<>();
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();

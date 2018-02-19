@@ -3,6 +3,7 @@ package gg.galaxygaming.janet.CommandHandler.Commands;
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
+import gg.galaxygaming.janet.api.Cmd;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,10 +11,10 @@ import java.util.List;
 
 public class CmdHelp implements Cmd {
     @Override
-    public boolean performCommand(String[] args, CommandSender sender) {
+    public void performCommand(String[] args, CommandSender sender) {
         if (args.length > 0 && !Utils.legalInt(args[0])) {
             sender.sendMessage("Error: You must enter a valid help page.");
-            return true;
+            return;
         }
         int page = 0;
         if (args.length > 0)
@@ -27,7 +28,7 @@ public class CmdHelp implements Cmd {
         int totalPages = helpList.size() / 10 + rounder;
         if (page > totalPages) {
             sender.sendMessage("Error: Input a number from 1 to " + totalPages);
-            return true;
+            return;
         }
         StringBuilder m = new StringBuilder(" ---- Help -- Page " + page + " / " + totalPages + " ---- \n");
         page -= 1;
@@ -38,7 +39,6 @@ public class CmdHelp implements Cmd {
         if (page + 1 < totalPages)
             m.append("Type !help ").append(page + 2).append(" to read the next page.\n");
         sender.sendMessage(m.toString());
-        return true;
     }
 
     @Override

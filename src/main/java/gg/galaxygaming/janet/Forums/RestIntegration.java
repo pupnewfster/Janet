@@ -6,7 +6,7 @@ import com.github.cliftonlabs.json_simple.Jsoner;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Utils;
-import gg.galaxygaming.janet.base.AbstractIntegration;
+import gg.galaxygaming.janet.api.AbstractIntegration;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -16,7 +16,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
 
-public class RestIntegration extends AbstractIntegration {
+/**
+ * An implementation of {@link gg.galaxygaming.janet.api.Integration} for using the RestAPI on the forums.
+ */
+public class RestIntegration extends AbstractIntegration {//TODO: JavaDoc this when writing autopromote
     private final String restURL;
     private final String restAPIKey;
     private final String invalidEmail;
@@ -82,6 +85,7 @@ public class RestIntegration extends AbstractIntegration {
     }
 
     public void stop() {
+        super.stop();
         scan.interrupt();
     }
 
@@ -152,7 +156,7 @@ public class RestIntegration extends AbstractIntegration {
             ArrayList<Integer> topics = forumInfo.getValue();
             //GET request to get topics
             JsonObject forum = sendGET("/forums/topics?forums=" + Integer.toString(fid));
-            JsonArray rTopics = (JsonArray) forum.get("results");//TODO test
+            JsonArray rTopics = (JsonArray) forum.get("results");
             for (Object t : rTopics) {
                 JsonObject topic = (JsonObject) t;
                 Integer topicID = topic.getIntegerOrDefault(Jsoner.mintJsonKey("id", null));

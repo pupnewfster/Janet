@@ -28,12 +28,14 @@ public class Config extends Properties {
         addMissingValues(config);
     }
 
+    /**
+     * Adds any missing values to the config file.
+     * @param config The file to check for missing values, and add any that are missing.
+     */
     private void addMissingValues(File config) {//TODO: should we store the default values in a map so that we can also get them
         try (OutputStream output = new FileOutputStream(config)) {
             if (!containsKey("SLACK_TOKEN"))
                 setProperty("SLACK_TOKEN", "token");
-            if (!containsKey("USER_SLACK_TOKEN"))
-                setProperty("USER_SLACK_TOKEN", "token");
             if (!containsKey("INFO_CHANNEL"))
                 setProperty("INFO_CHANNEL", "info_channel");
 
@@ -129,23 +131,45 @@ public class Config extends Properties {
         }
     }
 
+    /**
+     * Gets a {@link String} from the config with the specified key.
+     * @param key The key to search the config for.
+     * @return The value in the config for the specified key.
+     */
     public String getString(String key) {
         return getProperty(key);
     }
 
+    /**
+     * Gets a {@link String} from the config with the specified key, or returns the given value if the key is not found.
+     * @param key          The key to search the config for.
+     * @param defaultValue The value to return if the key is not found in the config.
+     * @return The value in the config for the specified key, or returns the given value if the key is not found
+     */
     public String getStringOrDefault(String key, String defaultValue) {
         return getProperty(key, defaultValue);
     }
 
+    /**
+     * Gets an int from the config with the specified key.
+     * @param key The key to search the config for.
+     * @return The value in the config for the specified key.
+     */
     public int getInteger(String key) {
         String value = getProperty(key);
         try {
             return Integer.valueOf(value);
         } catch (NumberFormatException e) {
-            return 0;//TODO should there be a different default failed value?
+            return 0;//TODO throw an invalid exception of some kind
         }
     }
 
+    /**
+     * Gets an int from the config with the specified key.
+     * @param key          The key to search the config for.
+     * @param defaultValue The value to return if the key is not found in the config.
+     * @return The value in the config for the specified key.
+     */
     public int getIntegerOrDefault(String key, int defaultValue) {
         String value = getProperty(key);
         try {
@@ -155,15 +179,26 @@ public class Config extends Properties {
         }
     }
 
+    /**
+     * Gets a long from the config with the specified key.
+     * @param key The key to search the config for.
+     * @return The value in the config for the specified key.
+     */
     public long getLong(String key) {
         String value = getProperty(key);
         try {
             return Long.valueOf(value);
         } catch (NumberFormatException e) {
-            return 0;//TODO should there be a different default failed value?
+            return 0;//TODO throw an invalid exception of some kind
         }
     }
 
+    /**
+     * Gets a long from the config with the specified key.
+     * @param key          The key to search the config for.
+     * @param defaultValue The value to return if the key is not found in the config.
+     * @return The value in the config for the specified key.
+     */
     public long getLongOrDefault(String key, long defaultValue) {
         String value = getProperty(key);
         try {

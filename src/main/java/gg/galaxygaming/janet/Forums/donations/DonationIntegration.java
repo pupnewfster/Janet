@@ -1,7 +1,10 @@
 package gg.galaxygaming.janet.Forums.donations;
 
-import gg.galaxygaming.janet.base.AbstractIntegration;
+import gg.galaxygaming.janet.api.AbstractIntegration;
 
+/**
+ * An implementation of {@link gg.galaxygaming.janet.api.Integration} to handle donations made on the forums.
+ */
 public class DonationIntegration extends AbstractIntegration {
     public DonationIntegration() {
         super();

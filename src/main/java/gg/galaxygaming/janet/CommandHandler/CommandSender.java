@@ -7,6 +7,9 @@ import de.btobastian.javacord.entities.channels.TextChannel;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Slack.SlackUser;
 
+/**
+ * Stores general information about who sent a {@link gg.galaxygaming.janet.api.Cmd}.
+ */
 public class CommandSender {
     private CommandSource source;
     private SlackUser slackUser;
@@ -17,67 +20,111 @@ public class CommandSender {
     private boolean isPrivate;
     private TextChannel dChannel;
 
-    public CommandSender() {
+    /**
+     * Creates a Console instance of {@link CommandSender}.
+     */
+    public CommandSender() { //TODO should console command sender be static, probably
         this.source = CommandSource.Console;
     }
 
+    /**
+     * Creates a Slack instance of {@link CommandSender}.
+     * @param user    The {@link SlackUser} behind the {@link CommandSender}.
+     * @param channel The ID of the Slack channel the {@link SlackUser} is in.
+     */
     public CommandSender(SlackUser user, String channel) {
         this.source = CommandSource.Slack;
         this.slackUser = user;
         this.channel = channel;
         this.rank = this.slackUser.getRank();
+        this.isPrivate = this.channel.startsWith("D");
     }
 
-    public CommandSender(User user, TextChannel channel) {
-        this(user, channel, Rank.MEMBER);
-    }
-
+    /**
+     * Creates a Discord instance of {@link CommandSender}.
+     * @param user    The {@link User} behind the {@link CommandSender}.
+     * @param channel The {@link TextChannel} that the {@link User} is in.
+     * @param rank    The {@link Rank} the {@link User} has.
+     */
     public CommandSender(User user, TextChannel channel, Rank rank) {
         this.source = CommandSource.Discord;
         this.discordUser = user;
         this.dChannel = channel;
         this.isPrivate = this.dChannel instanceof PrivateChannel;
-        this.rank = rank;//TODO retrieve actual rank
+        this.rank = rank;
     }
 
-    public CommandSender(Client client) {
-        this(client, Rank.MEMBER);
-    }
-
+    /**
+     * Creates a TeamSpeak instance of {@link CommandSender}.
+     * @param client The {@link Client} behind the {@link CommandSender}.
+     * @param rank   The {@link Rank} the {@link Client} has.
+     */
     public CommandSender(Client client, Rank rank) {
         this.source = CommandSource.TeamSpeak;
         this.tsClient = client;
         this.rank = rank;
     }
 
+    /**
+     * Retrieves the {@link CommandSource} of {@link CommandSender} object.
+     * @return The {@link CommandSource} of {@link CommandSender} object.
+     */
     public CommandSource getSource() {
         return this.source;
     }
 
+    /**
+     * If the {@link CommandSource} is {@link CommandSource#Slack} then it returns the {@link SlackUser} behind this {@link CommandSender}.
+     * @return The {@link SlackUser} behind this {@link CommandSender}.
+     */
     public SlackUser getSlackUser() {
         return this.slackUser;
     }
 
+    /**
+     * If the {@link CommandSource} is {@link CommandSource#Discord} then it returns the {@link User} behind this {@link CommandSender}.
+     * @return The {@link User} behind this {@link CommandSender}.
+     */
     public User getDiscordUser() {
         return this.discordUser;
     }
 
+    /**
+     * If the {@link CommandSource} is {@link CommandSource#TeamSpeak} then it returns the {@link Client} behind this {@link CommandSender}.
+     * @return The {@link Client} behind this {@link CommandSender}.
+     */
     public Client getTeamSpeakClient() {
         return this.tsClient;
     }
 
+    /**
+     * Retrieves the {@link Rank} of the {@link CommandSender}.
+     * @return The {@link Rank} of the {@link CommandSender}.
+     */
     public Rank getRank() {
         return this.rank;
     }
 
+    /**
+     * Gets if the {@link CommandSender} is in a direct message with {@link gg.galaxygaming.janet.Janet}.
+     * @return True if the message was a private message to {@link gg.galaxygaming.janet.Janet}, false otherwise.
+     */
     public boolean isPrivate() {
         return this.isPrivate;
     }
 
+    /**
+     * Gets the Channel ID of the slack channel the message was sent in.
+     * @return The Slack Channel ID.
+     */
     public String getChannel() {
         return this.channel;
     }
 
+    /**
+     * Sends a message to the {@link CommandSender}.
+     * @param message The message to send.
+     */
     public void sendMessage(String message) {
         switch (this.source) {
             case Slack:

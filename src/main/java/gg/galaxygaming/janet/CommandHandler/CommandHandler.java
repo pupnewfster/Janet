@@ -1,12 +1,15 @@
 package gg.galaxygaming.janet.CommandHandler;
 
-import gg.galaxygaming.janet.CommandHandler.Commands.Cmd;
+import gg.galaxygaming.janet.api.Cmd;
 import org.reflections.Reflections;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Handles all the commands that {@link gg.galaxygaming.janet.Janet} implements.
+ */
 public class CommandHandler {
     private final ArrayList<Cmd> cmds = new ArrayList<>();
 
@@ -25,9 +28,16 @@ public class CommandHandler {
         }
     }
 
-    public boolean handleCommand(String message, CommandSender sender) {//TODO: ignore multiple spaces
+    /**
+     * Handles a message sent by {@link CommandSender}, and if it is a {@link Cmd} attempts to run it.
+     * @param message The message that contains the command and any arguments.
+     * @param sender  The {@link CommandSender} trying to perform a {@link Cmd}.
+     * @return True if a {@link Cmd} was found and successfully run, false if no {@link Cmd} was found or the sender does not have permission to run the {@link Cmd}.
+     */
+    public boolean handleCommand(String message, CommandSender sender) {
         if (sender == null)
             return false;
+        message = message.trim().replaceAll("\\s\\s+", " ");//Replace all multiple spaces with a single space
         if (message.startsWith("!"))
             message = message.replaceFirst("!", "");
         String command = message.split(" ")[0];
@@ -54,12 +64,18 @@ public class CommandHandler {
                     sender.sendMessage("Error: This command must be used through " + validSources);
                     return true;
                 }
-                return cmd.performCommand(args, sender);
+                cmd.performCommand(args, sender);
+                return true;
             }
         }
         return false;
     }
 
+    /**
+     * Retrieves the help list for all the commands that {@link CommandSender} can perform.
+     * @param sender The {@link CommandSender} to retrieve the help list for.
+     * @return The complete help list of commands that {@link CommandSender} can perform.
+     */
     public ArrayList<String> getHelpList(CommandSender sender) {
         ArrayList<String> help = new ArrayList<>();
         this.cmds.stream().filter(cmd -> cmd.getName() != null && cmd.getUsage() != null && cmd.helpDoc() != null &&

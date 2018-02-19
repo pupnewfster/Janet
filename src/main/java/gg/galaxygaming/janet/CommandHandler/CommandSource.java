@@ -1,10 +1,24 @@
 package gg.galaxygaming.janet.CommandHandler;
 
+/**
+ * An enum for which platform {@link gg.galaxygaming.janet.api.Cmd}s can come from.
+ */
 public enum CommandSource {
-    //TODO: Add Discord and TeamSpeak integration at some point?? Afterwards add them as CommandSources
+    /**
+     * The {@link CommandSource} of {@link gg.galaxygaming.janet.api.Cmd} is Slack
+     */
     Slack("Slack"),
+    /**
+     * The {@link CommandSource} of {@link gg.galaxygaming.janet.api.Cmd} is TeamSpeak
+     */
     TeamSpeak("TeamSpeak"),
+    /**
+     * The {@link CommandSource} of {@link gg.galaxygaming.janet.api.Cmd} is Discord
+     */
     Discord("Discord"),
+    /**
+     * The {@link CommandSource} of {@link gg.galaxygaming.janet.api.Cmd} is the Console
+     */
     Console("Console");//TODO: Implement some commands for the console in the future
 
     private final String name;
@@ -13,6 +27,10 @@ public enum CommandSource {
         this.name = name;
     }
 
+    /**
+     * Gets the name of this {@link CommandSource}.
+     * @return The name of this {@link CommandSource}.
+     */
     public String getName() {
         return this.name;
     }

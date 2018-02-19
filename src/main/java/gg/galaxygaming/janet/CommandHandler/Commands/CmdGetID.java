@@ -2,13 +2,14 @@ package gg.galaxygaming.janet.CommandHandler.Commands;
 
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.CommandSource;
+import gg.galaxygaming.janet.api.Cmd;
 
 import java.util.Arrays;
 import java.util.List;
 
 public class CmdGetID implements Cmd {
     @Override
-    public boolean performCommand(String[] args, CommandSender sender) {
+    public void performCommand(String[] args, CommandSender sender) {
         if (sender.getSource().equals(CommandSource.TeamSpeak))
             sender.sendMessage(sender.getTeamSpeakClient().getUniqueIdentifier());
         else if (sender.getSource().equals(CommandSource.Discord)) {
@@ -17,7 +18,6 @@ public class CmdGetID implements Cmd {
             else
                 sender.sendMessage("[ERROR] This command can only be performed through a direct message to this bot.");
         }
-        return true;
     }
 
     @Override
