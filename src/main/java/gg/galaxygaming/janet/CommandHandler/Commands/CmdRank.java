@@ -9,14 +9,14 @@ import java.util.List;
 
 public class CmdRank implements Cmd {
     @Override
-    public void performCommand(String[] args, @Nonnull CommandSender sender) {
+    public void performCommand(@Nonnull String[] args, @Nonnull CommandSender sender) {
         sender.sendMessage(sender.getRank().getName());
     }
 
     @Override
     @Nonnull
     public String helpDoc() {
-        return "Shows you what rank you have on slack.";
+        return "Shows you what rank you have.";
     }
 
     @Override

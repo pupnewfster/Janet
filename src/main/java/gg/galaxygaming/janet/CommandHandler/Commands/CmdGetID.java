@@ -10,7 +10,7 @@ import java.util.List;
 
 public class CmdGetID implements Cmd {
     @Override
-    public void performCommand(String[] args, @Nonnull CommandSender sender) {
+    public void performCommand(@Nonnull String[] args, @Nonnull CommandSender sender) {
         if (sender.getSource().equals(CommandSource.TeamSpeak))
             sender.sendMessage(sender.getTeamSpeakClient().getUniqueIdentifier());
         else if (sender.getSource().equals(CommandSource.Discord)) {

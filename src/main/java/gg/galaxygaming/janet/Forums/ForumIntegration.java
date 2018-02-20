@@ -1,32 +1,26 @@
 package gg.galaxygaming.janet.Forums;
 
-import com.github.cliftonlabs.json_simple.JsonArray;
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
-import gg.galaxygaming.janet.Utils;
 import gg.galaxygaming.janet.api.AbstractIntegration;
 
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.*;
+import java.net.URLEncoder;
+import java.util.Base64;
 
 /**
  * An implementation of {@link gg.galaxygaming.janet.api.Integration} for using the RestAPI on the forums.
  */
 public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this when writing autopromote
-    private final String restURL;
-    private final String restAPIKey;
-    private final Map<Integer, List<Integer>> applicationForums;
-    private final List<Integer> acceptedForums;
-    private final List<Integer> deniedForums;
+    private final String restURL, restAPIKey, acceptMessage;
     private final int janetID;
-    private Thread scan;
     private String auth = "";
 
     public ForumIntegration() {
@@ -35,30 +29,7 @@ public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this 
         this.restURL = config.getStringOrDefault("REST_URL", "rest_url");
         this.restAPIKey = config.getStringOrDefault("REST_API_KEY", "api_key");
         this.janetID = config.getIntegerOrDefault("JANET_FORUM_ID", 0);
-        this.applicationForums = new HashMap<>();
-        String[] application = config.getStringOrDefault("APPLICATION_FORUMS", "").split(",");
-        for (String a : application) {
-            if (Utils.legalInt(a))
-                this.applicationForums.put(Integer.parseInt(a), new ArrayList<>());
-            else
-                Janet.getLogger().error("Invalid application forum: " + a);
-        }
-        this.acceptedForums = new ArrayList<>();
-        String[] accepted = config.getStringOrDefault("ACCEPTED_FORUMS", "").split(",");
-        for (String a : accepted) {
-            if (Utils.legalInt(a))
-                this.acceptedForums.add(Integer.parseInt(a));
-            else
-                Janet.getLogger().error("Invalid accepted forum: " + a);
-        }
-        this.deniedForums = new ArrayList<>();
-        String[] denied = config.getStringOrDefault("DENIED_FORUMS", "").split(",");
-        for (String d : denied) {
-            if (Utils.legalInt(d))
-                this.deniedForums.add(Integer.parseInt(d));
-            else
-                Janet.getLogger().error("Invalid denied forum: " + d);
-        }
+        this.acceptMessage = config.getStringOrDefault("APP_ACCEPT_MESSAGE", "Accepted.");
         if (this.restURL.equals("rest_url") || this.restAPIKey.equals("api_key")) {
             Janet.getLogger().error("Failed to load needed configs for Rest Integration");
             return;
@@ -69,22 +40,14 @@ public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this 
             e.printStackTrace();
         }
         this.mysql = new ForumMySQL();
-        /*this.scan = new Thread(() -> {
-            while (true) {
-                scanApplications();
-                try {
-                    Thread.sleep(5 * 60 * 1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        scan.start();*/
     }
 
-    public void stop() {
-        super.stop();
-        scan.interrupt();
+    public String getAcceptMessage() {
+        return this.acceptMessage;
+    }
+
+    public int getJanetID() {
+        return this.janetID;
     }
 
     //Loop over suggestion forums looking for new posts and things
@@ -93,29 +56,58 @@ public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this 
 
     //create github issue
 
-    private JsonObject sendPOST(String urlEnding, JsonObject payload) {
+    /**
+     * Sends a POST request to the forums.
+     * @param urlEnding The {@link String} to append to the REST API URL.
+     * @param payload   The Json payload to send
+     * @return The result.
+     */
+    @Nullable
+    public JsonObject sendPOST(String urlEnding, JsonObject payload) {//TODO: Add nullable?
+        JsonObject json = null;
+        StringBuilder postData = new StringBuilder();
+        payload.forEach((key, value) -> {
+            if (postData.length() != 0)
+                postData.append('&');
+            try {
+                postData.append(URLEncoder.encode(key, "UTF-8")).append('=').append(URLEncoder.encode(String.valueOf(value), "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        });
         try {
+            byte[] postDataBytes = postData.toString().getBytes("UTF-8");
             URL url = new URL(this.restURL + urlEnding);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setDoOutput(true);
             con.setRequestProperty("Authorization", this.auth);
-            con.setRequestProperty("Content-Type", "application/json;");
+            con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            con.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
             con.setRequestProperty("Accept", "application/json,text/plain");
             con.setRequestMethod("POST");
-            try (OutputStream os = con.getOutputStream()) {
-                os.write(Jsoner.serialize(payload).getBytes("UTF-8"));
+            con.getOutputStream().write(postDataBytes);
+            try (BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()))) {
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+                while ((inputLine = in.readLine()) != null)
+                    response.append(inputLine);
+                in.close();
+                json = (JsonObject) Jsoner.deserialize(response.toString());
             }
-            /*try (InputStream is = con.getInputStream()) {
-                //TODO include if we need to view error messages
-            }*/
             con.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return json;
     }
 
-    private JsonObject sendGET(String urlEnding) {
+    /**
+     * Sends a GET request to the forums.
+     * @param urlEnding The {@link String} to append to the REST API URL.
+     * @return The result.
+     */
+    @Nullable
+    public JsonObject sendGET(String urlEnding) {
         JsonObject json = null;
         try {
             URL url = new URL(this.restURL + urlEnding);
@@ -137,84 +129,5 @@ public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this 
             e.printStackTrace();
         }
         return json;
-    }
-
-    private void scanApplications() {
-        Janet.getLogger().info("Application scan started.");
-        scanNewApplications();
-        checkApplicationStatus();
-        Janet.getLogger().info("Application scan finished.");
-    }
-
-    //TODO: Maybe make this check in a separate thread
-    private void scanNewApplications() {
-        Set<Map.Entry<Integer, List<Integer>>> appForums = this.applicationForums.entrySet();
-        for (Map.Entry<Integer, List<Integer>> forumInfo : appForums) {
-            int fid = forumInfo.getKey();
-            List<Integer> topics = forumInfo.getValue();
-            //GET request to get topics
-            JsonObject forum = sendGET("/forums/topics?forums=" + Integer.toString(fid));
-            JsonArray rTopics = (JsonArray) forum.get("results");
-            for (Object t : rTopics) {
-                JsonObject topic = (JsonObject) t;
-                Integer topicID = topic.getIntegerOrDefault(Jsoner.mintJsonKey("id", null));
-                if (topicID != null && !topics.contains(topicID)) {
-                    topics.add(topicID);
-                    Janet.getLogger().debug("Topic added: " + topicID);
-                }
-            }
-            //TODO if there are multiple pages scan next pages also
-            //totalPages
-            //page
-        }
-    }
-
-    private void checkApplicationStatus() {
-        Set<Map.Entry<Integer, List<Integer>>> appForums = this.applicationForums.entrySet();
-        for (Map.Entry<Integer, List<Integer>> forumInfo : appForums) {
-            int fid = forumInfo.getKey();
-            List<Integer> topics = forumInfo.getValue();
-            List<Integer> remTopics = new ArrayList<>();
-            for (Integer topicID : topics) {
-                JsonObject topic = sendGET("/forums/topics/" + topicID);
-                if (topic.containsKey("errorCode")) { //Topic was deleted
-                    Janet.getLogger().debug("Error Code:" + topic.getStringOrDefault(Jsoner.mintJsonKey("errorMessage", "UNKNOWN")));
-                    remTopics.add(topicID);
-                    continue;
-                }
-                JsonObject forum = (JsonObject) topic.get("forum");
-                int forumID = forum.getInteger(Jsoner.mintJsonKey("id", null));
-                if (fid != forumID) {
-                    remTopics.add(topicID); //Can be here because it was moved no matter where it is now
-                    if (this.acceptedForums.contains(forumID)) {//Accepted
-                        Janet.getLogger().debug("Topic " + topicID + " ACCEPTED.");
-                        JsonObject post = (JsonObject) topic.get("firstPost");//TODO: maybe move this up if the post info is needed for other things
-                        JsonObject member = (JsonObject) post.get("author");
-                        String email = member.getString(Jsoner.mintJsonKey("email", null));
-                        String response = sendInvite(email);
-                        if (response != null) {
-                            JsonObject json = new JsonObject();
-                            json.put("topic", topicID);
-                            json.put("author", this.janetID);
-                            json.put("post", "<p>" + response + "</p>");
-                            Janet.getLogger().debug("Post to forums.");
-                            sendPOST("/forums/posts", json);
-                        }
-                        //Log some sort of error message
-                    } else if (this.deniedForums.contains(forumID)) {//Denied
-                        //No denied message, may want to send a debug message
-                        Janet.getLogger().info("Topic " + topicID + " DENIED.");
-                    } else {
-                        Janet.getLogger().info("[DEBUG] Topic " + topicID + " moved to " + forumID + '.');
-                    }
-                }
-            }
-            topics.removeAll(remTopics); //Removes all topics no longer in this forum
-        }
-    }
-
-    private String sendInvite(String email) {
-        //TODO remove this method and change what checkApplicationStatus does
-        return null;
     }
 }

@@ -47,14 +47,10 @@ public class Config extends Properties {
                 setProperty("REST_API_KEY", "api_key");
             if (!containsKey("JANET_FORUM_ID"))
                 setProperty("JANET_FORUM_ID", "0");
-            if (!containsKey("APPLICATION_FORUMS"))
-                setProperty("APPLICATION_FORUMS", "");
-            if (!containsKey("ACCEPTED_FORUMS"))
-                setProperty("ACCEPTED_FORUMS", "");
-            if (!containsKey("DENIED_FORUMS"))
-                setProperty("DENIED_FORUMS", "");
             if (!containsKey("FORUM_MEMBER_ID"))
                 setProperty("FORUM_MEMBER_ID", "-1");
+            if (!containsKey("APP_ACCEPT_MESSAGE"))
+                setProperty("APP_ACCEPT_MESSAGE", "Accepted.");
 
             //Discord
             if (!containsKey("DISCORD_TOKEN"))

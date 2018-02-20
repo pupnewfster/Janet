@@ -18,7 +18,7 @@ public interface Cmd {//TODO should this be moved to the api package?
      * @param args A List of the arguments passed to this {@link Cmd}.
      * @param info The {@link CommandSender} that performed this {@link Cmd}.
      */
-    void performCommand(String[] args, @Nonnull CommandSender info);
+    void performCommand(@Nonnull String[] args, @Nonnull CommandSender info);
 
     /**
      * Retrieves help documentation for this {@link Cmd}. This shows up in when using {@link gg.galaxygaming.janet.CommandHandler.Commands.CmdHelp}.
@@ -63,6 +63,7 @@ public interface Cmd {//TODO should this be moved to the api package?
      * Retrieves the minimum {@link Rank} required to perform this command. Defaults to {@link Rank#GUEST}.
      * @return The required {@link Rank} to use this command.
      */
+    @Nonnull
     default Rank getRequiredRank() {
         return Rank.GUEST;
     }

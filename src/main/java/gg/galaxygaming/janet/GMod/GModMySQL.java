@@ -92,7 +92,7 @@ public class GModMySQL extends AbstractMySQL {
                         gCount++;
                     }
                 String groups = sbGroups.toString().trim();
-                String query = gCount == 1 ? "site_rank_id = " + groups : "site_rank_id IN (" + groups + ')';//TODO maybe use forummysql for this
+                String query = gCount == 1 ? "site_rank_id = " + groups : "site_rank_id IN (" + groups + ')';
                 ResultSet rs2 = stmt2.executeQuery("SELECT gmod_rank_id, rank_power FROM rank_id_lookup WHERE " + query);
                 while (rs2.next()) {
                     String id = rs2.getString("gmod_rank_id");

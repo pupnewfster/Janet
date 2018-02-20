@@ -11,7 +11,7 @@ import java.util.List;
 
 public class CmdHelp implements Cmd {
     @Override
-    public void performCommand(String[] args, @Nonnull CommandSender sender) {
+    public void performCommand(@Nonnull String[] args, @Nonnull CommandSender sender) {
         if (args.length > 0 && !Utils.legalInt(args[0])) {
             sender.sendMessage("Error: You must enter a valid help page.");
             return;

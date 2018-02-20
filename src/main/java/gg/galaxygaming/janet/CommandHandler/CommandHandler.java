@@ -44,10 +44,6 @@ public final class CommandHandler {
         String[] args = arguments.equals("") ? new String[0] : arguments.split(" ");
         CommandSource source = sender.getSource();
         for (Cmd cmd : this.cmds) {
-            if (!sender.getRank().hasRank(cmd.getRequiredRank())) {
-                sender.sendMessage("Error: You do not have permission to use this command.");
-                return true;
-            }
             if (cmd.getName().equalsIgnoreCase(command) || cmd.getAliases() != null && cmd.getAliases().contains(command.toLowerCase())) {
                 List<CommandSource> sources = cmd.supportedSources();
                 if (sources != null && !sources.contains(source)) {
@@ -63,7 +59,10 @@ public final class CommandHandler {
                     sender.sendMessage("Error: This command must be used through " + validSources);
                     return true;
                 }
-                cmd.performCommand(args, sender);
+                if (sender.getRank().hasRank(cmd.getRequiredRank()))
+                    cmd.performCommand(args, sender);
+                else
+                    sender.sendMessage("Error: You do not have permission to use this command.");
                 return true;
             }
         }

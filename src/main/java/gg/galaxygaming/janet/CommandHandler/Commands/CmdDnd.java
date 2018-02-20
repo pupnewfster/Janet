@@ -13,7 +13,7 @@ import java.util.List;
 
 public class CmdDnd implements Cmd {
     @Override
-    public void performCommand(String[] args, @Nonnull CommandSender sender) {
+    public void performCommand(@Nonnull String[] args, @Nonnull CommandSender sender) {
         int dnd = Janet.getTeamspeak().getDndID();
         TS3ApiAsync api = Janet.getTeamspeak().getAsyncApi();
         Client c = sender.getTeamSpeakClient();
