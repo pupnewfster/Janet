@@ -92,7 +92,7 @@ public class GModMySQL extends AbstractMySQL {
                         gCount++;
                     }
                 String groups = sbGroups.toString().trim();
-                String query = gCount == 1 ? "site_rank_id = " + groups : "site_rank_id IN (" + groups + ')';
+                String query = gCount == 1 ? "site_rank_id = " + groups : "site_rank_id IN (" + groups + ')';//TODO maybe use forummysql for this
                 ResultSet rs2 = stmt2.executeQuery("SELECT gmod_rank_id, rank_power FROM rank_id_lookup WHERE " + query);
                 while (rs2.next()) {
                     String id = rs2.getString("gmod_rank_id");
@@ -105,7 +105,7 @@ public class GModMySQL extends AbstractMySQL {
             rs.close();
             stmt.close();
             stmt2.close();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
@@ -166,7 +166,7 @@ public class GModMySQL extends AbstractMySQL {
                         + valuesUpdate.toString().substring(1));
             }
             stmt.close();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
@@ -190,7 +190,7 @@ public class GModMySQL extends AbstractMySQL {
             }
             rs.close();
             stmt.close();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return servers;

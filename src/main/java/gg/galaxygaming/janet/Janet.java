@@ -2,7 +2,7 @@ package gg.galaxygaming.janet;
 
 import gg.galaxygaming.janet.CommandHandler.CommandHandler;
 import gg.galaxygaming.janet.Discord.DiscordIntegration;
-import gg.galaxygaming.janet.Forums.RestIntegration;
+import gg.galaxygaming.janet.Forums.ForumIntegration;
 import gg.galaxygaming.janet.Forums.donations.DonationIntegration;
 import gg.galaxygaming.janet.GMod.GModIntegration;
 import gg.galaxygaming.janet.Slack.SlackIntegration;
@@ -25,7 +25,7 @@ public class Janet {
     private DiscordIntegration discord;
     private SlackIntegration slack;
     private GModIntegration gmod;
-    private RestIntegration rest;
+    private ForumIntegration forum;
 
     private Janet() {//TODO Throw exceptions if something failed to initialize, and then add @Nullable to the get methods
         INSTANCE = this;
@@ -33,19 +33,19 @@ public class Janet {
         this.config = new Config();
         this.cmdHandler = new CommandHandler("gg.galaxygaming.janet.CommandHandler.Commands");
         this.slack = new SlackIntegration();
-        //this.rest = new RestIntegration(this.config);//TODO bring back when we work on automating suggestions -> github
+        this.forum = new ForumIntegration();
         this.discord = new DiscordIntegration();
         this.teamspeak = new TeamSpeakIntegration();
         this.gmod = new GModIntegration();
-        this.donations = new DonationIntegration();//THIS has to be after gmod initialization
+        this.donations = new DonationIntegration();//This has to be after gmod initialization
     }
 
     /**
      * Called when {@link Janet} is stopped to gracefully close all open {@link gg.galaxygaming.janet.api.Integration}s.
      */
     public void stop() {
-        if (getRestIntegration() != null)
-            getRestIntegration().stop();
+        if (getForums() != null)
+            getForums().stop();
         if (getSlack() != null)
             getSlack().stop();
         if (getGMod() != null)
@@ -79,11 +79,11 @@ public class Janet {
     }
 
     /**
-     * Retrieves the {@link RestIntegration}.
-     * @return The {@link RestIntegration}.
+     * Retrieves the {@link ForumIntegration}.
+     * @return The {@link ForumIntegration}.
      */
-    public static RestIntegration getRestIntegration() {
-        return INSTANCE.rest;
+    public static ForumIntegration getForums() {
+        return INSTANCE.forum;
     }
 
     /**

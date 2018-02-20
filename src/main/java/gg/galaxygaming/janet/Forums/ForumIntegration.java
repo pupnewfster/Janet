@@ -19,17 +19,18 @@ import java.util.*;
 /**
  * An implementation of {@link gg.galaxygaming.janet.api.Integration} for using the RestAPI on the forums.
  */
-public class RestIntegration extends AbstractIntegration {//TODO: JavaDoc this when writing autopromote
+public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this when writing autopromote
     private final String restURL;
     private final String restAPIKey;
-    private final Map<Integer, ArrayList<Integer>> applicationForums;
+    private final Map<Integer, List<Integer>> applicationForums;
     private final List<Integer> acceptedForums;
     private final List<Integer> deniedForums;
     private final int janetID;
     private Thread scan;
     private String auth = "";
 
-    public RestIntegration() {
+    public ForumIntegration() {
+        super();
         Config config = Janet.getConfig();
         this.restURL = config.getStringOrDefault("REST_URL", "rest_url");
         this.restAPIKey = config.getStringOrDefault("REST_API_KEY", "api_key");
@@ -67,7 +68,8 @@ public class RestIntegration extends AbstractIntegration {//TODO: JavaDoc this w
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        this.scan = new Thread(() -> {
+        this.mysql = new ForumMySQL();
+        /*this.scan = new Thread(() -> {
             while (true) {
                 scanApplications();
                 try {
@@ -77,7 +79,7 @@ public class RestIntegration extends AbstractIntegration {//TODO: JavaDoc this w
                 }
             }
         });
-        scan.start();
+        scan.start();*/
     }
 
     public void stop() {
@@ -146,10 +148,10 @@ public class RestIntegration extends AbstractIntegration {//TODO: JavaDoc this w
 
     //TODO: Maybe make this check in a separate thread
     private void scanNewApplications() {
-        Set<Map.Entry<Integer, ArrayList<Integer>>> appForums = this.applicationForums.entrySet();
-        for (Map.Entry<Integer, ArrayList<Integer>> forumInfo : appForums) {
+        Set<Map.Entry<Integer, List<Integer>>> appForums = this.applicationForums.entrySet();
+        for (Map.Entry<Integer, List<Integer>> forumInfo : appForums) {
             int fid = forumInfo.getKey();
-            ArrayList<Integer> topics = forumInfo.getValue();
+            List<Integer> topics = forumInfo.getValue();
             //GET request to get topics
             JsonObject forum = sendGET("/forums/topics?forums=" + Integer.toString(fid));
             JsonArray rTopics = (JsonArray) forum.get("results");
@@ -168,10 +170,10 @@ public class RestIntegration extends AbstractIntegration {//TODO: JavaDoc this w
     }
 
     private void checkApplicationStatus() {
-        Set<Map.Entry<Integer, ArrayList<Integer>>> appForums = this.applicationForums.entrySet();
-        for (Map.Entry<Integer, ArrayList<Integer>> forumInfo : appForums) {
+        Set<Map.Entry<Integer, List<Integer>>> appForums = this.applicationForums.entrySet();
+        for (Map.Entry<Integer, List<Integer>> forumInfo : appForums) {
             int fid = forumInfo.getKey();
-            ArrayList<Integer> topics = forumInfo.getValue();
+            List<Integer> topics = forumInfo.getValue();
             List<Integer> remTopics = new ArrayList<>();
             for (Integer topicID : topics) {
                 JsonObject topic = sendGET("/forums/topics/" + topicID);
