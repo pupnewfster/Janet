@@ -149,7 +149,7 @@ public class DiscordMySQL extends AbstractMySQL {
         Server server = Janet.getDiscord().getServer();
         Collection<Role> roles = user.getRoles(server);
         List<Long> newRanks = new ArrayList<>();
-        boolean changed = false, hadRoom = discordRanks.contains(this.supporterID);
+        boolean changed = false, hadRoom = discordRanks.contains(this.supporterID)  || getRankPowerByID(discordRanks).hasRank(Rank.MANAGER);
         for (Role r : roles) {
             long id = r.getId();
             if (!this.ranks.contains(id)) //Rank is not one that gets set by janet
@@ -170,7 +170,8 @@ public class DiscordMySQL extends AbstractMySQL {
                 server.getRoleById(newRank).ifPresent(newRoles::add);
             server.updateRoles(user, newRoles);
         }
-        checkRoom(user, siteID, newRanks.contains(this.supporterID), hadRoom);
+        boolean hasRoom = newRanks.contains(this.supporterID) || getRankPowerByID(newRanks).hasRank(Rank.MANAGER);
+        checkRoom(user, siteID, hasRoom, hadRoom);
     }
 
     /**
@@ -235,17 +236,17 @@ public class DiscordMySQL extends AbstractMySQL {
     }
 
     /**
-     * Retrieves the highest {@link Rank} that is contained by the list of {@link Role}s.
-     * @param roles The list of roles to calculate the highest {@link Rank} from.
-     * @return The highest {@link Rank} that is contained by the list of {@link Role}s.
+     * Retrieves the highest {@link Rank} that is contained by the list of {@link Role} ids.
+     * @param ranks The list of roles to calculate the highest {@link Rank} from.
+     * @return The highest {@link Rank} that is contained by the list of {@link Role} ids.
      */
     @Nonnull
-    public Rank getRankPower(List<Role> roles) {
+    public Rank getRankPowerByID(List<Long> ranks) {
         Rank r = Rank.MEMBER;
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
-            for (Role role : roles) {
-                ResultSet rs = stmt.executeQuery("SELECT rank_power FROM rank_id_lookup WHERE discord_rank_id = " + role.getId());
+            for (long rank : ranks) {
+                ResultSet rs = stmt.executeQuery("SELECT rank_power FROM rank_id_lookup WHERE discord_rank_id = " + rank);
                 if (rs.next()) {
                     r = Rank.fromPower(rs.getInt("rank_power"));
                     rs.close();
@@ -258,5 +259,17 @@ public class DiscordMySQL extends AbstractMySQL {
             e.printStackTrace();
         }
         return r;
+    }
+
+    /**
+     * Retrieves the highest {@link Rank} that is contained by the list of {@link Role}s.
+     * @param roles The list of roles to calculate the highest {@link Rank} from.
+     * @return The highest {@link Rank} that is contained by the list of {@link Role}s.
+     */
+    @Nonnull
+    public Rank getRankPower(List<Role> roles) {
+        List<Long> ranks = new ArrayList<>();
+        roles.forEach(id -> ranks.add(id.getId()));
+        return getRankPowerByID(ranks);
     }
 }

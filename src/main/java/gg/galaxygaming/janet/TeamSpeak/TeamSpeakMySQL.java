@@ -11,10 +11,8 @@ import gg.galaxygaming.janet.api.AbstractMySQL;
 
 import javax.annotation.Nonnull;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * An implementation of {@link gg.galaxygaming.janet.api.MySQL} to handle all MySQL
@@ -107,7 +105,8 @@ public class TeamSpeakMySQL extends AbstractMySQL {
         }
         int[] serverGroups = client.getServerGroups();
         List<Integer> oldRanks = new ArrayList<>();
-        boolean hasRoom = teamspeakRanks.contains(this.supporterID), hadRoom = false;
+        boolean hasRoom = teamspeakRanks.contains(this.supporterID) || getRankPower(teamspeakRanks).hasRank(Rank.MANAGER),
+                hadRoom = siteID != null && getRankPower(serverGroups).hasRank(Rank.MANAGER);
         for (int id : serverGroups) {
             if (!this.ranks.contains(id)) //Rank is not one that Janet modifies
                 continue;
@@ -195,6 +194,16 @@ public class TeamSpeakMySQL extends AbstractMySQL {
      */
     @Nonnull
     public Rank getRankPower(int[] serverGroups) {
+        return getRankPower(Arrays.stream(serverGroups).boxed().collect(Collectors.toList()));
+    }
+
+    /**
+     * Retrieves the highest {@link Rank} that is contained by the list of serverGroups.
+     * @param serverGroups The list of server groups to calculate the highest {@link Rank} from.
+     * @return The highest {@link Rank} that is contained by the list of serverGroups.
+     */
+    @Nonnull
+    public Rank getRankPower(List<Integer> serverGroups) {
         Rank r = Rank.MEMBER;
         StringBuilder sbGroups = new StringBuilder();
         int gCount = 0;

@@ -63,7 +63,7 @@
         <dependency>
             <groupId>de.btobastian</groupId>
             <artifactId>Javacord</artifactId>
-            <version>b725a96</version>
+            <version>3692f3c</version>
         </dependency>
     </dependencies>
 

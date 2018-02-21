@@ -31,9 +31,9 @@ public class CmdApplications implements Cmd {
             return;
         }
         Set<Map.Entry<Integer, String>> entries = applicationNames.entrySet();
-        StringBuilder m = new StringBuilder("ID. | NAME");
+        StringBuilder m = new StringBuilder("ID. NAME, Created By");
         for (Map.Entry<Integer, String> entry : entries)
-            m.append('\n').append(entry.getKey()).append(". | ").append(entry.getValue());
+            m.append('\n').append(entry.getKey()).append(". ").append(entry.getValue());
         sender.sendMessage(m.toString());
     }
 

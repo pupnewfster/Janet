@@ -35,7 +35,7 @@ public final class CommandHandler {
      * @param sender  The {@link CommandSender} trying to perform a {@link Cmd}.
      * @return True if a {@link Cmd} was found and successfully run, false if no {@link Cmd} was found or the sender does not have permission to run the {@link Cmd}.
      */
-    public boolean handleCommand(@Nonnull String message, @Nonnull CommandSender sender) {
+    public boolean handleCommand(@Nonnull String message, @Nonnull CommandSender sender) {//TODO: Log when commands are performed, maybe only to a log file
         message = message.trim().replaceAll("\\s\\s+", " ");//Replace all multiple spaces with a single space
         if (message.startsWith("!"))
             message = message.replaceFirst("!", "");
