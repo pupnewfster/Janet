@@ -2,7 +2,7 @@ package gg.galaxygaming.janet.TeamSpeak;
 
 import com.github.theholywaffle.teamspeak3.TS3ApiAsync;
 import com.github.theholywaffle.teamspeak3.api.ChannelProperty;
-import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
+import com.github.theholywaffle.teamspeak3.api.wrapper.DatabaseClientInfo;
 import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Forums.ForumMySQL;
@@ -64,78 +64,86 @@ public class TeamSpeakMySQL extends AbstractMySQL {
         this.ranks.add(Janet.getTeamspeak().getVerifiedID());
     }
 
-    protected void checkAll() {//TODO: Does this need better stop support added
-        Janet.getTeamspeak().getAsyncApi().getClients().onSuccess(clients -> clients.stream().filter(Client::isRegularClient).forEach(c -> {
-            if (!stop)
-                check(c);
-        }));
+    protected void checkAll() {
+        try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM teamspeak_verified");
+            while (rs.next()) {
+                if (stop)
+                    break;
+                String siteID = rs.getString("website_id");
+                String tsID = rs.getString("ts_id");
+                if (siteID != null && tsID != null)
+                    Janet.getTeamspeak().getAsyncApi().getDatabaseClientByUId(tsID).onSuccess(dbInfo -> {
+                        if (dbInfo != null)
+                            check(dbInfo, siteID);
+                    });
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
-     * Checks to see if a {@link Client} is authenticated and if so give them their ranks.
-     * @param client The {@link Client} to check.
+     * Checks to see if a {@link DatabaseClientInfo} is authenticated and if so give them their ranks.
+     * @param dbInfo The {@link DatabaseClientInfo} of the client to check.
+     * @param siteID The website id of the given {@link DatabaseClientInfo}.
      */
-    public void check(@Nonnull Client client) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
+    public void check(@Nonnull DatabaseClientInfo dbInfo, @Nonnull String siteID) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
         List<Integer> teamspeakRanks = new ArrayList<>();
-        String siteID = null;
-        try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT website_id FROM teamspeak_verified WHERE ts_id = \"" + client.getUniqueIdentifier() + '"');
-            if (rs.next())
-                siteID = rs.getString("website_id");
-            rs.close();
-            if (siteID == null) {
-                stmt.close();
-                return;
-            }
-            String query = ((ForumMySQL) Janet.getForums().getMySQL()).getRankQuery(siteID);
-            if (query != null) {
-                rs = stmt.executeQuery("SELECT ts_rank_id FROM rank_id_lookup WHERE " + query);
+        teamspeakRanks.add(Janet.getTeamspeak().getVerifiedID());
+        String query = ((ForumMySQL) Janet.getForums().getMySQL()).getRankQuery(siteID);
+        if (query != null)
+            try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery("SELECT ts_rank_id FROM rank_id_lookup WHERE " + query);
                 while (rs.next()) {
                     int rank = rs.getInt("ts_rank_id");
                     if (rank >= 0)
                         teamspeakRanks.add(rank);
                 }
                 rs.close();
-                teamspeakRanks.add(Janet.getTeamspeak().getVerifiedID());
+                stmt.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-            stmt.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        int[] serverGroups = client.getServerGroups();
-        List<Integer> oldRanks = new ArrayList<>();
-        boolean hasRoom = teamspeakRanks.contains(this.supporterID) || getRankPower(teamspeakRanks).hasRank(Rank.MANAGER),
-                hadRoom = siteID != null && getRankPower(serverGroups).hasRank(Rank.MANAGER);
-        for (int id : serverGroups) {
-            if (!this.ranks.contains(id)) //Rank is not one that Janet modifies
-                continue;
-            if (teamspeakRanks.contains(id))
-                teamspeakRanks.remove(Integer.valueOf(id)); //Already has the rank assigned so remove it from lists of ones
-            else {
-                oldRanks.add(id);//Add the rank to list to remove
-                if (id == this.supporterID)
-                    hadRoom = true;
+        int dbID = dbInfo.getDatabaseId();
+        Janet.getTeamspeak().getAsyncApi().getServerGroupsByClientId(dbID).onSuccess(serverGroups -> {
+            List<Integer> oldRanks = new ArrayList<>();
+            List<Integer> groupIDs = new ArrayList<>();
+            serverGroups.forEach(g -> groupIDs.add(g.getId()));
+            boolean hasRoom = teamspeakRanks.contains(this.supporterID) || getRankPower(teamspeakRanks).hasRank(Rank.MANAGER),
+                    hadRoom = getRankPower(groupIDs).hasRank(Rank.MANAGER);
+            for (int id : groupIDs) {
+                if (!this.ranks.contains(id)) //Rank is not one that Janet modifies
+                    continue;
+                if (teamspeakRanks.contains(id))
+                    teamspeakRanks.remove(Integer.valueOf(id)); //Already has the rank assigned so remove it from lists of ones
+                else {
+                    oldRanks.add(id);//Add the rank to list to remove
+                    if (id == this.supporterID)
+                        hadRoom = true;
+                }
             }
-        }
-        TS3ApiAsync api = Janet.getTeamspeak().getAsyncApi();
-        int dbID = client.getDatabaseId();
-        for (int rID : oldRanks)
-            api.removeClientFromServerGroup(rID, dbID);
-        for (int rID : teamspeakRanks)
-            api.addClientToServerGroup(rID, dbID);
-        if (siteID != null)
-            checkRoom(client, siteID, hasRoom, hadRoom);
+            TS3ApiAsync api = Janet.getTeamspeak().getAsyncApi();
+            for (int rID : oldRanks)
+                api.removeClientFromServerGroup(rID, dbID);
+            for (int rID : teamspeakRanks)
+                api.addClientToServerGroup(rID, dbID);
+            checkRoom(dbInfo, siteID, hasRoom, hadRoom);
+        });
     }
 
     /**
-     * Checks to see if the given {@link Client} should have a room, and if so create it for them.
-     * @param client  The {@link Client} to check.
-     * @param siteID  The siteID of the {@link Client}.
-     * @param hasRoom True if the {@link Client} should have a room, false otherwise.
+     * Checks to see if the given {@link DatabaseClientInfo} should have a room, and if so create it for them.
+     * @param dbInfo  The {@link DatabaseClientInfo} to check.
+     * @param siteID  The siteID of the {@link DatabaseClientInfo}.
+     * @param hasRoom True if the {@link DatabaseClientInfo} should have a room, false otherwise.
      * @param hadRoom True if the user used to have a room and the room should be deleted, false otherwise.
      */
-    private void checkRoom(@Nonnull Client client, @Nonnull String siteID, boolean hasRoom, boolean hadRoom) {
+    private void checkRoom(@Nonnull DatabaseClientInfo dbInfo, @Nonnull String siteID, boolean hasRoom, boolean hadRoom) {
         int curRoom = -1;
         long discord = -1;
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
@@ -149,28 +157,31 @@ public class TeamSpeakMySQL extends AbstractMySQL {
             if (hasRoom || hadRoom || curRoom >= 0) {
                 TS3ApiAsync api = Janet.getTeamspeak().getAsyncApi();
                 if (hasRoom) {
-                    if (curRoom >= 0) {
-                        if (client.getChannelGroupId() != this.channelAdmin)//If they already have channel admin do not bother setting it on them again
-                            api.setClientChannelGroup(this.channelAdmin, curRoom, client.getDatabaseId());
-                    } else {
-                        String name = client.getNickname();
-                        String cname = name + (name.endsWith("s") ? "'" : "'s") + " Room";
-                        final Map<ChannelProperty, String> properties = new HashMap<>();
-                        properties.put(ChannelProperty.CHANNEL_FLAG_PERMANENT, "1");
-                        properties.put(ChannelProperty.CPID, Integer.toString(this.userRooms));
-                        properties.put(ChannelProperty.CHANNEL_TOPIC, cname);
-                        api.createChannel(cname, properties).onSuccess(channelID -> {
-                            try (Connection conn2 = DriverManager.getConnection(this.url, this.properties)) {
-                                Statement stmt2 = conn2.createStatement();
-                                stmt2.execute("INSERT INTO verified_rooms(website_id,discord_room_id,ts_room_id) VALUES(" + siteID + ",-1," + channelID +
-                                        ") ON DUPLICATE KEY UPDATE ts_room_id = " + channelID);
-                                stmt2.close();
-                            } catch (SQLException e) {
-                                e.printStackTrace();
-                            }
-                            api.moveQuery(Janet.getTeamspeak().getDefaultChannelID()).onSuccess(success -> api.setClientChannelGroup(channelAdmin, channelID, client.getDatabaseId()));
-                        });
-                    }
+                    int finalCurRoom = curRoom;
+                    Janet.getTeamspeak().getAsyncApi().getClientByUId(dbInfo.getUniqueIdentifier()).onSuccess(client -> {
+                        if (finalCurRoom >= 0) {
+                            if (client == null || client.getChannelGroupId() != this.channelAdmin)//If they already have channel admin do not bother setting it on them again
+                                api.setClientChannelGroup(this.channelAdmin, finalCurRoom, dbInfo.getDatabaseId());
+                        } else if (client != null) {
+                            String name = client.getNickname();
+                            String cname = name + (name.endsWith("s") ? "'" : "'s") + " Room";
+                            final Map<ChannelProperty, String> properties = new HashMap<>();
+                            properties.put(ChannelProperty.CHANNEL_FLAG_PERMANENT, "1");
+                            properties.put(ChannelProperty.CPID, Integer.toString(this.userRooms));
+                            properties.put(ChannelProperty.CHANNEL_TOPIC, cname);
+                            api.createChannel(cname, properties).onSuccess(channelID -> {
+                                try (Connection conn2 = DriverManager.getConnection(this.url, this.properties)) {
+                                    Statement stmt2 = conn2.createStatement();
+                                    stmt2.execute("INSERT INTO verified_rooms(website_id,discord_room_id,ts_room_id) VALUES(" + siteID + ",-1," + channelID +
+                                            ") ON DUPLICATE KEY UPDATE ts_room_id = " + channelID);
+                                    stmt2.close();
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
+                                api.moveQuery(Janet.getTeamspeak().getDefaultChannelID()).onSuccess(success -> api.setClientChannelGroup(channelAdmin, channelID, dbInfo.getDatabaseId()));
+                            });
+                        }
+                    });
                 } else {//hadRoom
                     //Delete room
                     if (discord < 0)

@@ -27,6 +27,7 @@ public final class CommandSender {
      */
     public CommandSender() { //TODO should console command sender be static, probably
         this.source = CommandSource.Console;
+        this.rank = Rank.EXECUTIVE_STAFF;
     }
 
     /**
@@ -38,8 +39,8 @@ public final class CommandSender {
         this.source = CommandSource.Slack;
         this.slackUser = user;
         this.channel = channel;
-        this.rank = this.slackUser.getRank();
         this.isPrivate = this.channel.startsWith("D");
+        this.rank = this.slackUser.getRank();
     }
 
     /**
@@ -64,6 +65,7 @@ public final class CommandSender {
     public CommandSender(Client client, Rank rank) {
         this.source = CommandSource.TeamSpeak;
         this.tsClient = client;
+        this.isPrivate = true;//TODO: If we end up supporting non pms again on TeamSpeak update this to reflect that
         this.rank = rank;
     }
 

@@ -21,7 +21,7 @@ import java.util.Map;
  * An implementation of {@link gg.galaxygaming.janet.api.MySQL} to handle all MySQL interactions
  * with the Forum tables and ranks.
  */
-public class ForumMySQL extends AbstractMySQL {
+public class ForumMySQL extends AbstractMySQL {//TODO: Should some of application and suggestion stuff be cached in a mysql table
     private final int memberID;
 
     public ForumMySQL() {
