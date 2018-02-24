@@ -11,6 +11,9 @@ import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * An implementation of {@link Cmd} to toggle DND on TeamSpeak.
+ */
 public class CmdDnd implements Cmd {
     @Override
     public void performCommand(@Nonnull String[] args, @Nonnull CommandSender sender) {

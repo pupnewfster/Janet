@@ -83,8 +83,8 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
      * @return The query for selecting all ranks the member with the given siteID has, or null if no member was found with the given siteID.
      */
     @Nullable
-    public String getRankQuery(@Nonnull String siteID) {
-        List<Integer> ranks = getRanks(Integer.valueOf(siteID));
+    public String getRankQuery(int siteID) {
+        List<Integer> ranks = getRanks(siteID);
         if (ranks.isEmpty())
             return null;
         StringBuilder sbGroups = new StringBuilder();

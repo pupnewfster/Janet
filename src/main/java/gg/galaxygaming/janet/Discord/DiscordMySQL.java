@@ -94,14 +94,14 @@ public class DiscordMySQL extends AbstractMySQL {
      */
     private void check(@Nonnull User user) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
         List<Long> discordRanks = new ArrayList<>();
-        String siteID = null;
+        int siteID = -1;
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT website_id FROM discord_verified WHERE discord_id = " + user.getId());
             if (rs.next())
-                siteID = rs.getString("website_id");
+                siteID = rs.getInt("website_id");
             rs.close();
-            if (siteID == null) {
+            if (siteID < 0) {
                 stmt.close();
                 return;
             }
@@ -144,12 +144,12 @@ public class DiscordMySQL extends AbstractMySQL {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        if (siteID == null)
+        if (siteID < 0)
             return;
         Server server = Janet.getDiscord().getServer();
         Collection<Role> roles = user.getRoles(server);
         List<Long> newRanks = new ArrayList<>();
-        boolean changed = false, hadRoom = discordRanks.contains(this.supporterID)  || getRankPowerByID(discordRanks).hasRank(Rank.MANAGER);
+        boolean changed = false, hadRoom = discordRanks.contains(this.supporterID) || getRankPowerByID(discordRanks).hasRank(Rank.MANAGER);
         for (Role r : roles) {
             long id = r.getId();
             if (!this.ranks.contains(id)) //Rank is not one that gets set by janet
@@ -181,7 +181,7 @@ public class DiscordMySQL extends AbstractMySQL {
      * @param hasRoom True if the {@link User} should have a room, false otherwise.
      * @param hadRoom True if the user used to have a room and the room should be deleted, false otherwise.
      */
-    private void checkRoom(@Nonnull User user, @Nonnull String siteID, boolean hasRoom, boolean hadRoom) {
+    private void checkRoom(@Nonnull User user, int siteID, boolean hasRoom, boolean hadRoom) {
         int ts = -1;
         long discord = -1;
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {

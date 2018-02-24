@@ -5,7 +5,7 @@ import javax.annotation.Nonnull;
 /**
  * An enum representing the {@link Rank} structure of our community.
  */
-public enum Rank {
+public enum Rank {//TODO: Store the color the rank should have in this so that when TeamSpeak Widget is made it can also have colored things
     /**
      * {@link Rank} representing the Executive Staff.
      * <p>

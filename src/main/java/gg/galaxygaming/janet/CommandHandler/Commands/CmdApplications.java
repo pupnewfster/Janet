@@ -14,6 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * An implementation of {@link Cmd} to list the open applications on the forums.
+ */
 public class CmdApplications implements Cmd {
     @Override
     public void performCommand(@Nonnull String[] args, @Nonnull CommandSender sender) {

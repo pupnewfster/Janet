@@ -8,6 +8,9 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * An implementation of {@link Cmd} to retrieve the ID the {@link CommandSender} needs to verify their account.
+ */
 public class CmdGetID implements Cmd {
     @Override
     public void performCommand(@Nonnull String[] args, @Nonnull CommandSender sender) {
@@ -24,7 +27,7 @@ public class CmdGetID implements Cmd {
     @Override
     @Nonnull
     public String helpDoc() {
-        return "Returns your discord ID.";
+        return "Returns your discord or TeamSpeak ID.";
     }
 
     @Override

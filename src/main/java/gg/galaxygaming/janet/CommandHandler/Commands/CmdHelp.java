@@ -9,6 +9,9 @@ import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * An implementation of {@link Cmd} to list all the commands the {@link CommandSender} has access to.
+ */
 public class CmdHelp implements Cmd {
     @Override
     public void performCommand(@Nonnull String[] args, @Nonnull CommandSender sender) {

@@ -93,8 +93,8 @@ public class Config extends Properties {
                 setProperty("TEAMSPEAK_DEFAULT", "-1");
             if (!containsKey("TEAMSPEAK_USER_ROOMS"))
                 setProperty("TEAMSPEAK_USER_ROOMS", "-1");
-            if (!containsKey("TEAMSPEAK_CHANEL_ADMIN"))
-                setProperty("TEAMSPEAK_CHANEL_ADMIN", "-1");
+            if (!containsKey("TEAMSPEAK_CHANNEL_ADMIN"))
+                setProperty("TEAMSPEAK_CHANNEL_ADMIN", "-1");
             if (!containsKey("TEAMSPEAK_SUPPORTER"))
                 setProperty("TEAMSPEAK_SUPPORTER", "-1");
 

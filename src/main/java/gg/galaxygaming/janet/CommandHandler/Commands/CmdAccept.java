@@ -13,6 +13,9 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * An implementation of {@link Cmd} to accept an open applications on the forums.
+ */
 public class CmdAccept implements Cmd {
     @Override
     public void performCommand(@Nonnull String[] args, @Nonnull CommandSender sender) {

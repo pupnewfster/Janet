@@ -7,6 +7,9 @@ import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * An implementation of {@link Cmd} to return the {@link gg.galaxygaming.janet.CommandHandler.Rank} the {@link CommandSender} has.
+ */
 public class CmdRank implements Cmd {
     @Override
     public void performCommand(@Nonnull String[] args, @Nonnull CommandSender sender) {
