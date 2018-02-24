@@ -1,76 +1,79 @@
 package gg.galaxygaming.janet.CommandHandler;
 
 import javax.annotation.Nonnull;
+import java.awt.Color;
 
 /**
  * An enum representing the {@link Rank} structure of our community.
  */
-public enum Rank {//TODO: Store the color the rank should have in this so that when TeamSpeak Widget is made it can also have colored things
+public enum Rank {
     /**
      * {@link Rank} representing the Executive Staff.
      * <p>
      * This includes the Owner, Executive Director, and Head Developer.
      */
-    EXECUTIVE_STAFF("Executive Staff", 12),
+    EXECUTIVE_STAFF("Executive Staff", 12, new Color(0xFF0000)),
     /**
      * {@link Rank} representing all the Directors of our servers.
      */
-    DIRECTOR("Director", 11),
+    DIRECTOR("Director", 11, new Color(0xFF0000)),
     /**
      * {@link Rank} representing all the Managers of our servers.
      */
-    MANAGER("Manager", 10),
+    MANAGER("Manager", 10, new Color(0xFFCC00)),
     /**
      * {@link Rank} representing all the Senior Admins of our servers.
      */
-    SENIOR_ADMIN("Senior Admin", 9),
+    SENIOR_ADMIN("Senior Admin", 9, new Color(0xFF6600)),
     /**
      * {@link Rank} representing all Developers.
      */
-    DEV("Developer", 8),
+    DEV("Developer", 8, new Color(0xA00CA3)),
     /**
      * {@link Rank} representing all the Admins of our servers.
      */
-    ADMIN("Admin", 7),
+    ADMIN("Admin", 7, new Color(0xFF9900)),
     /**
      * {@link Rank} representing all the Moderators of our servers.
      */
-    MODERATOR("Moderator", 6),
+    MODERATOR("Moderator", 6, new Color(0x00CCFF)),
     /**
      * {@link Rank} representing any bots.
      */
-    BOT("Bot", 5),
+    BOT("Bot", 5, new Color(0xFF0000)),
     /**
      * {@link Rank} representing all the Trial Moderators of our servers.
      */
-    TMOD("Trial Mod", 4),
+    TMOD("Trial Mod", 4, new Color(0xD900FF)),
     /**
      * {@link Rank} representing all Trial Developers.
      */
-    TDEV("Trial Dev", 3),
+    TDEV("Trial Dev", 3, new Color(0xD900FF)),
     /**
      * {@link Rank} representing all the Donor Moderators of our servers.
      */
-    DMOD("Donor Mod", 2),
+    DMOD("Donor Mod", 2, new Color(0x98EFF5)),
     /**
      * {@link Rank} representing all the people who are verified as members of our community.
      */
-    MEMBER("Member", 1),
+    MEMBER("Member", 1, new Color(0x00E100)),
     /**
      * {@link Rank} representing all Guests.
      */
-    GUEST("Guest", 0),
+    GUEST("Guest", 0, new Color(0xFFFFFF)),
     /**
      * {@link Rank} representing anyone who is banned. Currently an unused rank.
      */
-    BANNED("Banned", -1);
+    BANNED("Banned", -1, new Color(0x515151));
 
     private final String name;
     private final int power;
+    private final Color color;
 
-    Rank(String name, int power) {
+    Rank(String name, int power, Color color) {
         this.name = name;
         this.power = power;
+        this.color = color;
     }
 
     /**
@@ -97,8 +100,18 @@ public enum Rank {//TODO: Store the color the rank should have in this so that w
      * Retrieves the proper name representing this {@link Rank}.
      * @return The proper name of this {@link Rank}.
      */
+    @Nonnull
     public String getName() {
         return this.name;
+    }
+
+    /**
+     * Retrieves the {@link Color} that this {@link Rank} displays as.
+     * @return The {@link Color} that this {@link Rank} displays as.
+     */
+    @Nonnull
+    public Color getColor() {
+        return this.color;
     }
 
     /**
