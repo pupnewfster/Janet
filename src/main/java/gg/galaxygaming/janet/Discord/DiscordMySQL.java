@@ -92,7 +92,7 @@ public class DiscordMySQL extends AbstractMySQL {
      * Checks to see if a {@link User} is authenticated and if so give them their ranks.
      * @param user The {@link User} to check.
      */
-    private void check(@Nonnull User user) {//TODO: cache the website id in case multiple have the same stuff (cache only through single run) this will be more useful for ts
+    private void check(@Nonnull User user) {
         List<Long> discordRanks = new ArrayList<>();
         int siteID = -1;
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {

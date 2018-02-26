@@ -377,12 +377,12 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
         }
         if (acceptedForum < 0 || server == null)
             return "ERROR: Unable to find accepted forum. This is probably because the given post is not in an applications forum.";
-        Map<Integer, Integer> rankMap = new HashMap<>();
+        Map<Integer, RankInfo> rankMap = new HashMap<>();
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT old_rank, new_rank FROM forum_promote_info WHERE server = \"" + server + '"');
+            ResultSet rs = stmt.executeQuery("SELECT old_rank, new_rank, add_rank FROM forum_promote_info WHERE server = \"" + server + '"');
             while (rs.next())
-                rankMap.put(rs.getInt("old_rank"), rs.getInt("new_rank"));
+                rankMap.put(rs.getInt("old_rank"), new RankInfo(rs.getInt("new_rank"), rs.getBoolean("add_rank")));
             rs.close();
             stmt.close();
         } catch (SQLException e) {
@@ -401,9 +401,12 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
                 rankFound = true;
             }
         int newRank;
-        if (rankMap.containsKey(oldRank))
-            newRank = rankMap.get(oldRank);
-        else
+        boolean addRank;
+        if (rankMap.containsKey(oldRank)) {
+            RankInfo nRank  = rankMap.get(oldRank);
+            newRank = nRank.getRank();
+            addRank = nRank.add();
+        } else
             return "ERROR: No available rank found to promote member to. This is likely because they are already the highest rank autopromote can set them to.";
         JsonObject lockMove = new JsonObject();
         lockMove.put("locked", 1);
@@ -422,8 +425,40 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
             return "ERROR: Unable to find forum: " + forumId + '.';
         if (forum.containsKey("errorCode"))
             return "An error occurred posting the acceptance message. Error Code:" + forum.getStringOrDefault(Jsoner.mintJsonKey("errorMessage", "UNKNOWN"));
-        if (!replaceRank(siteID, oldRank, newRank))
-            return "Failed to change rank " + oldRank + " to " + newRank;
+        if (addRank) {
+            if (!addRank(siteID, newRank))
+                return "Failed to add new rank " + newRank + '.';
+        } else if (!replaceRank(siteID, oldRank, newRank))
+            return "Failed to change rank " + oldRank + " to " + newRank + '.';
         return "Successfully accepted the application with the id: " + id + '.';
+    }
+
+    /**
+     * Stores information about whether to add the rank or replace it with the new rank.
+     */
+    private class RankInfo {
+        private final int rank;
+        private final boolean add;
+
+        private RankInfo(int rank, boolean add) {
+            this.rank = rank;
+            this.add = add;
+        }
+
+        /**
+         * Retrieves the rank to add.
+         * @return The rank to add.
+         */
+        public int getRank() {
+            return this.rank;
+        }
+
+        /**
+         * Checks if this rank should replace the old rank.
+         * @return True if this rank should not replace the old rank, false otherwise.
+         */
+        public boolean add() {
+            return this.add;
+        }
     }
 }
