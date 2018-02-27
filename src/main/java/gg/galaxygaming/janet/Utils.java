@@ -12,7 +12,7 @@ public final class Utils {
     public static boolean legalInt(String input) {
         try {
             Integer.parseInt(input);
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             return false;
         }
         return true;

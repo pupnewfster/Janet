@@ -8,6 +8,7 @@ import gg.galaxygaming.janet.api.AbstractIntegration;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
@@ -26,10 +27,10 @@ public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this 
     public ForumIntegration() {
         super();
         Config config = Janet.getConfig();
-        this.restURL = config.getStringOrDefault("REST_URL", "rest_url");
-        this.restAPIKey = config.getStringOrDefault("REST_API_KEY", "api_key");
-        this.janetID = config.getIntegerOrDefault("JANET_FORUM_ID", 0);
-        this.acceptMessage = config.getStringOrDefault("APP_ACCEPT_MESSAGE", "Accepted.");
+        this.restURL = config.getOrDefault("REST_URL", "rest_url");
+        this.restAPIKey = config.getOrDefault("REST_API_KEY", "api_key");
+        this.janetID = config.getOrDefault("JANET_FORUM_ID", 0);
+        this.acceptMessage = config.getOrDefault("APP_ACCEPT_MESSAGE", "Accepted.");
         if (this.restURL.equals("rest_url") || this.restAPIKey.equals("api_key")) {
             Janet.getLogger().error("Failed to load needed configs for Rest Integration");
             return;
@@ -92,10 +93,10 @@ public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this 
                 while ((inputLine = in.readLine()) != null)
                     response.append(inputLine);
                 in.close();
-                json = (JsonObject) Jsoner.deserialize(response.toString());
+                json = Jsoner.deserialize(response.toString(), new JsonObject());
             }
             con.disconnect();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return json;
@@ -125,7 +126,7 @@ public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this 
                 json = Jsoner.deserialize(content.toString(), new JsonObject());
             }
             con.disconnect();
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return json;

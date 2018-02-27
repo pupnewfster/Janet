@@ -46,9 +46,6 @@ public abstract class AbstractMySQL implements MySQL {
 
     public void stop() {
         this.stop = true;
-        try {
-            this.checkThread.interrupt();
-        } catch (Exception ignored) {
-        }
+        this.checkThread.interrupt();
     }
 }

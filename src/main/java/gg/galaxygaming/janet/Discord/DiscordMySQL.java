@@ -30,21 +30,21 @@ public class DiscordMySQL extends AbstractMySQL {
     public DiscordMySQL() {
         super();
         Config config = Janet.getConfig();
-        String dbName = config.getStringOrDefault("DB_NAME", "database");
-        String dbUser = config.getStringOrDefault("DB_USER", "user");
-        String dbPass = config.getStringOrDefault("DB_PASSWORD", "password");
-        this.verifiedRank = config.getLongOrDefault("DISCORD_VERIFIED", -1);
-        this.staffRank = config.getLongOrDefault("DISCORD_STAFF", -1);
-        this.seniorRank = config.getLongOrDefault("DISCORD_SENIOR", -1);
-        this.donorRank = config.getLongOrDefault("DISCORD_DONOR", -1);
-        this.supporterID = config.getLongOrDefault("DISCORD_SUPPORTER", -1);
-        this.userRooms = config.getLongOrDefault("DISCORD_USER_ROOMS", -1);
+        String dbName = config.getOrDefault("DB_NAME", "database");
+        String dbUser = config.getOrDefault("DB_USER", "user");
+        String dbPass = config.getOrDefault("DB_PASSWORD", "password");
+        this.verifiedRank = config.getOrDefault("DISCORD_VERIFIED", -1L);
+        this.staffRank = config.getOrDefault("DISCORD_STAFF", -1L);
+        this.seniorRank = config.getOrDefault("DISCORD_SENIOR", -1L);
+        this.donorRank = config.getOrDefault("DISCORD_DONOR", -1L);
+        this.supporterID = config.getOrDefault("DISCORD_SUPPORTER", -1L);
+        this.userRooms = config.getOrDefault("DISCORD_USER_ROOMS", -1L);
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || this.verifiedRank < 0 || this.staffRank < 0 ||
                 this.seniorRank < 0 || this.donorRank < 0 || supporterID < 0 || this.userRooms < 0) {
             Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (Discord)");
             return;
         }
-        this.url = "jdbc:mysql://" + config.getStringOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
+        this.url = "jdbc:mysql://" + config.getOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
         properties.setProperty("user", dbUser);
         properties.setProperty("password", dbPass);
         indexRanks();
@@ -255,7 +255,7 @@ public class DiscordMySQL extends AbstractMySQL {
                 rs.close();
             }
             stmt.close();
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
         return r;

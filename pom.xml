@@ -61,9 +61,14 @@
             <version>3.0.2</version>
         </dependency>
         <dependency>
+            <groupId>com.graphql-java</groupId>
+            <artifactId>graphql-java</artifactId>
+            <version>7.0</version>
+        </dependency>
+        <dependency>
             <groupId>de.btobastian</groupId>
             <artifactId>Javacord</artifactId>
-            <version>c8622a3</version>
+            <version>cd364ae</version>
         </dependency>
     </dependencies>
 

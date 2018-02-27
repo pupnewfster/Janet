@@ -17,14 +17,14 @@ public class DonationMySQL extends AbstractMySQL {
     public DonationMySQL() {
         super();
         Config config = Janet.getConfig();
-        String dbName = config.getStringOrDefault("DB_NAME", "database");
-        String dbUser = config.getStringOrDefault("DB_USER", "user");
-        String dbPass = config.getStringOrDefault("DB_PASSWORD", "password");
+        String dbName = config.getOrDefault("DB_NAME", "database");
+        String dbUser = config.getOrDefault("DB_USER", "user");
+        String dbPass = config.getOrDefault("DB_PASSWORD", "password");
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user")) {
             Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (Donations)");
             return;
         }
-        this.url = "jdbc:mysql://" + config.getStringOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
+        this.url = "jdbc:mysql://" + config.getOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
         properties.setProperty("user", dbUser);
         properties.setProperty("password", dbPass);
         this.service = "Donations";
@@ -69,7 +69,7 @@ public class DonationMySQL extends AbstractMySQL {
                     stmt3.execute("INSERT INTO donated_points (steamid,points,is_premium,server) VALUES(" + steamid + ',' + points + ',' + premium + ",\"" + server + "\")");
                     stmt3.close();
                     stmt2.execute("DELETE FROM ps2_info WHERE id = " + rs.getInt("id"));//Delete the row
-                } catch (Exception e) {
+                } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }

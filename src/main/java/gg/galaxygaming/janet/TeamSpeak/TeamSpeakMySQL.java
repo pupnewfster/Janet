@@ -27,18 +27,18 @@ public class TeamSpeakMySQL extends AbstractMySQL {
     public TeamSpeakMySQL() {
         super();
         Config config = Janet.getConfig();
-        String dbName = config.getStringOrDefault("DB_NAME", "database");
-        String dbUser = config.getStringOrDefault("DB_USER", "user");
-        String dbPass = config.getStringOrDefault("DB_PASSWORD", "password");
-        this.userRooms = config.getIntegerOrDefault("TEAMSPEAK_USER_ROOMS", -1);
-        this.supporterID = config.getIntegerOrDefault("TEAMSPEAK_SUPPORTER", -1);
-        this.channelAdmin = config.getIntegerOrDefault("TEAMSPEAK_CHANNEL_ADMIN", -1);
+        String dbName = config.getOrDefault("DB_NAME", "database");
+        String dbUser = config.getOrDefault("DB_USER", "user");
+        String dbPass = config.getOrDefault("DB_PASSWORD", "password");
+        this.userRooms = config.getOrDefault("TEAMSPEAK_USER_ROOMS", -1);
+        this.supporterID = config.getOrDefault("TEAMSPEAK_SUPPORTER", -1);
+        this.channelAdmin = config.getOrDefault("TEAMSPEAK_CHANNEL_ADMIN", -1);
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || this.userRooms < 0 ||
                 this.channelAdmin < 0 || this.supporterID < 0) {
             Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (TeamSpeak)");
             return;
         }
-        this.url = "jdbc:mysql://" + config.getStringOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
+        this.url = "jdbc:mysql://" + config.getOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
         properties.setProperty("user", dbUser);
         properties.setProperty("password", dbPass);
         indexRanks();

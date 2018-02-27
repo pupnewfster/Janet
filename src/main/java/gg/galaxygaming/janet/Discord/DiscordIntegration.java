@@ -22,10 +22,10 @@ public class DiscordIntegration extends AbstractIntegration {
     public DiscordIntegration() {
         super();
         Config config = Janet.getConfig();
-        String token = config.getStringOrDefault("DISCORD_TOKEN", "token");
-        this.serverID = config.getLongOrDefault("DISCORD_SERVER", -1);
-        this.authMessage = config.getStringOrDefault("DISCORD_AUTH_MESSAGE", "Go authenticate your account.");
-        this.devChannel = config.getLongOrDefault("DISCORD_DEV_CHANNEL", -1);
+        String token = config.getOrDefault("DISCORD_TOKEN", "token");
+        this.serverID = config.getOrDefault("DISCORD_SERVER", -1L);
+        this.authMessage = config.getOrDefault("DISCORD_AUTH_MESSAGE", "Go authenticate your account.");
+        this.devChannel = config.getOrDefault("DISCORD_DEV_CHANNEL", -1L);
         if (token.equals("token") || this.serverID < 0 || this.devChannel < 0) {
             Janet.getLogger().error("Failed to load needed configs for Discord Integration");
             return;

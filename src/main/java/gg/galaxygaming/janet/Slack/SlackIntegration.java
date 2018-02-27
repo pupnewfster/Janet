@@ -4,6 +4,7 @@ import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
 import com.neovisionaries.ws.client.WebSocket;
 import com.neovisionaries.ws.client.WebSocketAdapter;
+import com.neovisionaries.ws.client.WebSocketException;
 import com.neovisionaries.ws.client.WebSocketFactory;
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.Config;
@@ -14,6 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
@@ -36,8 +38,8 @@ public class SlackIntegration extends AbstractIntegration {
 
     public SlackIntegration() {
         Config config = Janet.getConfig();
-        this.token = config.getStringOrDefault("SLACK_TOKEN", "token");
-        this.infoChannel = config.getStringOrDefault("INFO_CHANNEL", "info_channel");
+        this.token = config.getOrDefault("SLACK_TOKEN", "token");
+        this.infoChannel = config.getOrDefault("INFO_CHANNEL", "info_channel");
         if (this.token.equals("token") || this.infoChannel.equals("info_channel")) {
             Janet.getLogger().error("Failed to load needed configs for Slack Integration");
             return;
@@ -120,8 +122,7 @@ public class SlackIntegration extends AbstractIntegration {
             String webSocketUrl = json.getString(Jsoner.mintJsonKey("url", null));
             if (webSocketUrl != null)
                 openWebSocket(webSocketUrl);
-        } catch (Exception ignored) {
-            return false;
+        } catch (IOException ignored) {
         }
         isConnected = true;
         sendMessage("Connected.", infoChannel);
@@ -154,7 +155,7 @@ public class SlackIntegration extends AbstractIntegration {
                     }
                 }
             }).connect();
-        } catch (Exception e) {
+        } catch (WebSocketException | IOException e) {
             e.printStackTrace();
         }
     }
@@ -204,14 +205,14 @@ public class SlackIntegration extends AbstractIntegration {
             while ((inputLine = in.readLine()) != null)
                 response.append(inputLine);
             in.close();
-            JsonObject jsonResponse = (JsonObject) Jsoner.deserialize(response.toString());
+            JsonObject jsonResponse = Jsoner.deserialize(response.toString(), new JsonObject());
             if (!jsonResponse.getBooleanOrDefault(Jsoner.mintJsonKey("ok", false)))
                 return null; //User does not exist or is deactivated
             JsonObject userInfo = (JsonObject) jsonResponse.get("user");
             if (userInfo.getBooleanOrDefault(Jsoner.mintJsonKey("deleted", false))) //This may not ever even be true, given account is deactivated
                 return null;
             userMap.put(id, user = new SlackUser(userInfo));
-        } catch (Exception e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return user;

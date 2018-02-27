@@ -1,8 +1,11 @@
 package gg.galaxygaming.janet;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.*;
-import java.util.Properties;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * A basic wrapper for Properties.
@@ -121,81 +124,128 @@ public class Config extends Properties {
     }
 
     /**
-     * Gets a {@link String} from the config with the specified key.
-     * @param key The key to search the config for.
-     * @return The value in the config for the specified key.
-     */
-    public String getString(@Nonnull String key) {
-        return getProperty(key);
-    }
-
-    /**
-     * Gets a {@link String} from the config with the specified key, or returns the given value if the key is not found.
+     * Gets an object with the specified type from the config with the given key, or returns the given default if the key is not found.
+     * <p>
+     * <p>This is a wrapper for {@link #getOrDefault(Class, String, Object)} so that if the default is not null it does not require the class type.</p>
      * @param key          The key to search the config for.
      * @param defaultValue The value to return if the key is not found in the config.
-     * @return The value in the config for the specified key, or returns the given value if the key is not found
+     * @param <T>          The type of the object to retrieve from the config.
+     * @return The value in the config for the specified key, or returns the given value if the key is not found.
      */
-    public String getStringOrDefault(@Nonnull String key, String defaultValue) {
-        return getProperty(key, defaultValue);
+    @Nonnull
+    public <T> T getOrDefault(@Nonnull String key, @Nonnull T defaultValue) {
+        T v = getOrDefault((Class<T>) defaultValue.getClass(), key, defaultValue);
+        return v == null ? defaultValue : v;//v should never be able to be null but just in case
     }
 
     /**
-     * Gets an int from the config with the specified key.
-     * @param key The key to search the config for.
-     * @return The value in the config for the specified key.
-     */
-    public int getInteger(@Nonnull String key) {
-        String value = getProperty(key);
-        try {
-            return Integer.valueOf(value);
-        } catch (NumberFormatException e) {
-            return 0;//TODO throw an invalid exception of some kind
-        }
-    }
-
-    /**
-     * Gets an int from the config with the specified key.
+     * Gets an object with the specified type from the config with the given key, or returns the given default if the key is not found.
+     * <p>
+     * <p>To add create new objects that this method can read from a config create a valueOf({@link String}) method.</p>
+     * @param c            The class that determines the type that will be returned.
      * @param key          The key to search the config for.
      * @param defaultValue The value to return if the key is not found in the config.
-     * @return The value in the config for the specified key.
+     * @param <T>          The type of the object to retrieve from the config.
+     * @return The value in the config for the specified key, or returns the given value if the key is not found.
      */
-    public int getIntegerOrDefault(@Nonnull String key, int defaultValue) {
-        String value = getProperty(key);
+    @Nullable
+    public <T> T getOrDefault(@Nonnull Class<T> c, @Nonnull String key, @Nullable T defaultValue) {
+        T value = defaultValue;
+        if (!containsKey(key))
+            return value;
+        String cValue = getProperty(key);
+        if (String.class.isAssignableFrom(c))
+            return (T) cValue;
         try {
-            return Integer.valueOf(value);
-        } catch (NumberFormatException e) {
-            return defaultValue;
+            value = (T) c.getMethod("valueOf", String.class).invoke(null, cValue);
+        } catch (InvocationTargetException | SecurityException | IllegalAccessException e) { //Should not be thrown
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            if (Collection.class.isAssignableFrom(c)) {
+                String[] split = cValue.split(",");
+                Collection<String> t = getCollection(c);
+                if (t == null)
+                    Janet.getLogger().error("Unable to find a default Collection implementation for class: " + c.getSimpleName() + '.');
+                else {
+                    Collections.addAll(t, split);
+                    value = (T) t;
+                }
+            } else if (Map.class.isAssignableFrom(c)) {
+                String[] split = cValue.split(",");
+                Map<String, String> t = getMap(c);
+                if (t == null)
+                    Janet.getLogger().error("Unable to find a default Map implementation for class: " + c.getSimpleName() + '.');
+                else {
+                    for (String info : split) {
+                        String[] s = info.split(";");
+                        if (s.length == 2)
+                            t.put(s[0], s[1]);
+                        else //Error
+                            Janet.getLogger().error("Unable to add: '" + info + "' to map.");
+                    }
+                    value = (T) t;
+                }
+            } else {//TODO: Add more wrappers if needed
+                System.out.println("No method found, key is: " + key + ". Passed class type: " + c.getSimpleName());
+            }
+        } catch (IllegalArgumentException ignored) {//Invalid param, return the default
         }
+        return value;
     }
 
     /**
-     * Gets a long from the config with the specified key.
-     * @param key The key to search the config for.
-     * @return The value in the config for the specified key.
+     * Creates an empty {@link Map} from the given type.
+     * @param c The class to attempt to create a {@link Map} from.
+     * @return An empty {@link Map} from the given type.
      */
-    public long getLong(@Nonnull String key) {
-        String value = getProperty(key);
+    private Map<String, String> getMap(Class<?> c) {//TODO: Figure out how to have keys or values that are not strings
+        Map<String, String> t = null;//Once that is figured out change to just be Map instead of Map<String, String>?
         try {
-            return Long.valueOf(value);
-        } catch (NumberFormatException e) {
-            return 0;//TODO throw an invalid exception of some kind
+            t = (Map<String, String>) c.newInstance();
+        } catch (InstantiationException ignored) {
+            if (ConcurrentNavigableMap.class.isAssignableFrom(c))
+                t = new ConcurrentSkipListMap<>();
+            else if (ConcurrentMap.class.isAssignableFrom(c))
+                t = new ConcurrentHashMap<>();
+            else if (SortedMap.class.isAssignableFrom(c))
+                t = new TreeMap<>();
+            else
+                t = new HashMap<>();
+        } catch (IllegalAccessException e1) { //Should not happen
+            e1.printStackTrace();
         }
+        return t;
     }
 
     /**
-     * Gets a long from the config with the specified key.
-     * @param key          The key to search the config for.
-     * @param defaultValue The value to return if the key is not found in the config.
-     * @return The value in the config for the specified key.
+     * Creates an empty {@link Collection} from the given type.
+     * @param c The class to attempt to create a {@link Collection} from.
+     * @return An empty {@link Collection} from the given type.
      */
-    public long getLongOrDefault(@Nonnull String key, long defaultValue) {
-        String value = getProperty(key);
+    private Collection<String> getCollection(Class<?> c) {//TODO: Figure out how to do types such as List<Integer>
+        Collection<String> t = null;//Once that is figured out change to just be Collection instead of Collection<String>?
         try {
-            return Long.valueOf(value);
-        } catch (NumberFormatException e) {
-            return defaultValue;
+            t = (Collection<String>) c.newInstance();
+        } catch (InstantiationException ignored) {
+            if (List.class.isAssignableFrom(c))
+                t = new ArrayList<>();
+            else if (Set.class.isAssignableFrom(c)) {
+                if (SortedSet.class.isAssignableFrom(c))
+                    t = new TreeSet<>();
+                else
+                    t = new HashSet<>();
+            } else if (Queue.class.isAssignableFrom(c)) {
+                if (BlockingQueue.class.isAssignableFrom(c)) {
+                    if (BlockingDeque.class.isAssignableFrom(c))
+                        t = new LinkedBlockingDeque<>();
+                    else if (TransferQueue.class.isAssignableFrom(c))
+                        t = new LinkedTransferQueue<>();
+                } else //It is a Queue or a Dequeue
+                    t = new LinkedList<>();
+            }
+        } catch (IllegalAccessException e1) { //Should not happen
+            e1.printStackTrace();
         }
+        return t;
     }
-
-    //TODO add more default wrappers, such as boolean, double, maybe move the splitting by comma into an array wrapper
 }

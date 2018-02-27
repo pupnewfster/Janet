@@ -24,20 +24,20 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
     public TeamSpeakIntegration() {
         super();
         Config config = Janet.getConfig();
-        String username = config.getStringOrDefault("TEAMSPEAK_USERNAME", "username");
-        String password = config.getStringOrDefault("TEAMSPEAK_PASSWORD", "password");
-        this.dndID = config.getIntegerOrDefault("TEAMSPEAK_DND", -1);
-        this.verifiedID = config.getIntegerOrDefault("TEAMSPEAK_VERIFIED", -1);
-        this.defaultChannel = config.getIntegerOrDefault("TEAMSPEAK_DEFAULT", -1);
-        this.joinMessage = config.getStringOrDefault("TEAMSPEAK_JOIN", "Welcome.");
-        this.verifyMessage = config.getStringOrDefault("TEAMSPEAK_VERIFY", "Go verify.");
-        this.roomCreatorName = config.getStringOrDefault("TEAMSPEAK_ROOM_CREATOR", "Join here to create a new room");
+        String username = config.getOrDefault("TEAMSPEAK_USERNAME", "username");
+        String password = config.getOrDefault("TEAMSPEAK_PASSWORD", "password");
+        this.dndID = config.getOrDefault("TEAMSPEAK_DND", -1);
+        this.verifiedID = config.getOrDefault("TEAMSPEAK_VERIFIED", -1);
+        this.defaultChannel = config.getOrDefault("TEAMSPEAK_DEFAULT", -1);
+        this.joinMessage = config.getOrDefault("TEAMSPEAK_JOIN", "Welcome.");
+        this.verifyMessage = config.getOrDefault("TEAMSPEAK_VERIFY", "Go verify.");
+        this.roomCreatorName = config.getOrDefault("TEAMSPEAK_ROOM_CREATOR", "Join here to create a new room");
         if (username.equals("username") || password.equals("password") || this.dndID < 0 || this.verifiedID < 0 || this.defaultChannel < 0) {
             Janet.getLogger().error("Failed to load needed configs for TeamSpeak Integration");
             return;
         }
         this.ts3Config = new TS3Config();
-        this.ts3Config.setHost(config.getStringOrDefault("TEAMSPEAK_HOST", "127.0.0.1"));
+        this.ts3Config.setHost(config.getOrDefault("TEAMSPEAK_HOST", "127.0.0.1"));
         //this.ts3Config.setDebugLevel(Level.OFF);
         this.ts3Config.setFloodRate(TS3Query.FloodRate.UNLIMITED);
 

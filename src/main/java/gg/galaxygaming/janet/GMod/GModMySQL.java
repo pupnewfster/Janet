@@ -21,18 +21,18 @@ public class GModMySQL extends AbstractMySQL {
     public GModMySQL() {
         super();
         Config config = Janet.getConfig();
-        String dbName = config.getStringOrDefault("DB_NAME", "database");
-        String dbUser = config.getStringOrDefault("DB_USER", "user");
-        String dbPass = config.getStringOrDefault("DB_PASSWORD", "password");
-        String gmodName = config.getStringOrDefault("GMOD_DB_NAME", "database");
-        String gmodUser = config.getStringOrDefault("GMOD_DB_USER", "user");
-        String gmodPass = config.getStringOrDefault("GMOD_DB_PASSWORD", "password");
+        String dbName = config.getOrDefault("DB_NAME", "database");
+        String dbUser = config.getOrDefault("DB_USER", "user");
+        String dbPass = config.getOrDefault("DB_PASSWORD", "password");
+        String gmodName = config.getOrDefault("GMOD_DB_NAME", "database");
+        String gmodUser = config.getOrDefault("GMOD_DB_USER", "user");
+        String gmodPass = config.getOrDefault("GMOD_DB_PASSWORD", "password");
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || gmodPass.equals("password") ||
                 gmodUser.equals("user") || gmodName.equals("database")) {
             Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (GMod)");
             return;
         }
-        String host = config.getStringOrDefault("DB_HOST", "127.0.0.1:3306");
+        String host = config.getOrDefault("DB_HOST", "127.0.0.1:3306");
         this.url = "jdbc:mysql://" + host + '/' + dbName;
         this.gmodURL = "jdbc:mysql://" + host + '/' + gmodName;
         this.properties.setProperty("user", dbUser);

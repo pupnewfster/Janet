@@ -25,7 +25,7 @@ public final class CommandHandler {
             Cmd command = (Cmd) Cmd.class.getClassLoader().loadClass(pkg + name).newInstance();
             if (command != null)
                 this.cmds.add(command);
-        } catch (Exception ignored) {
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException ignored) {
         }
     }
 

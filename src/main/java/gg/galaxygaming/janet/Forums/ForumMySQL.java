@@ -27,15 +27,15 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
     public ForumMySQL() {
         super();
         Config config = Janet.getConfig();
-        String dbName = config.getStringOrDefault("DB_NAME", "database");
-        String dbUser = config.getStringOrDefault("DB_USER", "user");
-        String dbPass = config.getStringOrDefault("DB_PASSWORD", "password");
-        this.memberID = config.getIntegerOrDefault("FORUM_MEMBER_ID", -1);
+        String dbName = config.getOrDefault("DB_NAME", "database");
+        String dbUser = config.getOrDefault("DB_USER", "user");
+        String dbPass = config.getOrDefault("DB_PASSWORD", "password");
+        this.memberID = config.getOrDefault("FORUM_MEMBER_ID", -1);
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || this.memberID < 0) {
             Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (Forums)");
             return;
         }
-        this.url = "jdbc:mysql://" + config.getStringOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
+        this.url = "jdbc:mysql://" + config.getOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
         properties.setProperty("user", dbUser);
         properties.setProperty("password", dbPass);
         this.service = "Forums";
@@ -300,40 +300,32 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
     @Nullable
     public Map<Integer, String> getApplicationNames(String server) {
         Map<Integer, String> applications = new HashMap<>();
+        JsonObject forum = null;
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT forum_id FROM forum_info WHERE forum_name = \"" + server + '"');
-            if (rs.next()) {
-                int forumID = rs.getInt("forum_id");
-                JsonObject forum = Janet.getForums().sendGET("/forums/topics?forums=" + forumID);
-                if (forum == null) {
-                    rs.close();
-                    stmt.close();
-                    return null;
-                }
-                JsonArray rTopics = (JsonArray) forum.get("results");
-                for (Object t : rTopics) {
-                    JsonObject topic = (JsonObject) t;
-                    Integer topicID = topic.getIntegerOrDefault(Jsoner.mintJsonKey("id", null));
-                    String title = topic.getStringOrDefault(Jsoner.mintJsonKey("title", null));
-                    boolean hidden = topic.getBooleanOrDefault(Jsoner.mintJsonKey("hidden", false));
-                    boolean archived = topic.getBooleanOrDefault(Jsoner.mintJsonKey("archived", false));
-                    boolean pinned = topic.getBooleanOrDefault(Jsoner.mintJsonKey("pinned", false));
-                    if (topicID != null && title != null && !hidden && !archived && !pinned) {
-                        JsonObject post = (JsonObject) topic.get("firstPost");
-                        JsonObject author = (JsonObject) post.get("author");
-                        applications.put(topicID, title + ", Created by: " + author.getStringOrDefault(Jsoner.mintJsonKey("name", "unknown")) + '.');
-                    }
-                }
-            } else {
-                rs.close();
-                stmt.close();
-                return null;
-            }
+            if (rs.next())
+                forum = Janet.getForums().sendGET("/forums/topics?forums=" + rs.getInt("forum_id"));
             rs.close();
             stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+        if (forum == null || forum.isEmpty())
+            return null;
+        JsonArray rTopics = (JsonArray) forum.get("results");
+        for (Object t : rTopics) {
+            JsonObject topic = (JsonObject) t;
+            Integer topicID = topic.getIntegerOrDefault(Jsoner.mintJsonKey("id", null));
+            String title = topic.getStringOrDefault(Jsoner.mintJsonKey("title", null));
+            boolean hidden = topic.getBooleanOrDefault(Jsoner.mintJsonKey("hidden", false));
+            boolean archived = topic.getBooleanOrDefault(Jsoner.mintJsonKey("archived", false));
+            boolean pinned = topic.getBooleanOrDefault(Jsoner.mintJsonKey("pinned", false));
+            if (topicID != null && title != null && !hidden && !archived && !pinned) {
+                JsonObject post = (JsonObject) topic.get("firstPost");
+                JsonObject author = (JsonObject) post.get("author");
+                applications.put(topicID, title + ", Created by: " + author.getOrDefault(String.class, Jsoner.mintJsonKey("name", "unknown")) + '.');
+            }
         }
         return applications;
     }
@@ -347,10 +339,10 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
     public String acceptApp(int id) {
         ForumIntegration forums = Janet.getForums();
         JsonObject topic = forums.sendGET("/forums/topics/" + id);
-        if (topic == null)
+        if (topic == null || topic.isEmpty())
             return "ERROR: Failed to get topic information from id: " + id + ". Please check that the id is valid.";
         if (topic.containsKey("errorCode"))
-            return "An error occurred finding the topic with the id :" + id + ". Error Code:" + topic.getStringOrDefault(Jsoner.mintJsonKey("errorMessage", "UNKNOWN"));
+            return "An error occurred finding the topic with the id :" + id + ". Error Code:" + topic.getOrDefault(String.class, Jsoner.mintJsonKey("errorMessage", "UNKNOWN"));
         JsonObject f = (JsonObject) topic.get("forum");
         int forumId = f.getIntegerOrDefault(Jsoner.mintJsonKey("id", -1));
         JsonObject post = (JsonObject) topic.get("firstPost");
@@ -412,19 +404,19 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
         lockMove.put("locked", 1);
         lockMove.put("forum", acceptedForum);
         JsonObject moveResponse = forums.sendPOST("/forums/topics/" + id, lockMove);
-        if (moveResponse == null)
+        if (moveResponse == null || moveResponse.isEmpty())
             return "ERROR: Unable to move topic: " + id + '.';
         if (moveResponse.containsKey("errorCode"))
-            return "An error occurred moving and locking the topic. Error Code:" + moveResponse.getStringOrDefault(Jsoner.mintJsonKey("errorMessage", "UNKNOWN"));
+            return "An error occurred moving and locking the topic. Error Code:" + moveResponse.getOrDefault(String.class, Jsoner.mintJsonKey("errorMessage", "UNKNOWN"));
         JsonObject accept = new JsonObject();
         accept.put("topic", id);
         accept.put("author", forums.getJanetID());
         accept.put("post", "<p>" + forums.getAcceptMessage() + "</p>");
         JsonObject forum = forums.sendPOST("/forums/posts", accept);
-        if (forum == null)
+        if (forum == null || forum.isEmpty())
             return "ERROR: Unable to find forum: " + forumId + '.';
         if (forum.containsKey("errorCode"))
-            return "An error occurred posting the acceptance message. Error Code:" + forum.getStringOrDefault(Jsoner.mintJsonKey("errorMessage", "UNKNOWN"));
+            return "An error occurred posting the acceptance message. Error Code:" + forum.getOrDefault(String.class, Jsoner.mintJsonKey("errorMessage", "UNKNOWN"));
         if (addRank) {
             if (!addRank(siteID, newRank))
                 return "Failed to add new rank " + newRank + '.';
