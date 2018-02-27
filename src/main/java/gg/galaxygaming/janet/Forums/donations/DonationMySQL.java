@@ -15,19 +15,18 @@ import java.util.Calendar;
  */
 public class DonationMySQL extends AbstractMySQL {
     public DonationMySQL() {
-        super();
+        super("Donations");
         Config config = Janet.getConfig();
         String dbName = config.getOrDefault("DB_NAME", "database");
         String dbUser = config.getOrDefault("DB_USER", "user");
         String dbPass = config.getOrDefault("DB_PASSWORD", "password");
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user")) {
-            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (Donations)");
+            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (" + this.service + ')');
             return;
         }
         this.url = "jdbc:mysql://" + config.getOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
         properties.setProperty("user", dbUser);
         properties.setProperty("password", dbPass);
-        this.service = "Donations";
         this.checkThread.start();
     }
 

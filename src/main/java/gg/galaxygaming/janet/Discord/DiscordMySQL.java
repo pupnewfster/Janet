@@ -28,7 +28,7 @@ public class DiscordMySQL extends AbstractMySQL {
     private final long verifiedRank, staffRank, seniorRank, donorRank, supporterID, userRooms;
 
     public DiscordMySQL() {
-        super();
+        super("Discord");
         Config config = Janet.getConfig();
         String dbName = config.getOrDefault("DB_NAME", "database");
         String dbUser = config.getOrDefault("DB_USER", "user");
@@ -41,7 +41,7 @@ public class DiscordMySQL extends AbstractMySQL {
         this.userRooms = config.getOrDefault("DISCORD_USER_ROOMS", -1L);
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || this.verifiedRank < 0 || this.staffRank < 0 ||
                 this.seniorRank < 0 || this.donorRank < 0 || supporterID < 0 || this.userRooms < 0) {
-            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (Discord)");
+            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (" + this.service + ')');
             return;
         }
         this.url = "jdbc:mysql://" + config.getOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
@@ -51,7 +51,6 @@ public class DiscordMySQL extends AbstractMySQL {
         perms.add(new PermissionsBuilder().setState(PermissionType.MANAGE_CHANNELS, PermissionState.ALLOWED).build());
         perms.add(new PermissionsBuilder().setState(PermissionType.VOICE_MOVE_MEMBERS, PermissionState.ALLOWED).build());
         //TODO maybe add a way to lock room?
-        this.service = "Discord";
         this.checkThread.start();
     }
 

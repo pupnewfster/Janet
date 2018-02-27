@@ -25,20 +25,19 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
     private final int memberID;
 
     public ForumMySQL() {
-        super();
+        super("Forums");
         Config config = Janet.getConfig();
         String dbName = config.getOrDefault("DB_NAME", "database");
         String dbUser = config.getOrDefault("DB_USER", "user");
         String dbPass = config.getOrDefault("DB_PASSWORD", "password");
         this.memberID = config.getOrDefault("FORUM_MEMBER_ID", -1);
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || this.memberID < 0) {
-            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (Forums)");
+            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (" + this.service + ')');
             return;
         }
         this.url = "jdbc:mysql://" + config.getOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
         properties.setProperty("user", dbUser);
         properties.setProperty("password", dbPass);
-        this.service = "Forums";
         //this.checkThread.start();
     }
 
@@ -165,6 +164,10 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
     public boolean replaceRank(int siteID, int oldRankID, int newRankID) {
         if (oldRankID == newRankID)
             return true;
+        if (oldRankID < 0)//If the old rank cannot be in it just add the new rank
+            return addRank(siteID, newRankID);
+        if (newRankID < 0)//If the new rank cannot be in it just remove the old rank
+            return removeRank(siteID, oldRankID);
         List<Integer> ranks = getRanks(siteID);
         if (ranks.contains(newRankID))
             return true;
@@ -384,13 +387,16 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
             return "ERROR: No rank info found.";
         int oldRank = -1;
         List<Integer> ranks = getRanks(siteID);
-        boolean rankFound = false;
+        boolean rankFound = false, rankAdd = false;
         for (int rank : ranks)
             if (rankMap.containsKey(rank)) {
-                if (rankFound) //If someone screwed up and they have both TMod and Mod for example.
+                RankInfo info = rankMap.get(rank);
+                if (!info.add() && rankAdd || !rankFound) {
+                    oldRank = rank;
+                    rankFound = true;
+                    rankAdd = info.add();
+                } else //rankFound //If someone screwed up and they have both TMod and Mod for example.
                     return "ERROR: This user has more than one staff rank for this server.";
-                oldRank = rank;
-                rankFound = true;
             }
         int newRank;
         boolean addRank;

@@ -15,6 +15,15 @@ public abstract class AbstractMySQL implements MySQL {
     protected String url, service;
     protected boolean stop;
 
+    public AbstractMySQL(String service) {
+        this.service = service;
+        this.properties = new Properties();
+        this.properties.setProperty("useSSL", "false");
+        this.properties.setProperty("autoReconnect", "true");
+        this.properties.setProperty("useLegacyDatetimeCode", "false");
+        this.properties.setProperty("serverTimezone", "EST");
+    }
+
     /**
      * Runs a {@link #checkAll()} ever five minutes.
      */
@@ -29,14 +38,6 @@ public abstract class AbstractMySQL implements MySQL {
             }
         }
     });
-
-    public AbstractMySQL() {
-        this.properties = new Properties();
-        this.properties.setProperty("useSSL", "false");
-        this.properties.setProperty("autoReconnect", "true");
-        this.properties.setProperty("useLegacyDatetimeCode", "false");
-        this.properties.setProperty("serverTimezone", "EST");
-    }
 
     /**
      * Is called by the check thread and implements the different checks that each

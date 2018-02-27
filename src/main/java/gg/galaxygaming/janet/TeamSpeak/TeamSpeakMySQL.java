@@ -25,7 +25,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
     private final HashMap<Integer, CacheInfo> cachedInfo = new HashMap<>();
 
     public TeamSpeakMySQL() {
-        super();
+        super("TeamSpeak");
         Config config = Janet.getConfig();
         String dbName = config.getOrDefault("DB_NAME", "database");
         String dbUser = config.getOrDefault("DB_USER", "user");
@@ -35,14 +35,13 @@ public class TeamSpeakMySQL extends AbstractMySQL {
         this.channelAdmin = config.getOrDefault("TEAMSPEAK_CHANNEL_ADMIN", -1);
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || this.userRooms < 0 ||
                 this.channelAdmin < 0 || this.supporterID < 0) {
-            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (TeamSpeak)");
+            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (" + this.service + ')');
             return;
         }
         this.url = "jdbc:mysql://" + config.getOrDefault("DB_HOST", "127.0.0.1:3306") + '/' + dbName;
         properties.setProperty("user", dbUser);
         properties.setProperty("password", dbPass);
         indexRanks();
-        this.service = "TeamSpeak";
         this.checkThread.start();
     }
 

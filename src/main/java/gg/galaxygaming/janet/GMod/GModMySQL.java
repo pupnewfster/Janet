@@ -19,7 +19,7 @@ public class GModMySQL extends AbstractMySQL {
     private Properties gmodProperties;
 
     public GModMySQL() {
-        super();
+        super("GMod");
         Config config = Janet.getConfig();
         String dbName = config.getOrDefault("DB_NAME", "database");
         String dbUser = config.getOrDefault("DB_USER", "user");
@@ -29,7 +29,7 @@ public class GModMySQL extends AbstractMySQL {
         String gmodPass = config.getOrDefault("GMOD_DB_PASSWORD", "password");
         if (dbName.equals("database") || dbPass.equals("password") || dbUser.equals("user") || gmodPass.equals("password") ||
                 gmodUser.equals("user") || gmodName.equals("database")) {
-            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (GMod)");
+            Janet.getLogger().error("Failed to load config for connecting to MySQL Database. (" + this.service + ')');
             return;
         }
         String host = config.getOrDefault("DB_HOST", "127.0.0.1:3306");
@@ -44,7 +44,6 @@ public class GModMySQL extends AbstractMySQL {
         this.gmodProperties.setProperty("autoReconnect", "true");
         this.gmodProperties.setProperty("useLegacyDatetimeCode", "false");
         this.gmodProperties.setProperty("serverTimezone", "EST");
-        this.service = "GMod";
         this.checkThread.start();
     }
 
