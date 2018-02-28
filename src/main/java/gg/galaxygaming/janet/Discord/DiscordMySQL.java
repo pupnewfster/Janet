@@ -1,11 +1,11 @@
 package gg.galaxygaming.janet.Discord;
 
 import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.entities.Server;
-import de.btobastian.javacord.entities.User;
-import de.btobastian.javacord.entities.channels.ServerVoiceChannelBuilder;
-import de.btobastian.javacord.entities.channels.ServerVoiceChannelUpdater;
-import de.btobastian.javacord.entities.permissions.*;
+import de.btobastian.javacord.entity.channel.ServerVoiceChannelBuilder;
+import de.btobastian.javacord.entity.channel.ServerVoiceChannelUpdater;
+import de.btobastian.javacord.entity.permission.*;
+import de.btobastian.javacord.entity.server.Server;
+import de.btobastian.javacord.entity.user.User;
 import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Forums.ForumMySQL;

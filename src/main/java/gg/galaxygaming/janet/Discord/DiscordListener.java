@@ -1,10 +1,10 @@
 package gg.galaxygaming.janet.Discord;
 
-import de.btobastian.javacord.entities.message.Message;
-import de.btobastian.javacord.events.message.MessageCreateEvent;
-import de.btobastian.javacord.events.server.member.ServerMemberJoinEvent;
-import de.btobastian.javacord.listeners.message.MessageCreateListener;
-import de.btobastian.javacord.listeners.server.member.ServerMemberJoinListener;
+import de.btobastian.javacord.entity.message.Message;
+import de.btobastian.javacord.event.message.MessageCreateEvent;
+import de.btobastian.javacord.event.server.member.ServerMemberJoinEvent;
+import de.btobastian.javacord.listener.message.MessageCreateListener;
+import de.btobastian.javacord.listener.server.member.ServerMemberJoinListener;
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Janet;

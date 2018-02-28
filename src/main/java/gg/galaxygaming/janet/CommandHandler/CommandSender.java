@@ -1,9 +1,9 @@
 package gg.galaxygaming.janet.CommandHandler;
 
 import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
-import de.btobastian.javacord.entities.User;
-import de.btobastian.javacord.entities.channels.PrivateChannel;
-import de.btobastian.javacord.entities.channels.TextChannel;
+import de.btobastian.javacord.entity.channel.PrivateChannel;
+import de.btobastian.javacord.entity.channel.TextChannel;
+import de.btobastian.javacord.entity.user.User;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Slack.SlackUser;
 
