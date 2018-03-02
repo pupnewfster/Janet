@@ -1,7 +1,6 @@
 package gg.galaxygaming.janet.Discord;
 
 import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.entity.channel.ServerVoiceChannelBuilder;
 import de.btobastian.javacord.entity.channel.ServerVoiceChannelUpdater;
 import de.btobastian.javacord.entity.permission.*;
 import de.btobastian.javacord.entity.server.Server;
@@ -16,6 +15,7 @@ import javax.annotation.Nonnull;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -58,13 +58,20 @@ public class DiscordMySQL extends AbstractMySQL {
      * Index all the ranks that {@link Janet} can assign.
      */
     private void indexRanks() {
+        Server server = Janet.getDiscord().getServer();
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT discord_rank_id FROM rank_id_lookup");
             while (rs.next()) {
                 long rank = rs.getLong("discord_rank_id");
-                if (rank >= 0 && !this.ranks.contains(rank))//If multiple ranks point to the same one (VIP)
+                if (rank >= 0 && !this.ranks.contains(rank)) {//If multiple ranks point to the same one (VIP)
                     this.ranks.add(rank);
+                    server.getRoleById(rank).ifPresent(role -> {
+                        RoleUpdater updater = role.getUpdater();
+                        updater.setColor(getRankPower(Collections.singletonList(role)).getColor());
+                        updater.update();
+                    });
+                }
             }
             rs.close();
             stmt.close();
@@ -201,7 +208,7 @@ public class DiscordMySQL extends AbstractMySQL {
                 if (!hadRoom || discord < 0) {//Create it for them
                     String name = user.getDisplayName(server);
                     String finalName = name + (name.endsWith("s") ? "'" : "'s") + " Room";
-                    server.getChannelCategoryById(userRooms).ifPresent(c -> new ServerVoiceChannelBuilder(server).setName(finalName).setCategory(c).create().thenAccept(vc -> {
+                    server.getChannelCategoryById(userRooms).ifPresent(c -> server.createVoiceChannelBuilder().setName(finalName).setCategory(c).create().thenAccept(vc -> {
                         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
                             Statement stmt = conn.createStatement();
                             stmt.execute("INSERT INTO verified_rooms(website_id,discord_room_id,ts_room_id) VALUES(" + siteID + ',' + vc.getId() + ",-1)" +
@@ -210,7 +217,7 @@ public class DiscordMySQL extends AbstractMySQL {
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
-                        ServerVoiceChannelUpdater vcUpdater = vc.getUpdater();
+                        ServerVoiceChannelUpdater vcUpdater = vc.createUpdater();
                         perms.forEach(p -> vcUpdater.addPermissionOverwrite(user, p));
                         vcUpdater.update();
                     }));

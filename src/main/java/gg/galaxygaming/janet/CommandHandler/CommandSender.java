@@ -14,11 +14,11 @@ import javax.annotation.Nonnull;
  */
 public final class CommandSender {
     private final CommandSource source;
+    private final Rank rank;
     private SlackUser slackUser;
     private Client tsClient;
     private User discordUser;
     private String channel;
-    private Rank rank;
     private boolean isPrivate;
     private TextChannel dChannel;
 

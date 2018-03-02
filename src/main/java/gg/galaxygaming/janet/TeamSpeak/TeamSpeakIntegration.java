@@ -13,7 +13,7 @@ import javax.annotation.Nonnull;
 /**
  * An implementation of {@link gg.galaxygaming.janet.api.Integration} to connect to the TeamSpeak server.
  */
-public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconnect if teamspeak server goes down or restarts
+public final class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconnect if teamspeak server goes down or restarts
     private final int dndID, verifiedID, defaultChannel;
     private final String joinMessage, verifyMessage, roomCreatorName;
     private TS3Config ts3Config;
@@ -49,7 +49,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
     }
 
     private void login(@Nonnull String username, @Nonnull String password) {
-        getAsyncApi().login(username, password).onSuccess(loggedIn -> {
+        this.asyncApi.login(username, password).onSuccess(loggedIn -> {
             if (loggedIn)
                 selectServer();
             else
@@ -58,7 +58,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
     }
 
     private void selectServer() {
-        getAsyncApi().selectVirtualServerById(1).onSuccess(serverSelected -> {
+        this.asyncApi.selectVirtualServerById(1).onSuccess(serverSelected -> {
             if (serverSelected)
                 setNickName();
             else
@@ -67,7 +67,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
     }
 
     private void setNickName() {
-        getAsyncApi().setNickname("Janet").onSuccess(nickSet -> {
+        this.asyncApi.setNickname("Janet").onSuccess(nickSet -> {
             if (nickSet)
                 findDefaultChannel();
             else
@@ -76,7 +76,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
     }
 
     private void findDefaultChannel() {
-        getAsyncApi().whoAmI().onSuccess(info -> {
+        this.asyncApi.whoAmI().onSuccess(info -> {
             if (info != null)
                 finishConnect();
         });
@@ -84,8 +84,8 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
 
     private void finishConnect() {
         this.listener = new TeamSpeakListener();
-        getAsyncApi().registerAllEvents();
-        getAsyncApi().addTS3Listeners(this.listener);
+        this.asyncApi.registerAllEvents();
+        this.asyncApi.addTS3Listeners(this.listener);
 
         //getAsyncApi().getClients().onSuccess(clients -> clients.stream().filter(Client::isRegularClient).forEach(this::checkVerification));
 
@@ -94,10 +94,11 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
 
     public void stop() {
         super.stop();
-        if (getAsyncApi() != null) {
-            if (this.listener != null)
-                getAsyncApi().removeTS3Listeners(this.listener);
-            getAsyncApi().logout();
+        if (this.asyncApi != null) {
+            if (this.listener != null) {
+                this.asyncApi.removeTS3Listeners(this.listener);
+            }
+            this.asyncApi.logout();
         }
         this.ts3Query.exit();
     }
@@ -150,7 +151,7 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
      * @param c The {@link Client} to check the verification status of.
      */
     public void checkVerification(@Nonnull Client c) {
-        getAsyncApi().sendPrivateMessage(c.getId(), joinMessage).onSuccess(sent -> {
+        this.asyncApi.sendPrivateMessage(c.getId(), joinMessage).onSuccess(sent -> {
             if (sent) {
                 int[] serverGroups = c.getServerGroups();
                 boolean verified = false;
@@ -159,8 +160,9 @@ public class TeamSpeakIntegration extends AbstractIntegration {//TODO AutoReconn
                         verified = true;
                         break;
                     }
-                if (!verified)
-                    getAsyncApi().sendPrivateMessage(c.getId(), verifyMessage);
+                if (!verified) {
+                    this.asyncApi.sendPrivateMessage(c.getId(), verifyMessage);
+                }
             } else
                 Janet.getLogger().debug("Failed to send message to " + c.getNickname() + '.');
         });

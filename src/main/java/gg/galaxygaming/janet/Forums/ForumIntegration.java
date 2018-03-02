@@ -20,7 +20,7 @@ import java.util.Base64;
  * An implementation of {@link gg.galaxygaming.janet.api.Integration} for using the RestAPI on the forums.
  */
 public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this when writing autopromote
-    private final String restURL, restAPIKey, acceptMessage;
+    private final String restURL, acceptMessage;
     private final int janetID;
     private String auth = "";
 
@@ -28,15 +28,15 @@ public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this 
         super();
         Config config = Janet.getConfig();
         this.restURL = config.getOrDefault("REST_URL", "rest_url");
-        this.restAPIKey = config.getOrDefault("REST_API_KEY", "api_key");
+        String restAPIKey = config.getOrDefault("REST_API_KEY", "api_key");
         this.janetID = config.getOrDefault("JANET_FORUM_ID", 0);
         this.acceptMessage = config.getOrDefault("APP_ACCEPT_MESSAGE", "Accepted.");
-        if (this.restURL.equals("rest_url") || this.restAPIKey.equals("api_key")) {
+        if (this.restURL.equals("rest_url") || restAPIKey.equals("api_key")) {
             Janet.getLogger().error("Failed to load needed configs for Rest Integration");
             return;
         }
         try {
-            this.auth = "Basic " + Base64.getEncoder().encodeToString((this.restAPIKey + ':').getBytes("UTF-8"));
+            this.auth = "Basic " + Base64.getEncoder().encodeToString((restAPIKey + ':').getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }

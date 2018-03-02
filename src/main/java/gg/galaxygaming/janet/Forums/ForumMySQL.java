@@ -119,8 +119,7 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
         int highest = getHighest(ranks);
         if (primaries.containsKey(highest)) {
             Integer primary = primaries.get(highest);
-            if (ranks.contains(primary))//Remove it from list so that it is the list of secondaries
-                ranks.remove(primary);
+            ranks.remove(primary);//Remove it from list so that it is the list of secondaries
             return updateRanks(siteID, primary, ranks);
         } //Else something went wrong
         Janet.getLogger().warn("Failed to add rank " + rankID + " to " + siteID);
@@ -139,15 +138,13 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
             return true;
         Map<Integer, Integer> primaries = getPrimaries(ranks);
         ranks.remove(Integer.valueOf(rankID));
-        if (ranks.contains(primaries.get(rankID)))
-            ranks.remove(primaries.get(rankID)); //Remove old primary
+        ranks.remove(primaries.get(rankID));//Remove old primary
         if (ranks.isEmpty())
             return updateRanks(siteID, this.memberID, ranks);
         int highest = getHighest(ranks);
         if (primaries.containsKey(highest)) {
             Integer primary = primaries.get(highest);
-            if (ranks.contains(primary))//Remove it from list so that it is the list of secondaries
-                ranks.remove(primary);
+            ranks.remove(primary);//Remove it from list so that it is the list of secondaries
             return updateRanks(siteID, primary, ranks);
         } //Else something went wrong
         Janet.getLogger().warn("Failed to remove rank " + rankID + " from " + siteID);
@@ -187,16 +184,14 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
 
         if (oldRankID > 0) {
             ranks.remove(Integer.valueOf(oldRankID));
-            if (ranks.contains(primaries.get(oldRankID)))
-                ranks.remove(primaries.get(oldRankID)); //Remove old primary
+            ranks.remove(primaries.get(oldRankID)); //Remove old primary
             if (ranks.isEmpty())
                 return updateRanks(siteID, this.memberID, ranks);
         }
         int highest = getHighest(ranks);
         if (primaries.containsKey(highest)) {
             Integer primary = primaries.get(highest);
-            if (ranks.contains(primary))//Remove it from list so that it is the list of secondaries
-                ranks.remove(primary);
+            ranks.remove(primary);//Remove it from list so that it is the list of secondaries
             return updateRanks(siteID, primary, ranks);
         } //Else something went wrong
         Janet.getLogger().warn("Failed to change rank " + oldRankID + " to " + newRankID);
@@ -401,7 +396,7 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
         int newRank;
         boolean addRank;
         if (rankMap.containsKey(oldRank)) {
-            RankInfo nRank  = rankMap.get(oldRank);
+            RankInfo nRank = rankMap.get(oldRank);
             newRank = nRank.getRank();
             addRank = nRank.add();
         } else

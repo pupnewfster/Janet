@@ -12,7 +12,7 @@ import javax.annotation.Nonnull;
 /**
  * An implementation of {@link gg.galaxygaming.janet.api.Integration} to connect to the Discord server.
  */
-public class DiscordIntegration extends AbstractIntegration {
+public final class DiscordIntegration extends AbstractIntegration {
     private final long serverID, devChannel;
     private final String authMessage;
     private DiscordApi api;
@@ -39,16 +39,16 @@ public class DiscordIntegration extends AbstractIntegration {
 
     public void stop() {
         super.stop();
-        getApi().disconnect();
+        this.api.disconnect();
     }
 
     private void finishConnect() {
         Janet.getLogger().info("Discord connected, registering listeners...");
         this.listeners = new DiscordListener();
-        getApi().addMessageCreateListener(this.listeners);
-        getApi().addServerMemberJoinListener(this.listeners);
+        this.api.addMessageCreateListener(this.listeners);
+        this.api.addServerMemberJoinListener(this.listeners);
         Janet.getLogger().info("Discord listeners registered.");
-        getApi().getServerById(this.serverID).ifPresent(server -> this.server = server);
+        this.api.getServerById(this.serverID).ifPresent(server -> this.server = server);
         this.mysql = new DiscordMySQL();
     }
 

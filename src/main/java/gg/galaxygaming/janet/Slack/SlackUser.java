@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 /**
  * An implementation for users of {@link AbstractSlackUser}
  */
-public class SlackUser implements AbstractSlackUser {
+public final class SlackUser implements AbstractSlackUser {
     private final String id;
     private final String name, displayName;
     private final Rank rank;
@@ -72,6 +72,6 @@ public class SlackUser implements AbstractSlackUser {
      * @return True if this user is a bot, false otherwise.
      */
     public boolean isBot() {
-        return getRank().equals(Rank.BOT);
+        return this.rank.equals(Rank.BOT);
     }
 }

@@ -12,47 +12,55 @@ public enum Rank {
      * <p>
      * This includes the Owner, Executive Director, and Head Developer.
      */
-    EXECUTIVE_STAFF("Executive Staff", 12, new Color(0xFF0000)),
+    EXECUTIVE_STAFF("Executive Staff", 14, new Color(0xFF0000)),
     /**
      * {@link Rank} representing all the Directors of our servers.
      */
-    DIRECTOR("Director", 11, new Color(0xFF0000)),
+    DIRECTOR("Director", 13, new Color(0xFF0000)),
     /**
      * {@link Rank} representing all the Managers of our servers.
      */
-    MANAGER("Manager", 10, new Color(0xFFCC00)),
+    MANAGER("Manager", 12, new Color(0xFFCC00)),
     /**
      * {@link Rank} representing all the Senior Admins of our servers.
      */
-    SENIOR_ADMIN("Senior Admin", 9, new Color(0xFF6600)),
+    SENIOR_ADMIN("Senior Admin", 11, new Color(0xFF6600)),
     /**
      * {@link Rank} representing all Developers.
      */
-    DEV("Developer", 8, new Color(0xA00CA3)),
+    DEV("Developer", 10, new Color(0xA00CA3)),
     /**
      * {@link Rank} representing all the Admins of our servers.
      */
-    ADMIN("Admin", 7, new Color(0xFF9900)),
+    ADMIN("Admin", 9, new Color(0xFF9900)),
     /**
      * {@link Rank} representing all the Moderators of our servers.
      */
-    MODERATOR("Moderator", 6, new Color(0x00CCFF)),
+    MODERATOR("Moderator", 8, new Color(0x00CCFF)),
     /**
      * {@link Rank} representing any bots.
      */
-    BOT("Bot", 5, new Color(0xFF0000)),
+    BOT("Bot", 7, new Color(0xFF0000)),
     /**
      * {@link Rank} representing all the Trial Moderators of our servers.
      */
-    TMOD("Trial Mod", 4, new Color(0xD900FF)),
+    TMOD("Trial Mod", 6, new Color(0xD900FF)),
     /**
      * {@link Rank} representing all Trial Developers.
      */
-    TDEV("Trial Dev", 3, new Color(0xD900FF)),
+    TDEV("Trial Dev", 5, new Color(0xD900FF)),
     /**
      * {@link Rank} representing all the Donor Moderators of our servers.
      */
-    DMOD("Donor Mod", 2, new Color(0x98EFF5)),
+    DMOD("Donor Mod", 4, new Color(0x98EFF5)),
+    /**
+     * {@link Rank} representing all the people with Emeritus.
+     */
+    EMERITUS("Emeritus", 3, new Color(0xEB1FF2)),
+    /**
+     * {@link Rank} representing all the people with Community Supporter.
+     */
+    COMMUNITY_SUPPORTER("Community Supporter", 2, new Color(0x1F95EF)),
     /**
      * {@link Rank} representing all the people who are verified as members of our community.
      */
