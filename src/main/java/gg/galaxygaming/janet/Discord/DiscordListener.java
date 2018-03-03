@@ -1,13 +1,13 @@
 package gg.galaxygaming.janet.Discord;
 
-import de.btobastian.javacord.entity.message.Message;
-import de.btobastian.javacord.event.message.MessageCreateEvent;
-import de.btobastian.javacord.event.server.member.ServerMemberJoinEvent;
-import de.btobastian.javacord.listener.message.MessageCreateListener;
-import de.btobastian.javacord.listener.server.member.ServerMemberJoinListener;
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Janet;
+import org.javacord.entity.message.Message;
+import org.javacord.event.message.MessageCreateEvent;
+import org.javacord.event.server.member.ServerMemberJoinEvent;
+import org.javacord.listener.message.MessageCreateListener;
+import org.javacord.listener.server.member.ServerMemberJoinListener;
 
 /**
  * A listener to listen to events that happen on Discord.

@@ -1,21 +1,20 @@
 package gg.galaxygaming.janet.Discord;
 
-import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.entity.channel.ServerVoiceChannelUpdater;
-import de.btobastian.javacord.entity.permission.*;
-import de.btobastian.javacord.entity.server.Server;
-import de.btobastian.javacord.entity.user.User;
 import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Forums.ForumMySQL;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.api.AbstractMySQL;
+import org.javacord.DiscordApi;
+import org.javacord.entity.channel.ServerVoiceChannelUpdater;
+import org.javacord.entity.permission.*;
+import org.javacord.entity.server.Server;
+import org.javacord.entity.user.User;
 
 import javax.annotation.Nonnull;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -61,14 +60,15 @@ public class DiscordMySQL extends AbstractMySQL {
         Server server = Janet.getDiscord().getServer();
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT discord_rank_id FROM rank_id_lookup");
+            ResultSet rs = stmt.executeQuery("SELECT discord_rank_id, rank_power FROM rank_id_lookup");
             while (rs.next()) {
                 long rank = rs.getLong("discord_rank_id");
+                int power = rs.getInt("rank_power");
                 if (rank >= 0 && !this.ranks.contains(rank)) {//If multiple ranks point to the same one (VIP)
                     this.ranks.add(rank);
                     server.getRoleById(rank).ifPresent(role -> {
                         RoleUpdater updater = role.getUpdater();
-                        updater.setColor(getRankPower(Collections.singletonList(role)).getColor());
+                        updater.setColor(Rank.fromPower(power).getColor());
                         updater.update();
                     });
                 }

@@ -66,6 +66,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
     }
 
     protected void checkAll() {
+        TS3ApiAsync api = Janet.getTeamspeak().getAsyncApi();
         try (Connection conn = DriverManager.getConnection(this.url, this.properties)) {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM teamspeak_verified");
@@ -74,8 +75,8 @@ public class TeamSpeakMySQL extends AbstractMySQL {
                     break;
                 int siteID = rs.getInt("website_id");
                 String tsID = rs.getString("ts_id");
-                if (siteID < 0 && tsID != null)
-                    Janet.getTeamspeak().getAsyncApi().getDatabaseClientByUId(tsID).onSuccess(dbInfo -> {
+                if (siteID >= 0 && tsID != null)
+                    api.getDatabaseClientByUId(tsID).onSuccess(dbInfo -> {
                         if (dbInfo != null)
                             check(dbInfo, siteID);
                     });
@@ -123,7 +124,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
         }
         boolean hasRoom = cachedHasRoom || teamspeakRanks.contains(this.supporterID) || getRankPower(teamspeakRanks).hasRank(Rank.MANAGER);
         if (!isCached)
-            this.cachedInfo.put(siteID, new CacheInfo(teamspeakRanks, hasRoom));
+            this.cachedInfo.put(siteID, new CacheInfo((List<Integer>) ((ArrayList<Integer>) teamspeakRanks).clone(), hasRoom));
         int dbID = dbInfo.getDatabaseId();
         TS3ApiAsync api = Janet.getTeamspeak().getAsyncApi();
         api.getServerGroupsByClientId(dbID).onSuccess(serverGroups -> {

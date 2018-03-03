@@ -1,11 +1,11 @@
 package gg.galaxygaming.janet.Discord;
 
-import de.btobastian.javacord.DiscordApi;
-import de.btobastian.javacord.DiscordApiBuilder;
-import de.btobastian.javacord.entity.server.Server;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.api.AbstractIntegration;
+import org.javacord.DiscordApi;
+import org.javacord.DiscordApiBuilder;
+import org.javacord.entity.server.Server;
 
 import javax.annotation.Nonnull;
 

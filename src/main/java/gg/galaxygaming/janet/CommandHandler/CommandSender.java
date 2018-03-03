@@ -1,11 +1,11 @@
 package gg.galaxygaming.janet.CommandHandler;
 
 import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
-import de.btobastian.javacord.entity.channel.PrivateChannel;
-import de.btobastian.javacord.entity.channel.TextChannel;
-import de.btobastian.javacord.entity.user.User;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.Slack.SlackUser;
+import org.javacord.entity.channel.PrivateChannel;
+import org.javacord.entity.channel.TextChannel;
+import org.javacord.entity.user.User;
 
 import javax.annotation.Nonnull;
 
