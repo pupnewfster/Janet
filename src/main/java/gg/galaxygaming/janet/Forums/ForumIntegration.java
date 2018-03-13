@@ -20,18 +20,22 @@ import java.util.Base64;
  * An implementation of {@link gg.galaxygaming.janet.api.Integration} for using the RestAPI on the forums.
  */
 public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this when writing autopromote
-    private final String restURL, acceptMessage;
+    private final String restURL, acceptMessage, siteURL, restartCommand;
     private final int janetID;
     private String auth = "";
+    private Thread siteCheck;
 
     public ForumIntegration() {
         super();
         Config config = Janet.getConfig();
         this.restURL = config.getOrDefault("REST_URL", "rest_url");
+        this.siteURL = config.getOrDefault("SITE_URL", "site_url");
         String restAPIKey = config.getOrDefault("REST_API_KEY", "api_key");
         this.janetID = config.getOrDefault("JANET_FORUM_ID", 0);
         this.acceptMessage = config.getOrDefault("APP_ACCEPT_MESSAGE", "Accepted.");
-        if (this.restURL.equals("rest_url") || restAPIKey.equals("api_key")) {
+        this.restartCommand = config.getOrDefault("SITE_RESTART_COMMAND", "restart");
+        if (this.restURL.equals("rest_url") || restAPIKey.equals("api_key") || this.siteURL.equals("site_url") ||
+                this.restartCommand.equals("restart")) {
             Janet.getLogger().error("Failed to load needed configs for Rest Integration");
             return;
         }
@@ -41,6 +45,36 @@ public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this 
             e.printStackTrace();
         }
         this.mysql = new ForumMySQL();
+        this.siteCheck = new Thread(() -> {
+            int errorCount = 0;
+            while (true) {
+                try {
+                    int statusCode = ((HttpURLConnection) new URL(siteURL).openConnection()).getResponseCode();
+                    if (statusCode == 500) {
+                        errorCount++;
+                        if (errorCount == 3) {
+                            errorCount = 0;
+                            Runtime.getRuntime().exec(restartCommand);
+                            Janet.getLogger().error("Site restarted.");
+                        }
+                    } else
+                        errorCount = 0;
+                } catch (IOException e) {//If this gets called a bunch for no reason just change to ignored
+                    e.printStackTrace();
+                }
+                try {
+                    Thread.sleep(5 * 60 * 1000);
+                } catch (InterruptedException ignored) {//It is fine if this is interrupted
+                }
+            }
+        });
+        this.siteCheck.start();
+    }
+
+    public void stop() {
+        super.stop();
+        if (siteCheck != null)
+            siteCheck.interrupt();
     }
 
     public String getAcceptMessage() {

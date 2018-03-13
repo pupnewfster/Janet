@@ -44,6 +44,10 @@ public class Config extends Properties {
                 setProperty("INFO_CHANNEL", "info_channel");
 
             //Forums
+            if (!containsKey("SITE_URL"))
+                setProperty("SITE_URL", "site_url");
+            if (!containsKey("SITE_RESTART_COMMAND"))
+                setProperty("SITE_RESTART_COMMAND", "restart");
             if (!containsKey("REST_URL"))
                 setProperty("REST_URL", "rest_url");
             if (!containsKey("REST_API_KEY"))
