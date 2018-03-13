@@ -116,6 +116,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
                     stmt.close();
                 } catch (SQLException e) {
                     e.printStackTrace();
+                    return;//Something went wrong
                 }
         } else {
             CacheInfo cached = this.cachedInfo.get(siteID);

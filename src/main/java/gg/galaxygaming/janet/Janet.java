@@ -5,6 +5,7 @@ import gg.galaxygaming.janet.Discord.DiscordIntegration;
 import gg.galaxygaming.janet.Forums.ForumIntegration;
 import gg.galaxygaming.janet.Forums.donations.DonationIntegration;
 import gg.galaxygaming.janet.GMod.GModIntegration;
+import gg.galaxygaming.janet.GitHub.GitHubIntegration;
 import gg.galaxygaming.janet.Slack.SlackIntegration;
 import gg.galaxygaming.janet.TeamSpeak.TeamSpeakIntegration;
 import org.apache.logging.log4j.LogManager;
@@ -23,6 +24,7 @@ public class Janet {
     private TeamSpeakIntegration teamspeak;
     private DonationIntegration donations;
     private DiscordIntegration discord;
+    private GitHubIntegration github;
     private SlackIntegration slack;
     private GModIntegration gmod;
     private ForumIntegration forum;
@@ -34,6 +36,7 @@ public class Janet {
         this.cmdHandler = new CommandHandler("gg.galaxygaming.janet.CommandHandler.Commands");
         this.slack = new SlackIntegration();
         this.forum = new ForumIntegration();
+        //this.github = new GitHubIntegration();
         this.discord = new DiscordIntegration();
         this.teamspeak = new TeamSpeakIntegration();
         this.gmod = new GModIntegration();
@@ -46,6 +49,8 @@ public class Janet {
     public void stop() {
         if (getForums() != null)
             getForums().stop();
+        if (getGitHub() != null)
+            getGitHub().stop();
         if (getSlack() != null)
             getSlack().stop();
         if (getGMod() != null)
@@ -76,6 +81,14 @@ public class Janet {
      */
     public static SlackIntegration getSlack() {
         return INSTANCE.slack;
+    }
+
+    /**
+     * Retrieves the {@link GitHubIntegration}.
+     * @return The {@link GitHubIntegration}.
+     */
+    public static GitHubIntegration getGitHub() {
+        return INSTANCE.github;
     }
 
     /**

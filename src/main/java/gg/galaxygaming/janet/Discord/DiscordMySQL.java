@@ -67,7 +67,7 @@ public class DiscordMySQL extends AbstractMySQL {
                 if (rank >= 0 && !this.ranks.contains(rank)) {//If multiple ranks point to the same one (VIP)
                     this.ranks.add(rank);
                     server.getRoleById(rank).ifPresent(role -> {
-                        RoleUpdater updater = role.getUpdater();
+                        RoleUpdater updater = role.createUpdater();
                         updater.setColor(Rank.fromPower(power).getColor());
                         updater.update();
                     });
@@ -149,9 +149,8 @@ public class DiscordMySQL extends AbstractMySQL {
             stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
+            return;//Something went wrong
         }
-        if (siteID < 0)
-            return;
         Server server = Janet.getDiscord().getServer();
         Collection<Role> roles = user.getRoles(server);
         List<Long> newRanks = new ArrayList<>();

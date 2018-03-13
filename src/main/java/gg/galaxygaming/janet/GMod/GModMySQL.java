@@ -76,7 +76,6 @@ public class GModMySQL extends AbstractMySQL {
             while (rs.next()) {
                 if (stop)
                     break;
-                List<Rank> gmodRanks = new ArrayList<>();
                 String steamid = rs.getString("steamid");
                 if (steamid.isEmpty() || steamid.equals("0"))
                     continue;
@@ -93,6 +92,7 @@ public class GModMySQL extends AbstractMySQL {
                 String groups = sbGroups.toString().trim();
                 String query = gCount == 1 ? "site_rank_id = " + groups : "site_rank_id IN (" + groups + ')';
                 ResultSet rs2 = stmt2.executeQuery("SELECT gmod_rank_id, rank_power FROM rank_id_lookup WHERE " + query);
+                List<Rank> gmodRanks = new ArrayList<>();
                 while (rs2.next()) {
                     String id = rs2.getString("gmod_rank_id");
                     if (id != null)

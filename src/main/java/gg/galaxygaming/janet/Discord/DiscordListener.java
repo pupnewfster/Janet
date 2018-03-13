@@ -4,10 +4,13 @@ import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Janet;
 import org.javacord.entity.message.Message;
+import org.javacord.entity.user.User;
 import org.javacord.event.message.MessageCreateEvent;
 import org.javacord.event.server.member.ServerMemberJoinEvent;
 import org.javacord.listener.message.MessageCreateListener;
 import org.javacord.listener.server.member.ServerMemberJoinListener;
+
+import java.util.Collection;
 
 /**
  * A listener to listen to events that happen on Discord.
@@ -45,5 +48,8 @@ public class DiscordListener implements MessageCreateListener, ServerMemberJoinL
         if (Janet.getDiscord().getServer().equals(event.getServer())) {
             event.getUser().sendMessage(Janet.getDiscord().getAuthMessage());
         }
+        Collection<User> cachedUsers = Janet.getDiscord().getApi().getCachedUsers();
+        if (!cachedUsers.contains(event.getUser()))
+            cachedUsers.add(event.getUser());
     }
 }
