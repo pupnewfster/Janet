@@ -138,10 +138,7 @@ public class GModMySQL extends AbstractMySQL {
                     stmt.execute("DELETE FROM gmod_ranks WHERE steamid = \"" + steamid + '"');
                 else
                     for (String server : servers)
-                        if (!serverRanks.containsKey(server)) {//If one of the values is not already set, then keep the old value for it
-                            serverRanks.put(server, new Rank(rs.getString(server), 0));//Power may not be 0 but it does not matter. We are passed where that is checked
-                            update = true;
-                        } else if (!serverRanks.get(server).getID().equals(rs.getString(server)))
+                        if (!serverRanks.containsKey(server) || !serverRanks.get(server).getID().equals(rs.getString(server)))
                             update = true;
             } else if (!serverRanks.isEmpty())
                 update = true;
