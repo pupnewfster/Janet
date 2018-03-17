@@ -120,7 +120,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
                 }
         } else {
             CacheInfo cached = this.cachedInfo.get(siteID);
-            teamspeakRanks = cached.getTeamSpeakRanks();
+            teamspeakRanks = (List<Integer>) ((ArrayList<Integer>) cached.getTeamSpeakRanks()).clone();
             cachedHasRoom = cached.hasRoom();
         }
         boolean hasRoom = cachedHasRoom || teamspeakRanks.contains(this.supporterID) || getRankPower(teamspeakRanks).hasRank(Rank.MANAGER);
