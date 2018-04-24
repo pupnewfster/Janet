@@ -3,9 +3,9 @@ package gg.galaxygaming.janet.Discord;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.api.AbstractIntegration;
-import org.javacord.DiscordApi;
-import org.javacord.DiscordApiBuilder;
-import org.javacord.entity.server.Server;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.entity.server.Server;
 
 import javax.annotation.Nonnull;
 

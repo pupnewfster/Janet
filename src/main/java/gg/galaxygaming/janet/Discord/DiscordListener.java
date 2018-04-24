@@ -3,12 +3,12 @@ package gg.galaxygaming.janet.Discord;
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Janet;
-import org.javacord.entity.message.Message;
-import org.javacord.entity.user.User;
-import org.javacord.event.message.MessageCreateEvent;
-import org.javacord.event.server.member.ServerMemberJoinEvent;
-import org.javacord.listener.message.MessageCreateListener;
-import org.javacord.listener.server.member.ServerMemberJoinListener;
+import org.javacord.api.entity.message.Message;
+import org.javacord.api.entity.user.User;
+import org.javacord.api.event.message.MessageCreateEvent;
+import org.javacord.api.event.server.member.ServerMemberJoinEvent;
+import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.listener.server.member.ServerMemberJoinListener;
 
 import java.util.Collection;
 

@@ -148,7 +148,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
                 api.removeClientFromServerGroup(rID, dbID);
             for (int rID : teamspeakRanks)
                 api.addClientToServerGroup(rID, dbID);
-            if (!cachedHasRoom)
+            if (!cachedHasRoom)//TODO: Make it so that if they have cachedHasRoom then give it to them, or make it so it adds to it their cached info if they should have one added
                 checkRoom(dbInfo, siteID, hasRoom, hadRoom);
         });
     }

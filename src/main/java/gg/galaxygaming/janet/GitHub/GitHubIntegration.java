@@ -1,6 +1,5 @@
 package gg.galaxygaming.janet.GitHub;
 
-import com.neovisionaries.ws.client.WebSocket;
 import gg.galaxygaming.janet.api.AbstractIntegration;
 
 /**
@@ -8,8 +7,7 @@ import gg.galaxygaming.janet.api.AbstractIntegration;
  * with the GitHub IssueTracker.
  */
 public class GitHubIntegration extends AbstractIntegration {
-    private WebSocket ws;//https://dzone.com/articles/building-a-realtime-github-integration-using-java
-
+    //https://dzone.com/articles/building-a-realtime-github-integration-using-java
     public GitHubIntegration() {//TODO Use GraphQL to utilize GitHub API v4
 
     }

@@ -322,7 +322,7 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
             if (topicID != null && title != null && !hidden && !archived && !pinned) {
                 JsonObject post = (JsonObject) topic.get("firstPost");
                 JsonObject author = (JsonObject) post.get("author");
-                applications.put(topicID, title + ", Created by: " + author.getOrDefault(String.class, Jsoner.mintJsonKey("name", "unknown")) + '.');
+                applications.put(topicID, title + ", Created by: " + author.getStringOrDefault(Jsoner.mintJsonKey("name", "unknown")) + '.');
             }
         }
         return applications;

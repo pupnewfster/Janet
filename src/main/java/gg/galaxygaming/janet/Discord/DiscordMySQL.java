@@ -5,11 +5,11 @@ import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Forums.ForumMySQL;
 import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.api.AbstractMySQL;
-import org.javacord.DiscordApi;
-import org.javacord.entity.channel.ServerVoiceChannelUpdater;
-import org.javacord.entity.permission.*;
-import org.javacord.entity.server.Server;
-import org.javacord.entity.user.User;
+import org.javacord.api.DiscordApi;
+import org.javacord.api.entity.channel.ServerVoiceChannelUpdater;
+import org.javacord.api.entity.permission.*;
+import org.javacord.api.entity.server.Server;
+import org.javacord.api.entity.user.User;
 
 import javax.annotation.Nonnull;
 import java.sql.*;
