@@ -49,37 +49,10 @@ public final class TeamSpeakIntegration extends AbstractIntegration {//TODO Auto
     }
 
     private void login(@Nonnull String username, @Nonnull String password) {
-        this.asyncApi.login(username, password).onSuccess(loggedIn -> {
-            if (loggedIn)
-                selectServer();
-            else
-                Janet.getLogger().error("Failed to authenticate TeamSpeak Query.");
-        });
-    }
-
-    private void selectServer() {
-        this.asyncApi.selectVirtualServerById(1).onSuccess(serverSelected -> {
-            if (serverSelected)
-                setNickName();
-            else
-                Janet.getLogger().error("Failed to select TeamSpeak server.");
-        });
-    }
-
-    private void setNickName() {
-        this.asyncApi.setNickname("Janet").onSuccess(nickSet -> {
-            if (nickSet)
-                findDefaultChannel();
-            else
-                Janet.getLogger().error("Failed to set TeamSpeak nickname.");
-        });
-    }
-
-    private void findDefaultChannel() {
-        this.asyncApi.whoAmI().onSuccess(info -> {
-            if (info != null)
-                finishConnect();
-        });
+        this.asyncApi.login(username, password).onSuccess(loggedIn ->
+                this.asyncApi.selectVirtualServerById(1).onSuccess(serverSelected ->
+                        this.asyncApi.setNickname("Janet").onSuccess(nickSet ->
+                                this.asyncApi.whoAmI().onSuccess(info -> finishConnect()))));
     }
 
     private void finishConnect() {
@@ -152,19 +125,16 @@ public final class TeamSpeakIntegration extends AbstractIntegration {//TODO Auto
      */
     public void checkVerification(@Nonnull Client c) {
         this.asyncApi.sendPrivateMessage(c.getId(), joinMessage).onSuccess(sent -> {
-            if (sent) {
-                int[] serverGroups = c.getServerGroups();
-                boolean verified = false;
-                for (int id : serverGroups)
-                    if (id == verifiedID) {
-                        verified = true;
-                        break;
-                    }
-                if (!verified) {
-                    this.asyncApi.sendPrivateMessage(c.getId(), verifyMessage);
+            int[] serverGroups = c.getServerGroups();
+            boolean verified = false;
+            for (int id : serverGroups)
+                if (id == verifiedID) {
+                    verified = true;
+                    break;
                 }
-            } else
-                Janet.getLogger().debug("Failed to send message to " + c.getNickname() + '.');
+            if (!verified) {
+                this.asyncApi.sendPrivateMessage(c.getId(), verifyMessage);
+            }
         });
     }
 }

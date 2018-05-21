@@ -33,12 +33,12 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.9-rc</version>
+            <version>8.0.11</version>
         </dependency>
         <dependency>
             <groupId>com.github.theholywaffle</groupId>
             <artifactId>teamspeak3-api</artifactId>
-            <version>1.0.14</version>
+            <version>1.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -58,12 +58,12 @@
         <dependency>
             <groupId>com.neovisionaries</groupId>
             <artifactId>nv-websocket-client</artifactId>
-            <version>2.3</version>
+            <version>2.4</version>
         </dependency>
         <dependency>
             <groupId>de.btobastian</groupId>
             <artifactId>Javacord</artifactId>
-            <version>f306ace</version>
+            <version>3212a68</version>
         </dependency>
     </dependencies>
 

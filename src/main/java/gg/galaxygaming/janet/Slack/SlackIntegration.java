@@ -2,10 +2,7 @@ package gg.galaxygaming.janet.Slack;
 
 import com.github.cliftonlabs.json_simple.JsonObject;
 import com.github.cliftonlabs.json_simple.Jsoner;
-import com.neovisionaries.ws.client.WebSocket;
-import com.neovisionaries.ws.client.WebSocketAdapter;
-import com.neovisionaries.ws.client.WebSocketException;
-import com.neovisionaries.ws.client.WebSocketFactory;
+import com.neovisionaries.ws.client.*;
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.Config;
 import gg.galaxygaming.janet.Janet;
@@ -152,6 +149,14 @@ public class SlackIntegration extends AbstractIntegration {
                             String channel = json.getString(Jsoner.mintJsonKey("channel", null));
                             sendSlackChat(info, cleanChat(json.getString(Jsoner.mintJsonKey("text", null))), channel);
                         }
+                    }
+                }
+
+                @Override
+                public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) {
+                    if (isConnected) {
+                        Janet.getSlack().stop();
+                        Janet.getSlack().connect();
                     }
                 }
             }).connect();
