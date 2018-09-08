@@ -48,7 +48,7 @@ public class DiscordMySQL extends AbstractMySQL {
         properties.setProperty("password", dbPass);
         indexRanks();
         perms.add(new PermissionsBuilder().setState(PermissionType.MANAGE_CHANNELS, PermissionState.ALLOWED).build());
-        perms.add(new PermissionsBuilder().setState(PermissionType.VOICE_MOVE_MEMBERS, PermissionState.ALLOWED).build());
+        perms.add(new PermissionsBuilder().setState(PermissionType.MOVE_MEMBERS, PermissionState.ALLOWED).build());
         //TODO maybe add a way to lock room?
         this.checkThread.start();
     }
