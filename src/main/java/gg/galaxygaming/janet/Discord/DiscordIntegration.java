@@ -5,6 +5,7 @@ import gg.galaxygaming.janet.Janet;
 import gg.galaxygaming.janet.api.AbstractIntegration;
 import org.javacord.api.DiscordApi;
 import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.entity.activity.ActivityType;
 import org.javacord.api.entity.server.Server;
 
 import javax.annotation.Nonnull;
@@ -49,6 +50,7 @@ public final class DiscordIntegration extends AbstractIntegration {
         this.api.addServerMemberJoinListener(this.listeners);
         Janet.getLogger().info("Discord listeners registered.");
         this.api.getServerById(this.serverID).ifPresent(server -> this.server = server);
+        this.api.updateActivity(ActivityType.WATCHING, "over the autists.");
         this.mysql = new DiscordMySQL();
     }
 

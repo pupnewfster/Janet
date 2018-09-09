@@ -6,7 +6,7 @@ import gg.galaxygaming.janet.Utils;
 import gg.galaxygaming.janet.api.Cmd;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -64,6 +64,6 @@ public class CmdHelp implements Cmd {
 
     @Override
     public List<String> getAliases() {
-        return Collections.singletonList("commands");
+        return Arrays.asList("commands", "h");
     }
 }

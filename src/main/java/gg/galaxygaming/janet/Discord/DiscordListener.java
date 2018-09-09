@@ -6,8 +6,12 @@ import gg.galaxygaming.janet.Janet;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
+import org.javacord.api.event.message.MessageDeleteEvent;
+import org.javacord.api.event.message.MessageEditEvent;
 import org.javacord.api.event.server.member.ServerMemberJoinEvent;
 import org.javacord.api.listener.message.MessageCreateListener;
+import org.javacord.api.listener.message.MessageDeleteListener;
+import org.javacord.api.listener.message.MessageEditListener;
 import org.javacord.api.listener.server.member.ServerMemberJoinListener;
 
 import java.util.Collection;
@@ -15,8 +19,7 @@ import java.util.Collection;
 /**
  * A listener to listen to events that happen on Discord.
  */
-public class DiscordListener implements MessageCreateListener, ServerMemberJoinListener {//TODO: listen to message edit events/delete and pass it on to slack??
-
+public class DiscordListener implements MessageCreateListener, ServerMemberJoinListener, MessageEditListener, MessageDeleteListener {
     /**
      * Called when a message is sent on Discord.
      */
@@ -27,17 +30,37 @@ public class DiscordListener implements MessageCreateListener, ServerMemberJoinL
             if (u.isBot())
                 return;
             boolean isCommand = false;
-            String m = message.getReadableContent();
+            String m = message.getReadableContent().trim();
             DiscordIntegration discord = Janet.getDiscord();
             if (m.startsWith("!")) {
                 Rank rank = ((DiscordMySQL) discord.getMySQL()).getRankPower(u.getRoles(discord.getServer()));
                 isCommand = Janet.getCommandHandler().handleCommand(m, new CommandSender(u, message.getChannel(), rank));
             }
             if (!isCommand) {
-                if (message.getChannel().getId() == discord.getDevChannel())
+                if (message.getChannel().getId() == discord.getDevChannel() && !m.isEmpty())
                     Janet.getSlack().sendMessage(u.getDisplayName(discord.getServer()) + ": " + m, Janet.getSlack().getInfoChannel());
             }
+            if (message.getChannel().getId() == discord.getDevChannel()) {
+                message.getAttachments().forEach(attachment -> Janet.getSlack().sendMessage(u.getDisplayName(discord.getServer()) + " attached " +
+                        attachment.getUrl().toString(), Janet.getSlack().getInfoChannel()));
+            }
         });
+    }
+
+    /**
+     * Called when a message is edited on Discord.
+     */
+    @Override
+    public void onMessageEdit(MessageEditEvent messageEditEvent) {
+
+    }
+
+    /**
+     * Called when a message is deleted on Discord.
+     */
+    @Override
+    public void onMessageDelete(MessageDeleteEvent messageDeleteEvent) {
+
     }
 
     /**

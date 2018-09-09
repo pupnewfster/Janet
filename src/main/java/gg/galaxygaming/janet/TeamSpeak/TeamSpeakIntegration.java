@@ -68,9 +68,9 @@ public final class TeamSpeakIntegration extends AbstractIntegration {//TODO Auto
     public void stop() {
         super.stop();
         if (this.asyncApi != null) {
-            if (this.listener != null) {
+            /*if (this.listener != null) {
                 this.asyncApi.removeTS3Listeners(this.listener);
-            }
+            }*/
             this.asyncApi.logout();
         }
         this.ts3Query.exit();

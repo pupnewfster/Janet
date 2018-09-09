@@ -11,9 +11,7 @@ import gg.galaxygaming.janet.api.AbstractIntegration;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -136,9 +134,11 @@ public class SlackIntegration extends AbstractIntegration {
                 @Override
                 public void onTextMessage(WebSocket websocket, String message) {//TODO listen back for potential replies to stored message ids
                     //Janet.getLogger().debug("Received Slack message: " + message);
+                    //System.out.println(message);
                     JsonObject json = Jsoner.deserialize(message, new JsonObject());
                     if (json.containsKey("type")) {
-                        if (json.getString(Jsoner.mintJsonKey("type", null)).equals("message")) {
+                        String type = json.getString(Jsoner.mintJsonKey("type", null));
+                        if (type.equals("message")) {
                             if (json.containsKey("bot_id"))
                                 return;//TODO maybe figure out the userid of bot id if there is any reason to support bot messages..
                             //TODO will probably require some sort of bot support depending on how the integration with gmod's issue reporting works
@@ -148,6 +148,13 @@ public class SlackIntegration extends AbstractIntegration {
                                 return;
                             String channel = json.getString(Jsoner.mintJsonKey("channel", null));
                             sendSlackChat(info, cleanChat(json.getString(Jsoner.mintJsonKey("text", null))), channel);
+                        } else if (type.equals("file_shared")) {
+                            SlackUser info = getUserInfo(json.getString(Jsoner.mintJsonKey("user_id", null)));
+                            if (info == null)
+                                return;
+                            if (infoChannel.equals(json.getString(Jsoner.mintJsonKey("channel_id", null)))) {
+                                handleFile(info, json.getString(Jsoner.mintJsonKey("file_id", null)));
+                            }
                         }
                     }
                 }
@@ -161,6 +168,53 @@ public class SlackIntegration extends AbstractIntegration {
                 }
             }).connect();
         } catch (WebSocketException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Sends a file to discord
+     * @param fileID The id of the file to send.
+     */
+    private void handleFile(SlackUser info, String fileID) {
+        if (fileID == null) {
+            return;
+        }
+        try {
+            URL url = new URL("https://slack.com/api/files.info?token=" + token + "&file=" + fileID);
+            HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+            con.setRequestMethod("POST");
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+            while ((inputLine = in.readLine()) != null)
+                response.append(inputLine);
+            in.close();
+            JsonObject jsonResponse = Jsoner.deserialize(response.toString(), new JsonObject());
+            if (!jsonResponse.getBooleanOrDefault(Jsoner.mintJsonKey("ok", false)))
+                return;
+            JsonObject file = (JsonObject) jsonResponse.get("file");
+            String fileURL = file.getString(Jsoner.mintJsonKey("url_private", null));//url_private_download
+            if (fileURL == null) {
+                return;
+            }
+
+            /*URL f = new URL(fileURL);
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+            try (InputStream inputStream = f.openStream()) {
+                int n;
+                byte [] buffer = new byte[1024];
+                while (-1 != (n = inputStream.read(buffer))) {
+                    output.write(buffer, 0, n);
+                }
+            }*/
+
+            Janet.getDiscord().getServer().getTextChannelById(Janet.getDiscord().getDevChannel()).ifPresent(c -> {
+                c.sendMessage(info.getDisplayName() + " attached " + fileURL);
+                //new MessageBuilder().addAttachment(output.toByteArray(), file.getString(Jsoner.mintJsonKey("name", "Unnamed"))).send(c);
+            });
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -230,7 +284,7 @@ public class SlackIntegration extends AbstractIntegration {
      * @param channel The ID of the channel the message was sent in.
      */
     private void sendSlackChat(SlackUser info, @Nonnull String message, @Nonnull String channel) {
-        if (info == null)
+        if (info == null || message.isEmpty())
             return;
         if (info.getRank().isBanned()) {
             sendMessage("Error: You are restricted.", channel);
