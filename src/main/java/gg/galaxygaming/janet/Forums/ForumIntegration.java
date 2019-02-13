@@ -14,6 +14,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 /**
@@ -39,11 +40,7 @@ public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this 
             Janet.getLogger().error("Failed to load needed configs for Rest Integration");
             return;
         }
-        try {
-            this.auth = "Basic " + Base64.getEncoder().encodeToString((restAPIKey + ':').getBytes("UTF-8"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        this.auth = "Basic " + Base64.getEncoder().encodeToString((restAPIKey + ':').getBytes(StandardCharsets.UTF_8));
         this.mysql = new ForumMySQL();
         this.siteCheck = new Thread(() -> {
             int errorCount = 0;
@@ -111,7 +108,7 @@ public class ForumIntegration extends AbstractIntegration {//TODO: JavaDoc this 
             }
         });
         try {
-            byte[] postDataBytes = postData.toString().getBytes("UTF-8");
+            byte[] postDataBytes = postData.toString().getBytes(StandardCharsets.UTF_8);
             URL url = new URL(this.restURL + urlEnding);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setDoOutput(true);

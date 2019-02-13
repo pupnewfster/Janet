@@ -255,7 +255,7 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
             for (int rank : ranks) {
                 ResultSet rs = stmt.executeQuery("SELECT primary_id FROM rank_priority WHERE rank_id = " + rank);
                 if (rs.next()) {
-                    Integer primary = rs.getInt("primary_id");
+                    int primary = rs.getInt("primary_id");
                     rInfo.put(rank, primary < 0 ? rank : primary);
                 }
                 rs.close();

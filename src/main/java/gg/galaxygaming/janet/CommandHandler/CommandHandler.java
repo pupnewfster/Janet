@@ -50,8 +50,8 @@ public final class CommandHandler {
                     StringBuilder validSources = new StringBuilder();
                     for (int i = 0; i < sources.size(); i++) {
                         if (!validSources.toString().equals("")) {
-                            validSources.append(i == 2 && i == sources.size() ? " " : ", ");
-                            if (i == sources.size())
+                            validSources.append(i == 1 && sources.size() == 2 ? " " : ", ");
+                            if (i + 1 == sources.size())
                                 validSources.append("or ");
                         }
                         validSources.append(sources.get(i));
