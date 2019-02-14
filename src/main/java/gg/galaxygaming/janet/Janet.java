@@ -8,10 +8,12 @@ import gg.galaxygaming.janet.GMod.GModIntegration;
 import gg.galaxygaming.janet.GitHub.GitHubIntegration;
 import gg.galaxygaming.janet.Slack.SlackIntegration;
 import gg.galaxygaming.janet.TeamSpeak.TeamSpeakIntegration;
+import gg.galaxygaming.janet.api.Integration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * The main class.
@@ -49,18 +51,19 @@ public class Janet {
      * Called when {@link Janet} is stopped to gracefully close all open {@link gg.galaxygaming.janet.api.Integration}s.
      */
     public void stop() {
-        if (getForums() != null)
-            getForums().stop();
-        if (getGitHub() != null)
-            getGitHub().stop();
-        if (getSlack() != null)
-            getSlack().stop();
-        if (getGMod() != null)
-            getGMod().stop();
-        if (getDiscord() != null)
-            getDiscord().stop();
-        if (getTeamspeak() != null)
-            getTeamspeak().stop();
+        stopIntegration(getForums());
+        stopIntegration(getGitHub());
+        stopIntegration(getSlack());
+        stopIntegration(getGMod());
+        stopIntegration(getDiscord());
+        stopIntegration(getTeamspeak());
+        stopIntegration(getDonations());
+    }
+
+    private void stopIntegration(Integration integration) {
+        if (integration != null) {
+            integration.stop();
+        }
     }
 
     public static void main(String[] args) {
@@ -81,6 +84,7 @@ public class Janet {
      * Retrieves the {@link SlackIntegration}.
      * @return The {@link SlackIntegration}.
      */
+    @Nullable
     public static SlackIntegration getSlack() {
         return INSTANCE.slack;
     }
@@ -89,6 +93,7 @@ public class Janet {
      * Retrieves the {@link GitHubIntegration}.
      * @return The {@link GitHubIntegration}.
      */
+    @Nullable
     public static GitHubIntegration getGitHub() {
         return INSTANCE.github;
     }
