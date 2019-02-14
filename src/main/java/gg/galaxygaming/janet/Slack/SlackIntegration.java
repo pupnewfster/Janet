@@ -162,8 +162,11 @@ public class SlackIntegration extends AbstractIntegration {
                 @Override
                 public void onDisconnected(WebSocket websocket, WebSocketFrame serverCloseFrame, WebSocketFrame clientCloseFrame, boolean closedByServer) {
                     if (isConnected) {
-                        Janet.getSlack().stop();
-                        Janet.getSlack().connect();
+                        SlackIntegration slack = Janet.getSlack();
+                        if (slack != null) { //Should never be the case
+                            slack.stop();
+                            slack.connect();
+                        }
                     }
                 }
             }).connect();

@@ -3,6 +3,7 @@ package gg.galaxygaming.janet.Discord;
 import gg.galaxygaming.janet.CommandHandler.CommandSender;
 import gg.galaxygaming.janet.CommandHandler.Rank;
 import gg.galaxygaming.janet.Janet;
+import gg.galaxygaming.janet.Slack.SlackIntegration;
 import org.javacord.api.entity.message.Message;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
@@ -36,13 +37,15 @@ public class DiscordListener implements MessageCreateListener, ServerMemberJoinL
                 Rank rank = ((DiscordMySQL) discord.getMySQL()).getRankPower(u.getRoles(discord.getServer()));
                 isCommand = Janet.getCommandHandler().handleCommand(m, new CommandSender(u, message.getChannel(), rank));
             }
-            if (!isCommand) {
-                if (message.getChannel().getId() == discord.getDevChannel() && !m.isEmpty())
-                    Janet.getSlack().sendMessage(u.getDisplayName(discord.getServer()) + ": " + m, Janet.getSlack().getInfoChannel());
-            }
-            if (message.getChannel().getId() == discord.getDevChannel()) {
-                message.getAttachments().forEach(attachment -> Janet.getSlack().sendMessage(u.getDisplayName(discord.getServer()) + " attached " +
-                        attachment.getUrl().toString(), Janet.getSlack().getInfoChannel()));
+            SlackIntegration slack = Janet.getSlack();
+            if (slack != null) {
+                if (!isCommand && message.getChannel().getId() == discord.getDevChannel() && !m.isEmpty()) {
+                    slack.sendMessage(u.getDisplayName(discord.getServer()) + ": " + m, slack.getInfoChannel());
+                }
+                if (message.getChannel().getId() == discord.getDevChannel()) {
+                    message.getAttachments().forEach(attachment -> slack.sendMessage(u.getDisplayName(discord.getServer()) + " attached " +
+                            attachment.getUrl().toString(), slack.getInfoChannel()));
+                }
             }
         });
     }

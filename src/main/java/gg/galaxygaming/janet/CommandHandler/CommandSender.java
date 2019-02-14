@@ -2,6 +2,7 @@ package gg.galaxygaming.janet.CommandHandler;
 
 import com.github.theholywaffle.teamspeak3.api.wrapper.Client;
 import gg.galaxygaming.janet.Janet;
+import gg.galaxygaming.janet.Slack.SlackIntegration;
 import gg.galaxygaming.janet.Slack.SlackUser;
 import org.javacord.api.entity.channel.PrivateChannel;
 import org.javacord.api.entity.channel.TextChannel;
@@ -132,7 +133,10 @@ public final class CommandSender {
     public void sendMessage(@Nonnull String message) {
         switch (this.source) {
             case Slack:
-                Janet.getSlack().sendMessage(message, this.channel);
+                SlackIntegration slack = Janet.getSlack();
+                if (slack != null) { //Is unlikely to ever be the case
+                    slack.sendMessage(message, this.channel);
+                }
                 break;
             case Console:
                 Janet.getLogger().info(message);

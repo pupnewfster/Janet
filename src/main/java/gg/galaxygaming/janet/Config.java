@@ -38,6 +38,8 @@ public class Config extends Properties {
      */
     private void addMissingValues(File config) {//TODO: should we store the default values in a map so that we can also get them
         try (OutputStream output = new FileOutputStream(config)) {
+            if (!containsKey("SLACK_ENABLED"))
+                setProperty("SLACK_ENABLED", "false");
             if (!containsKey("SLACK_TOKEN"))
                 setProperty("SLACK_TOKEN", "token");
             if (!containsKey("INFO_CHANNEL"))

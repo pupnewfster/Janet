@@ -34,7 +34,9 @@ public class Janet {
         this.logger = LogManager.getLogger("Janet");
         this.config = new Config();
         this.cmdHandler = new CommandHandler("gg.galaxygaming.janet.CommandHandler.Commands");
-        this.slack = new SlackIntegration();
+        if (config.getOrDefault("SLACK_ENABLED", false)) {
+            this.slack = new SlackIntegration();
+        }
         this.forum = new ForumIntegration();
         //this.github = new GitHubIntegration();
         this.discord = new DiscordIntegration();
