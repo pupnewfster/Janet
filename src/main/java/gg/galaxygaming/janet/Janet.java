@@ -1,13 +1,13 @@
 package gg.galaxygaming.janet;
 
-import gg.galaxygaming.janet.CommandHandler.CommandHandler;
-import gg.galaxygaming.janet.Discord.DiscordIntegration;
-import gg.galaxygaming.janet.Forums.ForumIntegration;
-import gg.galaxygaming.janet.Forums.donations.DonationIntegration;
-import gg.galaxygaming.janet.GMod.GModIntegration;
-import gg.galaxygaming.janet.GitHub.GitHubIntegration;
-import gg.galaxygaming.janet.Slack.SlackIntegration;
-import gg.galaxygaming.janet.TeamSpeak.TeamSpeakIntegration;
+import gg.galaxygaming.janet.command_handler.CommandHandler;
+import gg.galaxygaming.janet.discord.DiscordIntegration;
+import gg.galaxygaming.janet.forums.ForumIntegration;
+import gg.galaxygaming.janet.forums.donations.DonationIntegration;
+import gg.galaxygaming.janet.gmod.GModIntegration;
+import gg.galaxygaming.janet.github.GitHubIntegration;
+import gg.galaxygaming.janet.slack.SlackIntegration;
+import gg.galaxygaming.janet.teamspeak.TeamSpeakIntegration;
 import gg.galaxygaming.janet.api.Integration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

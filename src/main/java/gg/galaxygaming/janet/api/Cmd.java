@@ -1,8 +1,8 @@
 package gg.galaxygaming.janet.api;
 
-import gg.galaxygaming.janet.CommandHandler.CommandSender;
-import gg.galaxygaming.janet.CommandHandler.CommandSource;
-import gg.galaxygaming.janet.CommandHandler.Rank;
+import gg.galaxygaming.janet.command_handler.CommandSender;
+import gg.galaxygaming.janet.command_handler.CommandSource;
+import gg.galaxygaming.janet.command_handler.Rank;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,14 +21,14 @@ public interface Cmd {//TODO should this be moved to the api package?
     void performCommand(@Nonnull String[] args, @Nonnull CommandSender info);
 
     /**
-     * Retrieves help documentation for this {@link Cmd}. This shows up in when using {@link gg.galaxygaming.janet.CommandHandler.Commands.CmdHelp}.
+     * Retrieves help documentation for this {@link Cmd}. This shows up in when using {@link gg.galaxygaming.janet.command_handler.commands.CmdHelp}.
      * @return The help documentation for this {@link Cmd}.
      */
     @Nonnull
     String helpDoc();
 
     /**
-     * Retrieves the proper usage for this {@link Cmd}. This shows up in when using {@link gg.galaxygaming.janet.CommandHandler.Commands.CmdHelp}.
+     * Retrieves the proper usage for this {@link Cmd}. This shows up in when using {@link gg.galaxygaming.janet.command_handler.commands.CmdHelp}.
      * @return The proper usage for this {@link Cmd}.
      */
     @Nonnull
