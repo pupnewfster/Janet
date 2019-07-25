@@ -195,7 +195,7 @@ public class GModMySQL extends AbstractMySQL {
     /**
      * A wrapper that stores the gmod rank name and the power associated with it.
      */
-    public class Rank {
+    public static class Rank {
         private final String id;
         private final int power;
 

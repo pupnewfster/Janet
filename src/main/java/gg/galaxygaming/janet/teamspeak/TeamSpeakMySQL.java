@@ -120,12 +120,12 @@ public class TeamSpeakMySQL extends AbstractMySQL {
                 }
         } else {
             CacheInfo cached = this.cachedInfo.get(siteID);
-            teamspeakRanks = (List<Integer>) ((ArrayList<Integer>) cached.getTeamSpeakRanks()).clone();
+            teamspeakRanks = cloneRanks(cached.getTeamSpeakRanks());
             cachedHasRoom = cached.hasRoom();
         }
         boolean hasRoom = cachedHasRoom || teamspeakRanks.contains(this.supporterID) || getRankPower(teamspeakRanks).hasRank(Rank.MANAGER);
         if (!isCached)
-            this.cachedInfo.put(siteID, new CacheInfo((List<Integer>) ((ArrayList<Integer>) teamspeakRanks).clone(), hasRoom));
+            this.cachedInfo.put(siteID, new CacheInfo(cloneRanks(teamspeakRanks), hasRoom));
         int dbID = dbInfo.getDatabaseId();
         TS3ApiAsync api = Janet.getTeamspeak().getAsyncApi();
         api.getServerGroupsByClientId(dbID).onSuccess(serverGroups -> {
@@ -151,6 +151,11 @@ public class TeamSpeakMySQL extends AbstractMySQL {
             if (!cachedHasRoom)//TODO: Make it so that if they have cachedHasRoom then give it to them, or make it so it adds to it their cached info if they should have one added
                 checkRoom(dbInfo, siteID, hasRoom, hadRoom);
         });
+    }
+
+    private List<Integer> cloneRanks(List<Integer> teamspeakRanks) {
+        //Only call this when the casts are fine
+        return (List<Integer>) ((ArrayList<Integer>) teamspeakRanks).clone();
     }
 
     /**
@@ -290,7 +295,7 @@ public class TeamSpeakMySQL extends AbstractMySQL {
     /**
      * Stores info cached for same site id between multiple TeamSpeak IDs
      */
-    private class CacheInfo {
+    private static class CacheInfo {
         private final List<Integer> teamspeakRanks;
         private final boolean hasRoom;
 

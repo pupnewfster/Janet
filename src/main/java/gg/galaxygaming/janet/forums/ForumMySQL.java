@@ -429,7 +429,7 @@ public class ForumMySQL extends AbstractMySQL {//TODO: Should some of applicatio
     /**
      * Stores information about whether to add the rank or replace it with the new rank.
      */
-    private class RankInfo {
+    private static class RankInfo {
         private final int rank;
         private final boolean add;
 

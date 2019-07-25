@@ -185,15 +185,7 @@ public class SlackIntegration extends AbstractIntegration {
         }
         try {
             URL url = new URL("https://slack.com/api/files.info?token=" + token + "&file=" + fileID);
-            HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
-            con.setRequestMethod("POST");
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            while ((inputLine = in.readLine()) != null)
-                response.append(inputLine);
-            in.close();
-            JsonObject jsonResponse = Jsoner.deserialize(response.toString(), new JsonObject());
+            JsonObject jsonResponse = makePost(url);
             if (!jsonResponse.getBooleanOrDefault(Jsoner.mintJsonKey("ok", false)))
                 return;
             JsonObject file = (JsonObject) jsonResponse.get("file");
@@ -259,15 +251,7 @@ public class SlackIntegration extends AbstractIntegration {
             return user;
         try {
             URL url = new URL("https://slack.com/api/users.info?token=" + token + "&user=" + id);
-            HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
-            con.setRequestMethod("POST");
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuilder response = new StringBuilder();
-            while ((inputLine = in.readLine()) != null)
-                response.append(inputLine);
-            in.close();
-            JsonObject jsonResponse = Jsoner.deserialize(response.toString(), new JsonObject());
+            JsonObject jsonResponse = makePost(url);
             if (!jsonResponse.getBooleanOrDefault(Jsoner.mintJsonKey("ok", false)))
                 return null; //User does not exist or is deactivated
             JsonObject userInfo = (JsonObject) jsonResponse.get("user");
@@ -278,6 +262,18 @@ public class SlackIntegration extends AbstractIntegration {
             e.printStackTrace();
         }
         return user;
+    }
+
+    private JsonObject makePost(URL url) throws IOException {
+        HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+        con.setRequestMethod("POST");
+        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuilder response = new StringBuilder();
+        while ((inputLine = in.readLine()) != null)
+            response.append(inputLine);
+        in.close();
+        return Jsoner.deserialize(response.toString(), new JsonObject());
     }
 
     /**

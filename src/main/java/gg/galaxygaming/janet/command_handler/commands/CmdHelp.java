@@ -36,7 +36,7 @@ public class CmdHelp implements Cmd {
         StringBuilder m = new StringBuilder(" ---- Help -- Page " + page + " / " + totalPages + " ---- \n");
         page -= 1;
         int end = page * 10 + 9;
-        List<String> curPage = helpList.subList(page * 10, end > helpList.size() ? helpList.size() : end);
+        List<String> curPage = helpList.subList(page * 10, Math.min(end, helpList.size()));
         for (String msg : curPage)
             m.append(msg).append('\n');
         if (page + 1 < totalPages)
