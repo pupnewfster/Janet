@@ -35,7 +35,7 @@ public class Janet {
         INSTANCE = this;
         this.logger = LogManager.getLogger("Janet");
         this.config = new Config();
-        this.cmdHandler = new CommandHandler("gg.galaxygaming.janet.CommandHandler.Commands");
+        this.cmdHandler = new CommandHandler("gg.galaxygaming.janet.command_handler.commands");
         if (config.getOrDefault("SLACK_ENABLED", false)) {
             this.slack = new SlackIntegration();
         }
